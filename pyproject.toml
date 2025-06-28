@@ -1,0 +1,15 @@
+[project]
+dependencies = ["screeninfo~=0.8.1"]
+name = "appwindows"
+version = "1.0.0"
+authors = [
+ { name="lexter0705", email="lexter0705@gmail.com" },
+]
+description = "The appwindows library solves the problem of working with a graphical shell on different operating systems."
+readme = "README.md"
+requires-python = ">=3.12.0"
+classifiers = [
+   "Programming Language :: Python :: 3",
+   "License :: OSI Approved :: MIT License",
+   "Operating System :: Windows, Linux",
+]

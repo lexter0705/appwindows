@@ -1,0 +1,20 @@
+<img src="appwindows.svg" alt="">
+
+# Appwindows
+The appwindows library solves the problem of working with a graphical shell on different operating systems.
+
+# Install
+```pip install appwindows``` - on windows<br>
+```pip3 install appwindows``` - on linux
+
+# Docs
+All documentation <a href="#">here</a>
+
+# For Developers
+1) If something doesn't work - open issue.
+2) If you want something fixed - open issue.
+3) If you need help with the library - email.
+   
+apparser.development@gmail.com
+
+Any help in development is welcome)!
