@@ -64,7 +64,7 @@ void bind_size(py::module &m) {
 
 void bind_window(py::module &m) {
   py::class_<core::WindowI, std::shared_ptr<core::WindowI>>(
-      m, "WindowI", "Interface representing an application window")
+      m, "Window", "Interface representing an application window")
       .def(
           "get_points",
           [](core::WindowI &self) {
@@ -119,7 +119,7 @@ void bind_window(py::module &m) {
 
 void bind_finder(py::module &m) {
   py::class_<core::FinderI, std::shared_ptr<core::FinderI>>(
-      m, "FinderI", "Interface for finding application windows")
+      m, "Finder", "Interface for finding application windows")
       .def(
           "get_window_by_title",
           [](const core::FinderI &self, const std::string &title) {
