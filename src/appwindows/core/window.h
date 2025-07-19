@@ -12,9 +12,9 @@ namespace core {
 
 class InstructionI;
 
-class WindowI {
+class Window {
  public:
-  virtual ~WindowI() = default;
+  virtual ~Window() = default;
   virtual std::unique_ptr<std::vector<Point>> get_points() = 0;
   [[nodiscard]] virtual std::unique_ptr<std::string> get_title() const = 0;
   [[nodiscard]] virtual std::unique_ptr<Size> get_size() const = 0;

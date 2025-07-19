@@ -7,7 +7,7 @@
 namespace appwindows {
 namespace windows {
 
-class WindowMacOs final : public core::WindowI {
+class WindowMacOs final : public core::Window {
  public:
   explicit WindowMacOs();
   std::unique_ptr<std::vector<core::Point>> get_points() override;

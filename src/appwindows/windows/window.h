@@ -1,4 +1,5 @@
 #pragma once
+
 #ifdef _WIN32 || _WIN64
 
 #include <windows.h>
@@ -10,7 +11,7 @@
 namespace appwindows {
 namespace windows {
 
-class WindowWindows final : public core::WindowI {
+class WindowWindows final : public core::Window {
  public:
   explicit WindowWindows(const std::shared_ptr<HWND>& window);
   bool window_is_valid() const;

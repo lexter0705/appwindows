@@ -1,0 +1,26 @@
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+
+#include "./core/platform.h"
+#include "./windows/bind.h"
+#include "./x_server/bind.h"
+#include "./core/bind.h"
+
+namespace py = pybind11;
+
+PYBIND11_MODULE(appwindows, m) {
+  m.doc() =
+      "Python bindings for appwindows library\n\n"
+      "The appwindows library solves the problem of working with a graphical "
+      "shell on different operating systems.";
+  appwindows::core::bind_core(m);
+#if defined(_WIN32) || defined(_WIN64)
+  appwindows::windows::bind_windows(m);
+#elif defined(__linux__)
+  appwindows::x_server::bind_x_server(m)
+#endif
+  m.def("get_finder", &appwindows::get_finder,
+        "Get the window finder instance\n\n"
+        "Returns:\n"
+        "    Finder: Instance of window finder interface");
+}

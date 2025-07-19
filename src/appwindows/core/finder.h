@@ -7,12 +7,14 @@
 namespace appwindows {
 namespace core {
 
-class FinderI {
+class Finder {
  public:
-  virtual ~FinderI() = default;
+  virtual ~Finder() = default;
   [[nodiscard]]
-  virtual std::unique_ptr<WindowI> get_window_by_title(
+  virtual std::shared_ptr<Window> get_window_by_title(
       std::string title) const = 0;
+  [[nodiscard]]
+  virtual std::vector<std::shared_ptr<Window>> get_all_windows() const = 0;
 };
 
 }  // namespace core

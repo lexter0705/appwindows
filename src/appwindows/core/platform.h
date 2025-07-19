@@ -1,12 +1,10 @@
 #pragma once
 
 #include <memory>
+#include "finder.h"
 
 namespace appwindows {
-namespace core {
-class FinderI;
-}  // namespace core
 
-std::unique_ptr<core::FinderI> get_finder();
+std::shared_ptr<core::Finder> get_finder();
 
 }  // namespace appwindows

@@ -9,10 +9,10 @@
 namespace appwindows {
 namespace windows {
 
-class FinderMacOs final : public core::FinderI {
+class FinderMacOs final : public core::Finder {
  public:
   FinderMacOs() = default;
-  [[nodiscard]] std::unique_ptr<core::WindowI> get_window_by_title(
+  [[nodiscard]] std::unique_ptr<core::Window> get_window_by_title(
       std::string title) const override;
 };
 

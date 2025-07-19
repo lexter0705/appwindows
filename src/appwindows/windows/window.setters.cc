@@ -19,7 +19,7 @@ bool WindowWindows::window_is_valid() const {
 }
 
 void WindowWindows::set_active(const bool active) {
-  if (window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
+  if (!window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
 
   if (active) {
     SetForegroundWindow(*window_);
@@ -35,12 +35,12 @@ void WindowWindows::set_active(const bool active) {
 }
 
 void WindowWindows::set_maximize(const bool is_maximize) {
-  if (window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
+  if (!window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
   ShowWindow(*window_, is_maximize ? SW_MAXIMIZE : SW_RESTORE);
 }
 
 void WindowWindows::set_size(const core::Size size) {
-  if (window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
+  if (!window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
   RECT rect;
   GetWindowRect(*window_, &rect);
   SetWindowPos(*window_, nullptr, rect.left, rect.top, size.getWidth(),
@@ -48,14 +48,14 @@ void WindowWindows::set_size(const core::Size size) {
 }
 
 void WindowWindows::move(const core::Point point) {
-  if (window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
+  if (!window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
   const std::unique_ptr<core::Size> size = get_size();
   SetWindowPos(*window_, nullptr, point.getX(), point.getY(), size->getWidth(),
                size->getHeight(), SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE);
 }
 
 void WindowWindows::close() {
-  if (window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
+  if (!window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
   PostMessage(*window_, WM_CLOSE, 0, 0);
 }
 

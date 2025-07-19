@@ -1,7 +1,3 @@
-[build-system]
-requires = ["scikit-build-core"]
-build-backend = "scikit_build_core.build"
-
 [project]
 name = "appwindows"
 version = "1.0.0"

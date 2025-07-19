@@ -9,7 +9,7 @@ FinderXServer::FinderXServer() {
   if (!display_) throw std::runtime_error("Cannot open X11 display_");
 }
 
-std::unique_ptr<core::WindowI> FinderXServer::get_window_by_title(
+std::shared_ptr<core::WindowI> FinderXServer::get_window_by_title(
     const std::string title) const override {
   if (!display_) return nullptr;
   Window root = DefaultRootWindow(display_);
@@ -25,7 +25,7 @@ std::unique_ptr<core::WindowI> FinderXServer::get_window_by_title(
         std::string window_title(reinterpret_cast<char*>(text_prop.value));
         XFree(text_prop.value);
         if (window_title.find(title) != std::string::npos) {
-          result = std::make_unique<WindowXServer>(children[i], display_);
+          result = std::make_shared<WindowXServer>(children[i], display_);
           break;
         }
       }

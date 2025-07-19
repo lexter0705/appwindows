@@ -2,17 +2,20 @@ cmake_minimum_required(VERSION 3.31)
 
 project(appwindows)
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+add_subdirectory(pybind11)
 
-set(pybind11_DIR ./.venv/Lib/site-packages/pybind11/share/cmake)
-
-include(FetchContent)
-FetchContent_Declare(
-        pybind11
-        URL https://github.com/pybind/pybind11/archive/refs/tags/v2.10.0.zip
-)
-FetchContent_MakeAvailable(pybind11)
-
-pybind11_add_module(appwindows src/appwindows/appwindows.cc)
+pybind11_add_module(appwindows
+                    src/appwindows/core/bind.cc
+                    src/appwindows/windows/bind.cc
+                    src/appwindows/x_server/bind.cc
+                    src/appwindows/bind.cc
+                    src/appwindows/core/platform.cc
+                    src/appwindows/core/geometry/point.cc
+                    src/appwindows/core/geometry/size.cc
+                    src/appwindows/windows/window.setters.cc
+                    src/appwindows/windows/window.getters.cc
+                    src/appwindows/windows/finder.cc
+                    src/appwindows/x_server/finder.cc
+                    src/appwindows/x_server/window.setters.cc
+                    src/appwindows/x_server/window.getters.cc)
 

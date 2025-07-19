@@ -12,11 +12,31 @@
 namespace appwindows {
 namespace windows {
 
-std::unique_ptr<core::WindowI> FinderWindows::get_window_by_title(
-    const std::string title) const override {
+FinderWindows::FinderWindows() = default;
+
+std::shared_ptr<core::Window> FinderWindows::get_window_by_title(
+    std::string title) const {
   auto window = std::make_shared<HWND>(FindWindowA(nullptr, title.c_str()));
   if (!window) return nullptr;
-  return std::make_unique<WindowWindows>(window);
+  return std::make_shared<WindowWindows>(window);
+}
+
+std::vector<std::shared_ptr<core::Window>> FinderWindows::get_all_windows()
+    const {
+  std::vector<std::shared_ptr<core::Window>> result;
+  EnumWindows(
+      [](const HWND hwnd, const LPARAM lparam) {
+        auto& windows =
+            *reinterpret_cast<std::vector<std::shared_ptr<core::Window>>*>(
+                lparam);
+        if (IsWindowVisible(hwnd)) {
+          windows.push_back(
+              std::make_shared<WindowWindows>(std::make_shared<HWND>(hwnd)));
+        }
+        return TRUE;
+      },
+      reinterpret_cast<LPARAM>(&result));
+  return result;
 }
 
 }  // namespace windows

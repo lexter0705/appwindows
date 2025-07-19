@@ -1,4 +1,5 @@
 #pragma once
+
 #ifdef _WIN32 || _WIN64
 
 #include <memory>
@@ -10,11 +11,13 @@
 namespace appwindows {
 namespace windows {
 
-class FinderWindows final : public core::FinderI {
+class FinderWindows final : public core::Finder {
  public:
-  FinderWindows() = default;
-  [[nodiscard]] std::unique_ptr<core::WindowI> get_window_by_title(
+  FinderWindows();
+  [[nodiscard]] std::shared_ptr<core::Window> get_window_by_title(
       std::string title) const override;
+  [[nodiscard]] std::vector<std::shared_ptr<core::Window>> get_all_windows()
+      const override;
 };
 
 }  // namespace windows

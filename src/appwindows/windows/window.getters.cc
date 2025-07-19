@@ -4,26 +4,43 @@
 
 #include <windows.h>
 
-#include "../core/instruction.h"
-
 namespace appwindows {
 namespace windows {
 
 std::unique_ptr<std::string> WindowWindows::get_title() const {
-  char buffer[256];
-  const int result = GetWindowTextA(*window_, buffer, sizeof(buffer));
-  return std::make_unique<std::string>(result > 0 ? buffer : "");
+  const int length = GetWindowTextLengthW(*window_);
+  if (length == 0) {
+    return std::make_unique<std::string>(
+        "");
+  }
+  std::wstring wide_title(length + 1, L'\0');
+  GetWindowTextW(*window_, &wide_title[0], length + 1);
+  const int utf8_size = WideCharToMultiByte(CP_UTF8, 0, wide_title.c_str(), -1,
+                                            nullptr, 0, nullptr, nullptr);
+  if (utf8_size == 0) {
+    return std::make_unique<std::string>("");
+  }
+  std::string utf8_title(utf8_size, '\0');
+  WideCharToMultiByte(CP_UTF8, 0, wide_title.c_str(), -1, &utf8_title[0],
+                      utf8_size, nullptr, nullptr);
+
+  utf8_title.resize(utf8_size - 1);
+  return std::make_unique<std::string>(std::move(utf8_title));
 }
 
 std::unique_ptr<std::vector<core::Point>> WindowWindows::get_points() {
   RECT rect;
   GetWindowRect(*window_, &rect);
-  return std::make_unique<std::vector<core::Point>>{
-      core::Point{static_cast<int>(rect.left), static_cast<int>(rect.top)},
-      core::Point{static_cast<int>(rect.right), static_cast<int>(rect.top)},
-      core::Point{static_cast<int>(rect.right), static_cast<int>(rect.bottom)},
-      core::Point{static_cast<int>(rect.left), static_cast<int>(rect.bottom)},
-  };
+  auto points = std::make_unique<std::vector<core::Point>>();
+  points->reserve(4);
+  points->emplace_back(static_cast<int>(rect.left), static_cast<int>(rect.top));
+  points->emplace_back(static_cast<int>(rect.right),
+                       static_cast<int>(rect.top));
+  points->emplace_back(static_cast<int>(rect.right),
+                       static_cast<int>(rect.bottom));
+  points->emplace_back(static_cast<int>(rect.left),
+                       static_cast<int>(rect.bottom));
+  return points;
 }
 
 std::unique_ptr<core::Size> WindowWindows::get_size() const {

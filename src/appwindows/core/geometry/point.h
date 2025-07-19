@@ -6,12 +6,12 @@ namespace core {
 class Point {
  public:
   Point(int x, int y);
-  Point operator+(const Point& other) const noexcept;
-  Point operator-(const Point& other) const noexcept;
-  Point operator*(const Point& other) const noexcept;
+  Point operator+(const Point& other) const;
+  Point operator-(const Point& other) const;
+  Point operator*(const Point& other) const;
   Point operator/(const Point& other) const;
-  [[nodiscard]] int getX() const noexcept { return x_; };
-  [[nodiscard]] int getY() const noexcept { return y_; };
+  [[nodiscard]] int getX() const;
+  [[nodiscard]] int getY() const;
 
  private:
   int x_;
