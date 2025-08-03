@@ -1,4 +1,5 @@
 #pragma once
+
 #ifdef __linux__
 
 #include <X11/Xlib.h>

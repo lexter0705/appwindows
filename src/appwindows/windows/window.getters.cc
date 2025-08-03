@@ -9,21 +9,15 @@ namespace windows {
 
 std::unique_ptr<std::string> WindowWindows::get_title() const {
   const int length = GetWindowTextLengthW(*window_);
-  if (length == 0) {
-    return std::make_unique<std::string>(
-        "");
-  }
+  if (length == 0) return std::make_unique<std::string>("");
   std::wstring wide_title(length + 1, L'\0');
   GetWindowTextW(*window_, &wide_title[0], length + 1);
   const int utf8_size = WideCharToMultiByte(CP_UTF8, 0, wide_title.c_str(), -1,
                                             nullptr, 0, nullptr, nullptr);
-  if (utf8_size == 0) {
-    return std::make_unique<std::string>("");
-  }
+  if (utf8_size == 0) return std::make_unique<std::string>("");
   std::string utf8_title(utf8_size, '\0');
   WideCharToMultiByte(CP_UTF8, 0, wide_title.c_str(), -1, &utf8_title[0],
                       utf8_size, nullptr, nullptr);
-
   utf8_title.resize(utf8_size - 1);
   return std::make_unique<std::string>(std::move(utf8_title));
 }

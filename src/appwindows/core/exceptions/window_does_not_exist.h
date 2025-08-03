@@ -9,7 +9,7 @@ namespace exceptions {
 class WindowDoesNotExistException final : public std::runtime_error {
  public:
   explicit WindowDoesNotExistException()
-      : runtime_error("Window does not exist: ") {}
+      : runtime_error("Window does not exist") {}
 };
 
 }  // namespace exceptions

@@ -15,10 +15,11 @@ namespace windows {
 FinderWindows::FinderWindows() = default;
 
 std::shared_ptr<core::Window> FinderWindows::get_window_by_title(
-    std::string title) const {
-  auto window = std::make_shared<HWND>(FindWindowA(nullptr, title.c_str()));
-  if (!window) return nullptr;
-  return std::make_shared<WindowWindows>(window);
+    const std::string title) const {
+  const auto windows = FinderWindows::get_all_windows();
+  for (auto window : windows)
+    if (window->get_title()->find(title) != std::string::npos) return window;
+  return nullptr;
 }
 
 std::vector<std::shared_ptr<core::Window>> FinderWindows::get_all_windows()
