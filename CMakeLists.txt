@@ -13,14 +13,17 @@ set(PATH_TO_SOURCE
     src/appwindows/core/geometry/size.cc)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    if ("${_display_server_type}" MATCHES "Type=x11")
+    execute_process(
+            "loginctl show-session $(loginctl | grep $(whoami) | awk '{print $1}') -p Type"
+            OUTPUT_VARIABLE result_display_server)
+    if ("${result_display_server}" MATCHES "Type=x11")
         add_compile_definitions(X_SERVER_USED NOMINMAX)
         list(APPEND PATH_TO_SOURCE
             src/appwindows/x_server/window.setters.cc
             src/appwindows/x_server/window.getters.cc
             src/appwindows/x_server/finder.cc)
         define_property(X_SERVER_USE)
-    elseif ("${_display_server_type}" MATCHES "Type=wayland")
+    elseif ("${result_display_server}" MATCHES "Type=wayland")
         add_compile_definitions(WAYLAND_USED NOMINMAX)
         list(APPEND PATH_TO_SOURCE
             src/appwindows/wayland/window.setters.cc
@@ -37,4 +40,3 @@ endif ()
 
 pybind11_add_module(appwindows
                     ${PATH_TO_SOURCE})
-
