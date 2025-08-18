@@ -6,8 +6,8 @@ namespace core {
 class Size {
  public:
   Size(int width, int height);
-  [[nodiscard]] int getWidth() const noexcept { return width_; };
-  [[nodiscard]] int getHeight() const noexcept { return height_; };
+  [[nodiscard]] int get_width() const noexcept { return width_; };
+  [[nodiscard]] int get_height() const noexcept { return height_; };
 
  private:
   int width_;

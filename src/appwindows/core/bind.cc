@@ -2,14 +2,14 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/numpy.h>
 
 #include "exceptions/invalid_size.h"
 #include "exceptions/window_does_not_exist.h"
 #include "finder.h"
 #include "geometry/bind.h"
-#include "geometry/point.h"
-#include "geometry/size.h"
 #include "window.h"
+
 
 namespace py = pybind11;
 
@@ -42,7 +42,8 @@ void bind_window(py::module &m) {
             auto points = self.get_points();
             return points ? *points : std::vector<Point>{};
           },
-          "Get all points associated with the window\n\n"
+          "Get all points associated with the window\n"
+          ""
           "Returns:\n"
           "    list[Point]: List of points")
       .def(
@@ -63,12 +64,24 @@ void bind_window(py::module &m) {
           "Get current window size\n\n"
           "Returns:\n"
           "    Size: Current window dimensions")
-      .def("set_active", &Window::set_active,
+      .def(
+          "get_screenshot",
+          [](const Window &self) {
+            return self.get_screenshot();
+          },
+          "Get current window image\n\n"
+          "Returns:\n"
+          "    ndarray: image in ndarray")
+      .def("to_foreground", &Window::to_foreground,
+          "Moved window to forground")
+      .def("to_background", &Window::to_background,
+          "Moved window to background")
+      .def("set_minimize", &Window::set_minimize,
            "Set window active state\n\n"
            "Args:\n"
            "    active (bool): True to activate window",
            py::arg("active"))
-      .def("set_maximize", &Window::set_maximize,
+      .def("set_fullscreen", &Window::set_fullscreen,
            "Maximize or restore the window\n\n"
            "Args:\n"
            "    is_maximize (bool): True to maximize window",
@@ -76,14 +89,14 @@ void bind_window(py::module &m) {
       .def("resize", &Window::resize,
            "Resize the window\n\n"
            "Args:\n"
-           "    size (Size): New window dimensions\n\n"
+           "    size (appwindows.geometry.Size): New window dimensions\n\n"
            "Raises:\n"
            "    InvalidSizeError: If size is invalid",
            py::arg("size"))
       .def("move", &Window::move,
            "Move window to specified position\n\n"
            "Args:\n"
-           "    point (Point): New window position",
+           "    point (appwindows.geometry.Point): New window position",
            py::arg("point"))
       .def("close", &Window::close, "Close the window");
 }
@@ -100,16 +113,26 @@ void bind_finder(const py::module &m) {
           "Args:\n"
           "    title (str): Window title to search for\n\n"
           "Returns:\n"
-          "    WindowI: Found window\n\n"
-          "Raises:\n"
-          "    WindowDoesNotExistError: If window not found",
+          "    Optional[Window]: Found window or null if window does not exist",
           py::arg("title"))
       .def(
           "get_all_windows",
           [](const Finder &self) { return self.get_all_windows(); },
           "Find all opened windows\n\n"
           "Returns:\n"
-          "    list[Window]: Found windows\n\n");
+          "    list[Window]: Found windows\n\n")
+      .def(
+          "open_new_window",
+          [](const Finder &self, const std::string path_to_file, int pause_time) {
+             return self.open_new_window(path_to_file, pause_time);
+          },
+          "Open winow from file\n\n"
+          "Args:\n"
+          "    path_to_file (str): path to executable file\n\n"
+          "    pause_time (Optional[int]): pause time before open file\n\n"
+          "Returns:\n"
+          "    Window: Opened windows\n",
+          py::arg("path_to_file"), py::arg("pause_time") = 10000);
   ;
 }
 

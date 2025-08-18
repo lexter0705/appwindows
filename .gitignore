@@ -1,2 +1,4 @@
-./.idea/
-./.venv/
+CMake/
+pybind11/
+.venv/
+.vscode/

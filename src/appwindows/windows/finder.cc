@@ -30,10 +30,9 @@ std::vector<std::shared_ptr<core::Window>> FinderWindows::get_all_windows()
         auto& windows =
             *reinterpret_cast<std::vector<std::shared_ptr<core::Window>>*>(
                 lparam);
-        if (IsWindowVisible(hwnd)) {
+        if (IsWindowVisible(hwnd))
           windows.push_back(
               std::make_shared<WindowWindows>(std::make_shared<HWND>(hwnd)));
-        }
         return TRUE;
       },
       reinterpret_cast<LPARAM>(&result));

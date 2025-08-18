@@ -1,6 +1,9 @@
-cmake_minimum_required(VERSION 3.31)
+cmake_minimum_required(VERSION 3.25)
 
 project(appwindows)
+
+find_package(Python COMPONENTS Interpreter Development REQUIRED)
+find_package(X11 REQUIRED)
 
 add_subdirectory(pybind11)
 
@@ -17,4 +20,6 @@ pybind11_add_module(appwindows
                     src/appwindows/x_server/finder.cc
                     src/appwindows/x_server/window.setters.cc
                     src/appwindows/x_server/window.getters.cc)
+
+target_link_libraries(appwindows PRIVATE X11::X11)
 

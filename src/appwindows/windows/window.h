@@ -22,7 +22,6 @@ class WindowWindows final : public core::Window {
   [[nodiscard]] bool window_is_valid() const;
 
   void set_layer(core::layers::Layer& layer) override;
-  void set_active(bool active) override;
   void set_maximize(bool is_maximize) override;
   void resize(core::Size size) override;
   void move(core::Point point) override;

@@ -6,6 +6,6 @@
 
 namespace appwindows {
 
-std::unique_ptr<core::Finder> get_finder();
+std::shared_ptr<core::Finder> get_finder();
 
 }  // namespace appwindows

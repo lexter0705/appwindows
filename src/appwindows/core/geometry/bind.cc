@@ -23,8 +23,8 @@ void bind_point(const py::module &m) {
       .def("__sub__", &Point::operator-, "Subtract two points")
       .def("__mul__", &Point::operator*, "Multiply two points")
       .def("__truediv__", &Point::operator/, "Divide two points")
-      .def_property_readonly("x", &Point::getX, "X coordinate")
-      .def_property_readonly("y", &Point::getY, "Y coordinate");
+      .def_property_readonly("x", &Point::get_x, "X coordinate")
+      .def_property_readonly("y", &Point::get_y, "Y coordinate");
 }
 
 void bind_size(const py::module &m) {
@@ -37,8 +37,8 @@ void bind_size(const py::module &m) {
            "Raises:\n"
            "    InvalidSizeError: If width or height are invalid",
            py::arg("width"), py::arg("height"))
-      .def_property_readonly("width", &Size::getWidth, "Width dimension")
-      .def_property_readonly("height", &Size::getHeight, "Height dimension");
+      .def_property_readonly("width", &Size::get_width, "Width dimension")
+      .def_property_readonly("height", &Size::get_height, "Height dimension");
 }
 
 void bind_geometry(py::module &m) {
