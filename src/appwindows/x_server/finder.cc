@@ -24,22 +24,6 @@ Display* FinderXServer::open_display() {
   return display;
 }
 
-// std::vector<std::shared_ptr<core::Window>> FinderXServer::get_all_windows() const {
-//   auto display = FinderXServer::open_display();
-//   std::vector<std::shared_ptr<core::Window>> windows;
-//   WindowX root = DefaultRootWindow(display);
-//   WindowX* children = nullptr;
-//   unsigned int nchildren = 0;
-//   if (XQueryTree(display, root, &root, &root, &children, &nchildren))
-//     for (unsigned int i = 0; i < nchildren; ++i) {
-//       XWindowAttributes attr;
-//       if (XGetWindowAttributes(display, children[i], &attr))
-//         windows.push_back(std::make_shared<WindowXServer>(children[i]));
-//     }
-//   XCloseDisplay(display);
-//   return windows;
-// }
-
 std::shared_ptr<core::Window> FinderXServer::get_window_by_title(
     const std::string title) const {
   auto windows = FinderXServer::get_all_windows();
