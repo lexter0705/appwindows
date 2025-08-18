@@ -1,4 +1,3 @@
-#ifdef __linux__
 #include "finder.h"
 
 #include <X11/Xlib.h>
@@ -8,8 +7,8 @@
 #include <stdexcept>
 #include <string>
 
-#include "window.h"
 #include "../core/window.h"
+#include "window.h"
 
 using WIndowX = Window;
 
@@ -28,11 +27,14 @@ std::shared_ptr<core::Window> FinderXServer::get_window_by_title(
     const std::string title) const {
   auto windows = FinderXServer::get_all_windows();
   for (auto window : windows)
-    if (window->get_title() && window->get_title()->find(title) != std::string::npos) return window;
+    if (window->get_title() &&
+        window->get_title()->find(title) != std::string::npos)
+      return window;
   return nullptr;
 }
 
-std::shared_ptr<core::Window> FinderXServer::open_new_window(std::string path_to_file, int sleep_time) const {
+std::shared_ptr<core::Window> FinderXServer::open_new_window(
+    std::string path_to_file, int sleep_time) const {
   auto display = FinderXServer::open_display();
   auto pid = fork();
   if (pid == 0) {
@@ -47,11 +49,10 @@ std::shared_ptr<core::Window> FinderXServer::open_new_window(std::string path_to
   if (XQueryTree(display, root, &root, &root, &children, &nchildren)) {
     for (unsigned int i = 0; i < nchildren; ++i) {
       unsigned int pid_window = 0;
-      if (XGetWindowProperty(display, children[i], 
-            XInternAtom(display, "_NET_WM_PID", False),
-            0, 1, False, AnyPropertyType,
-            nullptr, nullptr, nullptr, nullptr,
-            reinterpret_cast<unsigned char**>(&pid_window)) == Success)
+      if (XGetWindowProperty(
+              display, children[i], XInternAtom(display, "_NET_WM_PID", False),
+              0, 1, False, AnyPropertyType, nullptr, nullptr, nullptr, nullptr,
+              reinterpret_cast<unsigned char**>(&pid_window)) == Success)
         if (pid_window == static_cast<unsigned int>(pid)) {
           new_window = std::make_shared<WindowXServer>(children[i]);
           break;
@@ -63,41 +64,42 @@ std::shared_ptr<core::Window> FinderXServer::open_new_window(std::string path_to
   return new_window;
 }
 
-std::vector<std::shared_ptr<core::Window>> FinderXServer::get_all_windows() const {
-    auto display = FinderXServer::open_display();
-    std::vector<std::shared_ptr<core::Window>> windows;
-    WindowX root = DefaultRootWindow(display);
-    Atom net_wm_window_type = XInternAtom(display, "_NET_WM_WINDOW_TYPE", False);
-    Atom net_wm_window_type_normal = XInternAtom(display, "_NET_WM_WINDOW_TYPE_NORMAL", False);
-    Atom xa_atom = XInternAtom(display, "ATOM", False);
-    WindowX* children = nullptr;
-    unsigned int nchildren = 0;
-    if (XQueryTree(display, root, &root, &root, &children, &nchildren)) {
-        for (unsigned int i = 0; i < nchildren; ++i) {
-            Atom type;
-            int format;
-            unsigned long nitems, bytes_after;
-            unsigned char* data = nullptr;
-            if (XGetWindowProperty(display, children[i], net_wm_window_type, 0, ~0L, False, xa_atom,
-                                 &type, &format, &nitems, &bytes_after, &data) == Success) {
-                if (type == xa_atom && data) {
-                    Atom* types = (Atom*)data;
-                    for (unsigned long j = 0; j < nitems; j++)
-                        if (types[j] == net_wm_window_type_normal) {
-                          windows.push_back(std::make_shared<WindowXServer>(children[i]));
-                          break;
-                        }
-                    XFree(data);
-                }
+std::vector<std::shared_ptr<core::Window>> FinderXServer::get_all_windows()
+    const {
+  auto display = FinderXServer::open_display();
+  std::vector<std::shared_ptr<core::Window>> windows;
+  WindowX root = DefaultRootWindow(display);
+  Atom net_wm_window_type = XInternAtom(display, "_NET_WM_WINDOW_TYPE", False);
+  Atom net_wm_window_type_normal =
+      XInternAtom(display, "_NET_WM_WINDOW_TYPE_NORMAL", False);
+  Atom xa_atom = XInternAtom(display, "ATOM", False);
+  WindowX* children = nullptr;
+  unsigned int nchildren = 0;
+  if (XQueryTree(display, root, &root, &root, &children, &nchildren)) {
+    for (unsigned int i = 0; i < nchildren; ++i) {
+      Atom type;
+      int format;
+      unsigned long nitems, bytes_after;
+      unsigned char* data = nullptr;
+      if (XGetWindowProperty(display, children[i], net_wm_window_type, 0, ~0L,
+                             False, xa_atom, &type, &format, &nitems,
+                             &bytes_after, &data) == Success) {
+        if (type == xa_atom && data) {
+          Atom* types = (Atom*)data;
+          for (unsigned long j = 0; j < nitems; j++)
+            if (types[j] == net_wm_window_type_normal) {
+              windows.push_back(std::make_shared<WindowXServer>(children[i]));
+              break;
             }
+          XFree(data);
         }
-        if (children) XFree(children);
+      }
     }
-    XCloseDisplay(display);
-    return windows;
+    if (children) XFree(children);
+  }
+  XCloseDisplay(display);
+  return windows;
 }
 
 }  // namespace x_server
 }  // namespace appwindows
-
-#endif

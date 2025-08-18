@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef _WIN32 || _WIN64
-
 #include <memory>
 #include <string>
 
@@ -18,9 +16,9 @@ class FinderWindows final : public core::Finder {
       std::string title) const override;
   [[nodiscard]] std::vector<std::shared_ptr<core::Window>> get_all_windows()
       const override;
+  [[nodiscard]] std::shared_ptr<core::Window> open_new_window(
+      std::string path_to_file, int sleep_time) const override;
 };
 
 }  // namespace windows
 }  // namespace appwindows
-
-#endif

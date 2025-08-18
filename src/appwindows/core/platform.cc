@@ -1,16 +1,16 @@
 #include "platform.h"
 
-#include <pybind11/pybind11.h>
-
-#include "../x_server/finder.h"
+#ifdef WINDOWS_USED
 #include "../windows/finder.h"
-
+#elif X_SERVER_USED
+#include "../x_server/finder.h"
+#endif
 
 namespace appwindows {
 std::shared_ptr<core::Finder> get_finder() {
-#ifdef _WIN32 || _WIN64
+#ifdef WINDOWS_USED
   return std::make_shared<windows::FinderWindows>();
-#elif __linux__
+#elif X_SERVER_USED
   return std::make_shared<x_server::FinderXServer>();
 #else
 #error "Unsoported platform"

@@ -1,10 +1,8 @@
 #pragma once
 
-#ifdef _WIN32 || _WIN64
-
+#include <pybind11/numpy.h>
 #include <windows.h>
 
-#include "../core/layers/layer.h"
 #include "../core/geometry/point.h"
 #include "../core/geometry/size.h"
 #include "../core/window.h"
@@ -18,14 +16,17 @@ class WindowWindows final : public core::Window {
   std::unique_ptr<std::vector<core::Point>> get_points() override;
   [[nodiscard]] std::unique_ptr<std::string> get_title() const override;
   [[nodiscard]] std::unique_ptr<core::Size> get_size() const override;
+  [[nodiscard]] py::array_t<unsigned char> get_screenshot() const override;
   [[nodiscard]] std::shared_ptr<HWND> get_window() const;
   [[nodiscard]] bool window_is_valid() const;
 
-  void set_layer(core::layers::Layer& layer) override;
-  void set_maximize(bool is_maximize) override;
+  void set_minimize(bool is_minimize) override;
+  void set_fullscreen(bool is_fullscreen) override;
   void resize(core::Size size) override;
   void move(core::Point point) override;
   void close() override;
+  void to_foreground() override;
+  void to_background() override;
 
  private:
   std::shared_ptr<HWND> window_;
@@ -33,5 +34,3 @@ class WindowWindows final : public core::Window {
 
 }  // namespace windows
 }  // namespace appwindows
-
-#endif

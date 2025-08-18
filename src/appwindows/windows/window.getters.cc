@@ -1,5 +1,3 @@
-#ifdef _WIN32 || _WIN64
-
 #include "window.h"
 
 #include <windows.h>
@@ -46,7 +44,9 @@ std::unique_ptr<core::Size> WindowWindows::get_size() const {
 
 std::shared_ptr<HWND> WindowWindows::get_window() const { return window_; }
 
+py::array_t<unsigned char> WindowWindows::get_screenshot() const {
+  throw std::runtime_error("Not implemented");
+};
+
 }  // namespace windows
 }  // namespace appwindows
-
-#endif

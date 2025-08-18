@@ -1,10 +1,8 @@
-#ifdef __linux__
-
 #include "window.h"
 
-#include <cstring> 
-
 #include <X11/Xlib.h>
+
+#include <cstring>
 
 #include "../core/geometry/point.h"
 #include "../core/geometry/size.h"
@@ -15,10 +13,9 @@ using WindowX = Window;
 namespace appwindows {
 namespace x_server {
 
-WindowXServer::WindowXServer(const WindowX window)
-    : window_(window) {}
-    
-void WindowXServer::to_foreground(const bool is_foreground){
+WindowXServer::WindowXServer(const WindowX window) : window_(window) {}
+
+void WindowXServer::to_foreground(const bool is_foreground) {
   auto display = FinderXServer::open_display();
   Atom wm_state = XInternAtom(display, "_NET_WM_STATE", False);
   Atom to_foreground = XInternAtom(display, "_NET_WM_STATE_ABOVE", False);
@@ -36,7 +33,7 @@ void WindowXServer::to_foreground(const bool is_foreground){
   XCloseDisplay(display);
 }
 
-void WindowXServer::to_background(const bool is_background){
+void WindowXServer::to_background(const bool is_background) {
   auto display = FinderXServer::open_display();
   Atom wm_state = XInternAtom(display, "_NET_WM_STATE", False);
   Atom to_background = XInternAtom(display, "_NET_WM_STATE_BELOW", False);
@@ -57,7 +54,8 @@ void WindowXServer::to_background(const bool is_background){
 void WindowXServer::set_fullscreen(const bool is_fullscreen) {
   auto display = FinderXServer::open_display();
   Atom wm_state = XInternAtom(display, "_NET_WM_STATE", False);
-  Atom fullscreen_atom = XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", False);
+  Atom fullscreen_atom =
+      XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", False);
   XEvent event;
   memset(&event, 0, sizeof(event));
   event.type = ClientMessage;
@@ -111,17 +109,15 @@ void WindowXServer::close() {
   XCloseDisplay(display);
 }
 
-void WindowXServer::to_foreground(){
+void WindowXServer::to_foreground() {
   to_foreground(true);
   to_background(false);
 }
 
-void WindowXServer::to_background(){
+void WindowXServer::to_background() {
   to_background(true);
   to_foreground(false);
 }
 
 }  // namespace x_server
 }  // namespace appwindows
-
-#endif

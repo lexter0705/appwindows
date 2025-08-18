@@ -1,5 +1,3 @@
-#ifdef _WIN32 || _WIN64
-
 #include "finder.h"
 
 #include <windows.h>
@@ -39,7 +37,10 @@ std::vector<std::shared_ptr<core::Window>> FinderWindows::get_all_windows()
   return result;
 }
 
+std::shared_ptr<core::Window> FinderWindows::open_new_window(
+    std::string path_to_file, int sleep_time) const {
+  throw std::runtime_error("Not implemented");
+}
+
 }  // namespace windows
 }  // namespace appwindows
-
-#endif

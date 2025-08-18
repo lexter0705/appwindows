@@ -1,7 +1,5 @@
 #pragma once
 
-#ifdef __linux__
-
 #include <X11/Xlib.h>
 
 #include <memory>
@@ -38,5 +36,3 @@ class WindowXServer final : public core::Window {
 
 }  // namespace x_server
 }  // namespace appwindows
-
-#endif
