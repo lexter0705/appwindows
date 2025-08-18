@@ -72,9 +72,9 @@ py::array_t<unsigned char> WindowXServer::get_screenshot() const {
   for (int y = 0; y < size->get_height(); ++y)
     for (int x = 0; x < size->get_width(); ++x) {
       unsigned long pixel = XGetPixel(image, x, y);
-      buf(y, x, 0) = (pixel >> 16) & 0xff;  // R
-      buf(y, x, 1) = (pixel >> 8) & 0xff;   // G
-      buf(y, x, 2) = pixel & 0xff;          // B
+      buf(y, x, 0) = (pixel >> 16) & 0xff; 
+      buf(y, x, 1) = (pixel >> 8) & 0xff;
+      buf(y, x, 2) = pixel & 0xff;         
     }
   XDestroyImage(image);
   XCloseDisplay(display);
