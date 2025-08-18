@@ -12,17 +12,22 @@ set(PATH_TO_SOURCE
     src/appwindows/core/geometry/point.cc
     src/appwindows/core/geometry/size.cc)
 
+set(LIBRARIES_TO_LINK)
+
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     execute_process(
-            "loginctl show-session $(loginctl | grep $(whoami) | awk '{print $1}') -p Type"
-            OUTPUT_VARIABLE result_display_server)
+        COMMAND bash -c "loginctl show-session $(loginctl | grep $(whoami) | awk '{print $1}') -p Type"
+        OUTPUT_VARIABLE result_display_server
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
     if ("${result_display_server}" MATCHES "Type=x11")
+        find_package(X11 REQUIRED)
         add_compile_definitions(X_SERVER_USED NOMINMAX)
         list(APPEND PATH_TO_SOURCE
             src/appwindows/x_server/window.setters.cc
             src/appwindows/x_server/window.getters.cc
             src/appwindows/x_server/finder.cc)
-        define_property(X_SERVER_USE)
+        list(APPEND LIBRARIES_TO_LINK ${X11_LIBRARIES})
     elseif ("${result_display_server}" MATCHES "Type=wayland")
         add_compile_definitions(WAYLAND_USED NOMINMAX)
         list(APPEND PATH_TO_SOURCE
@@ -40,3 +45,6 @@ endif ()
 
 pybind11_add_module(appwindows
                     ${PATH_TO_SOURCE})
+
+
+target_link_libraries(appwindows PRIVATE ${LIBRARIES_TO_LINK})
