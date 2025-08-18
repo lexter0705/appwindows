@@ -2,3 +2,4 @@ CMake/
 pybind11/
 .venv/
 .vscode/
+.idea/
