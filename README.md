@@ -4,8 +4,7 @@
 The appwindows library solves the problem of working with a graphical shell on different operating systems.
 
 # Install
-```pip install appwindows``` - on windows<br>
-```pip3 install appwindows``` - on linux
+### library in develop
 
 # Docs
 All documentation <a href="#">here</a>
