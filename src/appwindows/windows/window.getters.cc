@@ -1,5 +1,9 @@
 #include "window.h"
 
+#ifndef PW_RENDERFULLCONTENT
+#define PW_RENDERFULLCONTENT 0x00000002
+#endif
+
 #include <windows.h>
 
 namespace appwindows {
@@ -36,7 +40,7 @@ std::unique_ptr<std::vector<core::Point>> WindowWindows::get_points() {
 }
 
 std::unique_ptr<core::Size> WindowWindows::get_size() const {
-  RECT rect;
+  RECT rect = {0};
   GetWindowRect(*window_, &rect);
   return std::make_unique<core::Size>(rect.right - rect.left,
                                       rect.bottom - rect.top);
@@ -45,8 +49,40 @@ std::unique_ptr<core::Size> WindowWindows::get_size() const {
 std::shared_ptr<HWND> WindowWindows::get_window() const { return window_; }
 
 py::array_t<unsigned char> WindowWindows::get_screenshot() const {
-  throw std::runtime_error("Not implemented");
-};
+  const auto window_size = get_size();
+  const auto width = window_size->get_width();
+  const auto height = window_size->get_height();
+  const auto window_dc = GetWindowDC(*window_);
+  const auto memory_dc = CreateCompatibleDC(window_dc);
+  const auto bitmap = CreateCompatibleBitmap(window_dc, width, height);
+  const auto old_bitmap = SelectObject(memory_dc, bitmap);
+  PrintWindow(*window_, memory_dc, PW_RENDERFULLCONTENT);
+  BITMAPINFOHEADER bitmap_info = {};
+  bitmap_info.biSize = sizeof(BITMAPINFOHEADER);
+  bitmap_info.biWidth = width;
+  bitmap_info.biHeight = -height;
+  bitmap_info.biPlanes = 1;
+  bitmap_info.biBitCount = 32;
+  bitmap_info.biCompression = BI_RGB;
+  const auto pixel_buffer =
+      std::make_unique<unsigned char[]>(width * height * 4);
+  GetDIBits(memory_dc, bitmap, 0, height, pixel_buffer.get(),
+            reinterpret_cast<BITMAPINFO*>(&bitmap_info), DIB_RGB_COLORS);
+  SelectObject(memory_dc, old_bitmap);
+  DeleteObject(bitmap);
+  DeleteDC(memory_dc);
+  ReleaseDC(*window_, window_dc);
+  auto result_array = py::array_t<unsigned char>({height, width, 3});
+  auto array_data = result_array.mutable_unchecked<3>();
+  for (int y = 0; y < height; ++y)
+    for (int x = 0; x < width; ++x) {
+      const size_t buffer_index = (y * width + x) * 4;
+      array_data(y, x, 0) = pixel_buffer[buffer_index + 2];
+      array_data(y, x, 1) = pixel_buffer[buffer_index + 1];
+      array_data(y, x, 2) = pixel_buffer[buffer_index];
+    }
+  return result_array;
+}
 
 }  // namespace windows
 }  // namespace appwindows
