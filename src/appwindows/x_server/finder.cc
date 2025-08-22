@@ -33,37 +33,6 @@ std::shared_ptr<core::Window> FinderXServer::get_window_by_title(
   return nullptr;
 }
 
-std::shared_ptr<core::Window> FinderXServer::open_new_window(
-    std::string path_to_file, int sleep_time) const {
-  auto display = FinderXServer::open_display();
-  auto pid = fork();
-  if (pid == 0) {
-    execl(path_to_file.c_str(), path_to_file.c_str(), nullptr);
-    exit(EXIT_FAILURE);
-  }
-  usleep(sleep_time);
-  auto root = DefaultRootWindow(display);
-  std::shared_ptr<core::Window> new_window = nullptr;
-  WindowX* children = nullptr;
-  unsigned int nchildren = 0;
-  if (XQueryTree(display, root, &root, &root, &children, &nchildren)) {
-    for (unsigned int i = 0; i < nchildren; ++i) {
-      unsigned int pid_window = 0;
-      if (XGetWindowProperty(
-              display, children[i], XInternAtom(display, "_NET_WM_PID", False),
-              0, 1, False, AnyPropertyType, nullptr, nullptr, nullptr, nullptr,
-              reinterpret_cast<unsigned char**>(&pid_window)) == Success)
-        if (pid_window == static_cast<unsigned int>(pid)) {
-          new_window = std::make_shared<WindowXServer>(children[i]);
-          break;
-        }
-    }
-    XFree(children);
-  }
-  XCloseDisplay(display);
-  return new_window;
-}
-
 std::vector<std::shared_ptr<core::Window>> FinderXServer::get_all_windows()
     const {
   auto display = FinderXServer::open_display();

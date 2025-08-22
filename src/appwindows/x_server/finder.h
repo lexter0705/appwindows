@@ -18,9 +18,6 @@ class FinderXServer final : public core::Finder {
   std::shared_ptr<core::Window> get_window_by_title(
       std::string title) const override;
   [[nodiscard]]
-  std::shared_ptr<core::Window> open_new_window(std::string path_to_file,
-                                                int sleep_time) const override;
-  [[nodiscard]]
   std::vector<std::shared_ptr<core::Window>> get_all_windows() const override;
 
   static Display* open_display();

@@ -15,9 +15,6 @@ class Finder {
   virtual std::shared_ptr<Window> get_window_by_title(
       std::string title) const = 0;
   [[nodiscard]]
-  virtual std::shared_ptr<Window> open_new_window(
-      std::string path_to_file, int sleep_time) const = 0;
-  [[nodiscard]]
   virtual std::vector<std::shared_ptr<Window>> 
       get_all_windows() const = 0;
 

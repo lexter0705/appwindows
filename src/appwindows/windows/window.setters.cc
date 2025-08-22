@@ -43,15 +43,23 @@ void WindowWindows::close() {
 }
 
 void WindowWindows::to_background() {
-  throw std::runtime_error("Not implemented");
+  if (!window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
+    SetWindowPos(*window_, HWND_BOTTOM, 0, 0, 0, 0,
+                 SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
 }
 
 void WindowWindows::to_foreground() {
-  throw std::runtime_error("Not implemented");
+  if (!window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
+  set_minimize(false);
+  SetForegroundWindow(*window_);
+  SetActiveWindow(*window_);
+  SetWindowPos(*window_, HWND_TOP, 0, 0, 0, 0,
+               SWP_NOSIZE | SWP_NOMOVE | SWP_SHOWWINDOW);
 }
 
-void WindowWindows::set_minimize(bool is_minimize) {
-  throw std::runtime_error("Not implemented");
+void WindowWindows::set_minimize(const bool is_minimize) {
+  if (!window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
+  ShowWindow(*window_, is_minimize ? SW_MINIMIZE : SW_RESTORE);
 }
 
 }  // namespace windows

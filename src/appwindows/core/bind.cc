@@ -1,15 +1,14 @@
 #include "bind.h"
 
+#include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <pybind11/numpy.h>
 
 #include "exceptions/invalid_size.h"
 #include "exceptions/window_does_not_exist.h"
 #include "finder.h"
 #include "geometry/bind.h"
 #include "window.h"
-
 
 namespace py = pybind11;
 
@@ -66,16 +65,13 @@ void bind_window(py::module &m) {
           "    Size: Current window dimensions")
       .def(
           "get_screenshot",
-          [](const Window &self) {
-            return self.get_screenshot();
-          },
+          [](const Window &self) { return self.get_screenshot(); },
           "Get current window image\n\n"
           "Returns:\n"
           "    ndarray: image in ndarray")
-      .def("to_foreground", &Window::to_foreground,
-          "Moved window to forground")
+      .def("to_foreground", &Window::to_foreground, "Moved window to forground")
       .def("to_background", &Window::to_background,
-          "Moved window to background")
+           "Moved window to background")
       .def("set_minimize", &Window::set_minimize,
            "Set window active state\n\n"
            "Args:\n"
@@ -120,20 +116,7 @@ void bind_finder(const py::module &m) {
           [](const Finder &self) { return self.get_all_windows(); },
           "Find all opened windows\n\n"
           "Returns:\n"
-          "    list[Window]: Found windows\n\n")
-      .def(
-          "open_new_window",
-          [](const Finder &self, const std::string path_to_file, int pause_time) {
-             return self.open_new_window(path_to_file, pause_time);
-          },
-          "Open winow from file\n\n"
-          "Args:\n"
-          "    path_to_file (str): path to executable file\n\n"
-          "    pause_time (Optional[int]): pause time before open file\n\n"
-          "Returns:\n"
-          "    Window: Opened windows\n",
-          py::arg("path_to_file"), py::arg("pause_time") = 10000);
-  ;
+          "    list[Window]: Found windows\n\n");
 }
 
 void bind_core(py::module &m) {
