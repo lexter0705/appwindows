@@ -49,9 +49,15 @@ if host_machine.system() == 'windows'
     appwindows_inc = [appwindows_inc, include_directories('src/appwindows/windows')]
     platform_args = ['-DWINDOWS_USED=1']
 
-elif host_machine.system() == 'linux' or host_machine.system() == 'darwin'
-    wayland_dep = dependency('wayland-client', required : false)
-    if wayland_dep.found()
+elif host_machine.system() == 'linux'
+    xdg_session_type = run_command('sh', '-c', 'loginctl show-session $(loginctl | grep $(whoami) | awk "{print $1}") -p Type', check: false)
+    session_type = xdg_session_type.stdout().strip()
+    message('!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    message(session_type)
+    message('!!!!!!!!!!!!!!!!!!!!!!!!!!')
+    if session_type == 'Type=wayland'
+        wayland_dep = dependency('wayland-client', required : false)
+        wayland_dep.found()
         appwindows_sources += files(
             'src/appwindows/wayland/window.getters.cc',
             'src/appwindows/wayland/window.setters.cc',
@@ -60,21 +66,19 @@ elif host_machine.system() == 'linux' or host_machine.system() == 'darwin'
         appwindows_inc = [appwindows_inc, include_directories('src/appwindows/wayland')]
         platform_deps += wayland_dep
         platform_args += ['-DWAYLAND_USED=1']
-
-    else
+    elif session_type == 'Type=wayland'
         x11_dep = dependency('x11', required : false)
-        if x11_dep.found()
-            appwindows_sources += files(
-                'src/appwindows/x_server/window.getters.cc',
-                'src/appwindows/x_server/window.setters.cc',
-                'src/appwindows/x_server/finder.cc'
-            )
-            appwindows_inc = [appwindows_inc, include_directories('src/appwindows/x_server')]
-            platform_deps += x11_dep
-            platform_args += ['-DX_SERVER_USED=1']
-        else
-            warning('Neither Wayland nor X11 found, building without platform-specific features')
-        endif
+        x11_dep.found()
+        appwindows_sources += files(
+            'src/appwindows/x_server/window.getters.cc',
+            'src/appwindows/x_server/window.setters.cc',
+            'src/appwindows/x_server/finder.cc'
+        )
+        appwindows_inc = [appwindows_inc, include_directories('src/appwindows/x_server')]
+        platform_deps += x11_dep
+        platform_args += ['-DX_SERVER_USED=1']
+    else
+        warning('Neither Wayland nor X11 found, building without platform-specific features')
     endif
 
 else
@@ -90,6 +94,7 @@ appwindows_mod = py3.extension_module('appwindows',
                                       install : true,
                                       cpp_args : platform_args,
                                       subdir : 'appwindows')
+
 geometry_mod = py3.extension_module('geometry',
                                     sources : geometry_sources,
                                     dependencies : [pybind11_dep],
