@@ -19,7 +19,6 @@ python_install_dir = py3.get_install_dir()
 common_inc = include_directories('src/appwindows/core')
 base_inc = include_directories('src/appwindows')
 
-# Общие файлы
 common_sources = files(
     'src/appwindows/core/bind.cc',
     'src/appwindows/core/platform.cc',
@@ -28,7 +27,6 @@ common_sources = files(
     'src/appwindows/core/geometry/size.cc',
 )
 
-# Файл модуля
 module_sources = files('src/appwindows/appwindows.cc')
 
 platform_sources = []
@@ -46,9 +44,7 @@ if host_machine.system() == 'windows'
     platform_args = ['-DWINDOWS_USED=1']
 
 elif host_machine.system() == 'linux' or host_machine.system() == 'darwin'
-    # Сначала проверяем Wayland
     wayland_dep = dependency('wayland-client', required : false)
-
     if wayland_dep.found()
         platform_sources = files(
             'src/appwindows/wayland/window.getters.cc',
@@ -60,9 +56,7 @@ elif host_machine.system() == 'linux' or host_machine.system() == 'darwin'
         platform_args += ['-DWAYLAND_USED=1']
 
     else
-        # Если Wayland не найден, пробуем X11
         x11_dep = dependency('x11', required : false)
-
         if x11_dep.found()
             platform_sources = files(
                 'src/appwindows/x_server/window.getters.cc',
