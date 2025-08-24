@@ -88,7 +88,7 @@ endif
 
 appwindows_mod = py3.extension_module('appwindows',
                                       sources : appwindows_sources,
-                                      dependencies : [pybind11_dep],
+                                      dependencies : [pybind11_dep, platform_deps],
                                       include_directories : [appwindows_inc, exceptions_inc, geometry_inc],
                                       install : true,
                                       cpp_args : platform_args,
