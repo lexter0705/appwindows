@@ -1,5 +1,4 @@
 project('appwindows', 'cpp',
-        version : '1.0.2',
         license : 'BSD 3-Clause License',
         meson_version : '>=0.56.0',
         default_options : [
@@ -66,7 +65,7 @@ elif host_machine.system() == 'linux'
         appwindows_inc = [appwindows_inc, include_directories('src/appwindows/wayland')]
         platform_deps += wayland_dep
         platform_args += ['-DWAYLAND_USED=1']
-    elif session_type == 'Type=wayland'
+    elif session_type == 'Type=x11'
         x11_dep = dependency('x11', required : false)
         x11_dep.found()
         appwindows_sources += files(
