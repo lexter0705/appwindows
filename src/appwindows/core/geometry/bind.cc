@@ -42,10 +42,8 @@ void bind_size(const py::module &m) {
 }
 
 void bind_geometry(py::module &m) {
-  const auto geometry =
-      m.def_submodule("geometry", "Geometry types and operations");
-  bind_size(geometry);
-  bind_point(geometry);
+  bind_size(m);
+  bind_point(m);
 }
 
 }  // namespace core
