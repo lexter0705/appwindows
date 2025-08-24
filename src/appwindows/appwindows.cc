@@ -15,9 +15,6 @@ PYBIND11_MODULE(appwindows, m) {
   appwindows::core::bind_window(m);
   appwindows::core::bind_finder(m);
 
-  m.add_object("geometry", py::module_::import("geometry"));
-  m.add_object("exceptions", py::module_::import("exceptions"));
-
   m.def("get_finder", &appwindows::get_finder,
         "Get the window finder instance\n\n"
         "Returns:\n"
