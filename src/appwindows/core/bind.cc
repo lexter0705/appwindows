@@ -7,7 +7,7 @@
 #include "exceptions/invalid_size.h"
 #include "exceptions/window_does_not_exist.h"
 #include "finder.h"
-#include "geometry/bind.h"
+#include "geometry/geometry.h"
 #include "window.h"
 
 namespace py = pybind11;
@@ -16,21 +16,7 @@ namespace appwindows {
 namespace core {
 
 void bind_exceptions(const py::module &m) {
-  static py::exception<exceptions::WindowDoesNotExistException> window_exc(
-      m, "WindowDoesNotExistError");
-  static py::exception<exceptions::InvalidSizeException> size_exc(
-      m, "InvalidSizeError");
-  m.attr("WindowDoesNotExistError") = window_exc;
-  m.attr("InvalidSizeError") = size_exc;
-  py::register_exception_translator([](std::exception_ptr p) {
-    try {
-      if (p) std::rethrow_exception(p);
-    } catch (const exceptions::WindowDoesNotExistException &e) {
-      window_exc(e.what());
-    } catch (const exceptions::InvalidSizeException &e) {
-      size_exc(e.what());
-    }
-  });
+
 }
 
 void bind_window(py::module &m) {
