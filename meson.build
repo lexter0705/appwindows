@@ -104,15 +104,3 @@ install_data(
     '__init__.py',
     install_dir: python_install_dir / 'appwindows'
 )
-
-
-install_data(
-    'pyproject.toml',
-    install_dir: get_option('prefix') / 'share' / 'appwindows'
-)
-
-install_data(
-    'README.md',
-    'LICENSE.md',
-    install_dir: get_option('prefix') / 'share' / 'appwindows'
-)
