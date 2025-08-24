@@ -45,8 +45,7 @@ if host_machine.system() == 'windows'
         'src/appwindows/windows/window.setters.cc',
         'src/appwindows/windows/finder.cc'
     )
-    dirs = include_directories('src/appwindows/windows')
-    appwindows_inc += dirs
+    appwindows_inc = [appwindows_inc, include_directories('src/appwindows/windows')]
     platform_args = ['-DWINDOWS_USED=1']
 
 elif host_machine.system() == 'linux' or host_machine.system() == 'darwin'
@@ -57,8 +56,7 @@ elif host_machine.system() == 'linux' or host_machine.system() == 'darwin'
             'src/appwindows/wayland/window.setters.cc',
             'src/appwindows/wayland/finder.cc'
         )
-        dirs = include_directories('src/appwindows/wayland')
-
+        appwindows_inc = [appwindows_inc, include_directories('src/appwindows/wayland')]
         platform_deps += wayland_dep
         platform_args += ['-DWAYLAND_USED=1']
 
@@ -70,8 +68,7 @@ elif host_machine.system() == 'linux' or host_machine.system() == 'darwin'
                 'src/appwindows/x_server/window.setters.cc',
                 'src/appwindows/x_server/finder.cc'
             )
-            dirs = include_directories('src/appwindows/x_server')
-            appwindows_inc += dirs
+            appwindows_inc = [appwindows_inc, include_directories('src/appwindows/x_server')]
             platform_deps += x11_dep
             platform_args += ['-DX_SERVER_USED=1']
         else
