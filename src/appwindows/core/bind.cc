@@ -2,22 +2,14 @@
 
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
 
-#include "exceptions/invalid_size.h"
-#include "exceptions/window_does_not_exist.h"
 #include "finder.h"
-#include "geometry/geometry.h"
 #include "window.h"
 
 namespace py = pybind11;
 
 namespace appwindows {
 namespace core {
-
-void bind_exceptions(const py::module &m) {
-
-}
 
 void bind_window(py::module &m) {
   py::class_<Window, std::shared_ptr<Window>>(
