@@ -10,7 +10,7 @@ namespace py = pybind11;
 namespace appwindows {
 namespace core {
 
-void bind_point(const py::module &m) {
+void bind_point(py::module &m) {
   py::class_<Point>(m, "Point",
                     "Represents a 2D point with x and y coordinates")
       .def(py::init<int, int>(),
@@ -27,7 +27,7 @@ void bind_point(const py::module &m) {
       .def_property_readonly("y", &Point::get_y, "Y coordinate");
 }
 
-void bind_size(const py::module &m) {
+void bind_size(py::module &m) {
   py::class_<Size>(m, "Size", "Represents dimensions with width and height")
       .def(py::init<int, int>(),
            "Create size with specified dimensions\n\n"

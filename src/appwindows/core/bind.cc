@@ -15,7 +15,7 @@ namespace py = pybind11;
 namespace appwindows {
 namespace core {
 
-void bind_exceptions(const py::module &m) {
+void bind_exceptions(py::module &m) {
   static py::exception<exceptions::WindowDoesNotExistException>
       WindowDoesNotExistException(m, "WindowDoesNotExistError");
   static py::exception<exceptions::InvalidSizeException> InvalidSizeException(
@@ -97,7 +97,7 @@ void bind_window(py::module &m) {
       .def("close", &Window::close, "Close the window");
 }
 
-void bind_finder(const py::module &m) {
+void bind_finder(py::module &m) {
   py::class_<Finder, std::shared_ptr<Finder>>(
       m, "Finder", "Interface for finding application windows")
       .def(
@@ -117,11 +117,6 @@ void bind_finder(const py::module &m) {
           "Find all opened windows\n\n"
           "Returns:\n"
           "    list[Window]: Found windows\n\n");
-}
-
-void bind_core(py::module &m) {
-  bind_window(m);
-  bind_finder(m);
 }
 
 }  // namespace core
