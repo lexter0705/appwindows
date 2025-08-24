@@ -1,6 +1,6 @@
 project('appwindows', 'cpp',
-        version : '0.1.0',
-        license : 'MIT',
+        version : '1.0.2',
+        license : 'BSD 3-Clause License',
         meson_version : '>=0.56.0',
         default_options : [
             'cpp_std=c++17',
@@ -16,55 +16,59 @@ python_dep = dependency('python3', required : true)
 py3 = import('python').find_installation('python3', pure : false)
 python_install_dir = py3.get_install_dir()
 
-common_inc = include_directories('src/appwindows/core')
-base_inc = include_directories('src/appwindows')
+appwindows_inc = include_directories('src/appwindows',
+                                     'src/appwindows/core')
+geometry_inc = include_directories('src/appwindows/core/geometry')
+exceptions_inc = include_directories('src/appwindows/core/exceptions')
 
-common_sources = files(
+
+appwindows_sources = files(
+    'src/appwindows/appwindows.cc',
     'src/appwindows/core/bind.cc',
     'src/appwindows/core/platform.cc',
+    'src/appwindows/core/geometry/size.cc',
+    'src/appwindows/core/geometry/geometry.cc'
+)
+geometry_sources = files(
     'src/appwindows/core/geometry/point.cc',
     'src/appwindows/core/geometry/size.cc',
+    'src/appwindows/core/geometry/geometry.cc'
 )
+exceptions_sources = files('src/appwindows/core/exceptions/exceptions.cc')
 
-module_sources = files('src/appwindows/core/geometry/geometry.cc',
-                       'src/appwindows/core/exceptions/exceptions.cc',
-                       'src/appwindows/appwindows.cc')
-
-platform_sources = []
 platform_deps = []
 platform_args = []
-platform_inc = [base_inc]
 
 if host_machine.system() == 'windows'
-    platform_sources = files(
+    appwindows_sources += files(
         'src/appwindows/windows/window.getters.cc',
         'src/appwindows/windows/window.setters.cc',
         'src/appwindows/windows/finder.cc'
     )
-    platform_inc += include_directories('src/appwindows/windows')
+    appwindows_inc += include_directories('src/appwindows/windows')
     platform_args = ['-DWINDOWS_USED=1']
 
 elif host_machine.system() == 'linux' or host_machine.system() == 'darwin'
     wayland_dep = dependency('wayland-client', required : false)
     if wayland_dep.found()
-        platform_sources = files(
+        appwindows_sources += files(
             'src/appwindows/wayland/window.getters.cc',
             'src/appwindows/wayland/window.setters.cc',
             'src/appwindows/wayland/finder.cc'
         )
-        platform_inc += include_directories('src/appwindows/wayland')
+        appwindows_inc += include_directories('src/appwindows/wayland')
         platform_deps += wayland_dep
         platform_args += ['-DWAYLAND_USED=1']
 
     else
         x11_dep = dependency('x11', required : false)
         if x11_dep.found()
-            platform_sources = files(
+            appwindows_sources += files(
                 'src/appwindows/x_server/window.getters.cc',
                 'src/appwindows/x_server/window.setters.cc',
                 'src/appwindows/x_server/finder.cc'
             )
-            platform_inc += include_directories('src/appwindows/x_server')
+            appwindows_inc += include_directories('src/appwindows/x_server')
             platform_deps += x11_dep
             platform_args += ['-DX_SERVER_USED=1']
         else
@@ -76,18 +80,27 @@ else
     error('Unsupported platform: ' + host_machine.system())
 endif
 
-all_sources = common_sources + module_sources + platform_sources
-all_includes = [common_inc] + platform_inc
+geometry_mod = pybind11_extension('geometry',
+                                  sources : geometry_sources,
+                                  dependencies : [pybind11_dep],
+                                  include_directories : geometry_inc,
+                                  install : true,
+                                  subdir : 'appwindows')
 
-appwindows_module = py3.extension_module(
-    'appwindows',
-    all_sources,
-    include_directories : all_includes,
-    dependencies : [pybind11_dep, python_dep] + platform_deps,
-    cpp_args : platform_args + ['-fvisibility=hidden'],
-    install : true,
-    subdir : 'appwindows'
-)
+exceptions_mod = pybind11_extension('exceptions',
+                                    sources : exceptions_sources,
+                                    dependencies : [pybind11_dep],
+                                    include_directories : exceptions_inc,
+                                    install : true,
+                                    subdir : 'appwindows')
+
+appwindows_mod = pybind11_extension('appwindows',
+                                    sources : appwindows_sources,
+                                    dependencies : [pybind11_dep],
+                                    include_directories : appwindows_inc,
+                                    install : true,
+                                    subdir : 'appwindows')
+
 
 configure_file(
     input : '__init__.py',
