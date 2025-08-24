@@ -82,25 +82,26 @@ else
 endif
 
 geometry_mod = py3.extension_module('geometry',
-                                  sources : geometry_sources,
-                                  dependencies : [pybind11_dep],
-                                  include_directories : geometry_inc,
-                                  install : true,
-                                  subdir : 'appwindows')
+                                    sources : geometry_sources,
+                                    dependencies : [pybind11_dep],
+                                    include_directories : geometry_inc,
+                                    install : true,
+                                    subdir : 'appwindows')
 
 exceptions_mod = py3.extension_module('exceptions',
-                                    sources : exceptions_sources,
-                                    dependencies : [pybind11_dep],
-                                    include_directories : exceptions_inc,
-                                    install : true,
-                                    subdir : 'appwindows')
+                                      sources : exceptions_sources,
+                                      dependencies : [pybind11_dep],
+                                      include_directories : exceptions_inc,
+                                      install : true,
+                                      subdir : 'appwindows')
 
 appwindows_mod = py3.extension_module('appwindows',
-                                    sources : appwindows_sources,
-                                    dependencies : [pybind11_dep],
-                                    include_directories : appwindows_inc,
-                                    install : true,
-                                    subdir : 'appwindows')
+                                      sources : appwindows_sources,
+                                      dependencies : [pybind11_dep],
+                                      include_directories : appwindows_inc,
+                                      install : true,
+                                      cpp_args : platform_args,
+                                      subdir : 'appwindows')
 
 
 configure_file(
