@@ -119,10 +119,8 @@ void bind_finder(const py::module &m) {
           "    list[Window]: Found windows\n\n");
 }
 
-void bind_core(py::module &m, py::module &geometry, py::module &exceptions) {
+void bind_core(py::module &m) {
   bind_window(m);
-  bind_geometry(geometry);
-  bind_exceptions(exceptions);
   bind_finder(m);
 }
 
