@@ -13,7 +13,7 @@ PYBIND11_MODULE(appwindows, m) {
       "shell on different operating systems.";
   const auto geometry = m.def_submodule("geometry", "Geometry types and operations");
   const auto exceptions = m.def_submodule("exceptions", "Exception types");
-  appwindows::core::bind_core(m);
+  appwindows::core::bind_core(m, geometry, exceptions);
   m.def("get_finder", &appwindows::get_finder,
         "Get the window finder instance\n\n"
         "Returns:\n"
