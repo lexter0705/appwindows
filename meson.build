@@ -13,7 +13,7 @@ project('appwindows', 'cpp',
 pybind11_dep = dependency('pybind11', required : true)
 python_dep = dependency('python3', required : true)
 
-py3 = import('python').find_installation('python3')
+py3 = import('python').find_installation('python3', pure: false)
 python_install_dir = py3.get_install_dir()
 
 common_inc = include_directories('src/appwindows/core')
@@ -104,6 +104,7 @@ install_data(
     '__init__.py',
     install_dir: python_install_dir / 'appwindows'
 )
+
 
 install_data(
     'pyproject.toml',
