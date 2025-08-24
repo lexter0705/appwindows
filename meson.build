@@ -28,7 +28,7 @@ appwindows_sources = files(
     'src/appwindows/core/bind.cc',
     'src/appwindows/core/platform.cc',
     'src/appwindows/core/geometry/size.cc',
-    'src/appwindows/core/geometry/geometry.cc'
+    'src/appwindows/core/geometry/point.cc',
 )
 geometry_sources = files(
     'src/appwindows/core/geometry/point.cc',
@@ -98,7 +98,7 @@ exceptions_mod = py3.extension_module('exceptions',
 appwindows_mod = py3.extension_module('appwindows',
                                       sources : appwindows_sources,
                                       dependencies : [pybind11_dep],
-                                      include_directories : appwindows_inc,
+                                      include_directories : [appwindows_inc, exceptions_inc, geometry_inc],
                                       install : true,
                                       cpp_args : platform_args,
                                       subdir : 'appwindows')
