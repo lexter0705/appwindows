@@ -13,7 +13,7 @@ project('appwindows', 'cpp',
 pybind11_dep = dependency('pybind11', required : true)
 python_dep = dependency('python3', required : true)
 
-py3 = import('python').find_installation('python3', pure: false)
+py3 = import('python').find_installation('python3', pure : false)
 python_install_dir = py3.get_install_dir()
 
 common_inc = include_directories('src/appwindows/core')
@@ -22,12 +22,13 @@ base_inc = include_directories('src/appwindows')
 common_sources = files(
     'src/appwindows/core/bind.cc',
     'src/appwindows/core/platform.cc',
-    'src/appwindows/core/geometry/bind.cc',
     'src/appwindows/core/geometry/point.cc',
     'src/appwindows/core/geometry/size.cc',
 )
 
-module_sources = files('src/appwindows/appwindows.cc')
+module_sources = files('src/appwindows/core/geometry/geometry.cc',
+                       'src/appwindows/core/exceptions/exceptions.cc',
+                       'src/appwindows/appwindows.cc')
 
 platform_sources = []
 platform_deps = []
@@ -81,20 +82,20 @@ all_includes = [common_inc] + platform_inc
 appwindows_module = py3.extension_module(
     'appwindows',
     all_sources,
-    include_directories: all_includes,
-    dependencies: [pybind11_dep, python_dep] + platform_deps,
-    cpp_args: platform_args + ['-fvisibility=hidden'],
-    install: true,
-    subdir: 'appwindows'
+    include_directories : all_includes,
+    dependencies : [pybind11_dep, python_dep] + platform_deps,
+    cpp_args : platform_args + ['-fvisibility=hidden'],
+    install : true,
+    subdir : 'appwindows'
 )
 
 configure_file(
-    input: '__init__.py',
-    output: '__init__.py',
-    copy: true
+    input : '__init__.py',
+    output : '__init__.py',
+    copy : true
 )
 
 install_data(
     '__init__.py',
-    install_dir: python_install_dir / 'appwindows'
+    install_dir : python_install_dir / 'appwindows'
 )
