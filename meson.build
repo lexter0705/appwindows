@@ -55,7 +55,7 @@ elif host_machine.system() == 'linux'
     message(session_type)
     message('!!!!!!!!!!!!!!!!!!!!!!!!!!')
     if session_type == 'Type=wayland'
-        wayland_dep = dependency('wayland-client', required : true)
+        wayland_dep = dependency('wayland-client', required : false)
         wayland_dep.found()
         appwindows_sources += files(
             'src/appwindows/wayland/window.getters.cc',
@@ -66,10 +66,10 @@ elif host_machine.system() == 'linux'
         platform_deps += wayland_dep
         platform_args += ['-DWAYLAND_USED=1']
     elif session_type == 'Type=x11'
-        x11_dep = dependency('x11', required : true)
-        xext_dep = dependency('xext', required : true)
-        xfixes_dep = dependency('xfixes', required : true)
-        xinerama_dep = dependency('xinerama', required : true)
+        x11_dep = dependency('x11', required : false)
+        xext_dep = dependency('xext', required : false)
+        xfixes_dep = dependency('xfixes', required : false)
+        xinerama_dep = dependency('xinerama', required : false)
         x11_dep.found()
         xext_dep.found()
         xfixes_dep.found()
