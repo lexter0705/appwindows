@@ -109,7 +109,7 @@ void bind_finder(const py::module &m) {
           "Args:\n"
           "    title (str): Window title to search for\n\n"
           "Returns:\n"
-          "    Optional[Window]: Found window or null if window does not exist",
+          "    Window | None: Found window or null if window does not exist",
           py::arg("title"))
       .def(
           "get_all_windows",
