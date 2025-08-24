@@ -14,6 +14,9 @@ pybind11_dep = dependency('pybind11', required : true)
 python_dep = dependency('python3', required : true)
 
 py3 = import('python').find_installation('python3', pure : false)
+
+pybind11 = import('pybind11')
+
 python_install_dir = py3.get_install_dir()
 
 appwindows_inc = include_directories('src/appwindows',
@@ -80,21 +83,21 @@ else
     error('Unsupported platform: ' + host_machine.system())
 endif
 
-geometry_mod = pybind11_extension('geometry',
+geometry_mod = pybind11.extension('geometry',
                                   sources : geometry_sources,
                                   dependencies : [pybind11_dep],
                                   include_directories : geometry_inc,
                                   install : true,
                                   subdir : 'appwindows')
 
-exceptions_mod = pybind11_extension('exceptions',
+exceptions_mod = pybind11.extension('exceptions',
                                     sources : exceptions_sources,
                                     dependencies : [pybind11_dep],
                                     include_directories : exceptions_inc,
                                     install : true,
                                     subdir : 'appwindows')
 
-appwindows_mod = pybind11_extension('appwindows',
+appwindows_mod = pybind11.extension('appwindows',
                                     sources : appwindows_sources,
                                     dependencies : [pybind11_dep],
                                     include_directories : appwindows_inc,
