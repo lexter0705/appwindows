@@ -6,10 +6,13 @@
 
 #include <windows.h>
 
+#include "../core/exceptions/window_does_not_exist.h"
+
 namespace appwindows {
 namespace windows {
 
 std::unique_ptr<std::string> WindowWindows::get_title() const {
+  if (!window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
   const int length = GetWindowTextLengthW(*window_);
   if (length == 0) return std::make_unique<std::string>("");
   std::wstring wide_title(length + 1, L'\0');
@@ -25,6 +28,7 @@ std::unique_ptr<std::string> WindowWindows::get_title() const {
 }
 
 std::unique_ptr<std::vector<core::Point>> WindowWindows::get_points() {
+  if (!window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
   RECT rect;
   GetWindowRect(*window_, &rect);
   auto points = std::make_unique<std::vector<core::Point>>();
@@ -40,6 +44,7 @@ std::unique_ptr<std::vector<core::Point>> WindowWindows::get_points() {
 }
 
 std::unique_ptr<core::Size> WindowWindows::get_size() const {
+  if (!window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
   RECT rect = {0};
   GetWindowRect(*window_, &rect);
   return std::make_unique<core::Size>(rect.right - rect.left,
@@ -49,6 +54,7 @@ std::unique_ptr<core::Size> WindowWindows::get_size() const {
 std::shared_ptr<HWND> WindowWindows::get_window() const { return window_; }
 
 py::array_t<unsigned char> WindowWindows::get_screenshot() const {
+  if (!window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
   const auto window_size = get_size();
   const auto width = window_size->get_width();
   const auto height = window_size->get_height();

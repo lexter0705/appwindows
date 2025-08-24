@@ -6,7 +6,7 @@ requires = [
 build-backend = "mesonpy"
 [project]
 name = "appwindows"
-version = "1.0.0"
+version = "1.0.1"
 authors = [
  { name="lexter0705", email="lexter0705@gmail.com" },
 ]
