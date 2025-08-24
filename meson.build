@@ -89,8 +89,8 @@ appwindows_module = py3.extension_module(
 )
 
 configure_file(
-    input: '__init__.py',
-    output: '__init__.py',
+    input: 'src/appwindows/__init__.py',
+    output: 'src/appwindows/__init__.py',
     copy: true
 )
 
