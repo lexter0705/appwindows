@@ -16,18 +16,16 @@ namespace appwindows {
 namespace core {
 
 void bind_exceptions(py::module &m) {
-  static py::exception<exceptions::WindowDoesNotExistException>
-      WindowDoesNotExistException(m, "WindowDoesNotExistError");
-  static py::exception<exceptions::InvalidSizeException> InvalidSizeException(
-      m, "InvalidSizeError");
+  static py::exception<exceptions::WindowDoesNotExistException> WindowDoesNotExistError(m, "WindowDoesNotExistError");
+  static py::exception<exceptions::InvalidSizeException> InvalidSizeError(m, "InvalidSizeError");
 
   py::register_exception_translator([](std::exception_ptr p) {
     try {
       if (p) std::rethrow_exception(p);
     } catch (const exceptions::WindowDoesNotExistException &e) {
-      WindowDoesNotExistException(e.what());
+      WindowDoesNotExistError(e.what());
     } catch (const exceptions::InvalidSizeException &e) {
-      InvalidSizeException(e.what());
+     InvalidSizeError(e.what());
     }
   });
 }
