@@ -95,6 +95,6 @@ configure_file(
 )
 
 install_data(
-    '__init__.py',
+    'src/appwindows/__init__.py',
     install_dir: python_install_dir / 'appwindows'
 )

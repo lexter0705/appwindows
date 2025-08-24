@@ -15,7 +15,7 @@ namespace py = pybind11;
 namespace appwindows {
 namespace core {
 
-void bind_exceptions(py::module &m) {
+void bind_exceptions(const py::module &m) {
   static py::exception<exceptions::WindowDoesNotExistException> WindowDoesNotExistError(m, "WindowDoesNotExistError");
   static py::exception<exceptions::InvalidSizeException> InvalidSizeError(m, "InvalidSizeError");
 

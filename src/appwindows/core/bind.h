@@ -9,7 +9,7 @@ namespace core {
 
 void bind_window(py::module &m);
 void bind_finder(py::module &m);
-void bind_exceptions(py::module &m);
+void bind_exceptions(const py::module &m);
 
 }  // namespace windows
 }  // namespace appwindows
