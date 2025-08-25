@@ -4,7 +4,9 @@
 The appwindows library solves the problem of working with a graphical shell on different operating systems.
 
 # Install
-### pip install appwindows
+```bash
+pip install appwindows
+```
 
 # Docs
 All documentation <a href="#">here</a>
