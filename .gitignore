@@ -1,6 +1,5 @@
-CMake/
-pybind11/
 .venv/
 .vscode/
 .idea/
-./dist
+dist/
+test.py

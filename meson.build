@@ -66,7 +66,7 @@ elif host_machine.system() == 'linux'
         platform_deps += wayland_dep
         platform_args += ['-DWAYLAND_USED=1']
     elif session_type == 'Type=x11'
-        x11_dep = dependency('x11', required : false)
+        x11_dep = dependency('x11', required : true)
         xext_dep = dependency('xext', required : false)
         xfixes_dep = dependency('xfixes', required : false)
         xinerama_dep = dependency('xinerama', required : false)
