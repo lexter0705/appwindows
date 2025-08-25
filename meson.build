@@ -55,7 +55,7 @@ elif host_machine.system() == 'linux'
     message(session_type)
     message('!!!!!!!!!!!!!!!!!!!!!!!!!!')
     if session_type == 'Type=wayland'
-        wayland_dep = dependency('wayland-client', required : false)
+        wayland_dep = dependency('wayland-client', required : true)
         wayland_dep.found()
         appwindows_sources += files(
             'src/appwindows/wayland/window.getters.cc',
