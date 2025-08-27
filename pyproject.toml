@@ -4,6 +4,7 @@ requires = [
     "pybind11>=2.10.0"
 ]
 build-backend = "mesonpy"
+
 [project]
 dependencies = ["numpy >= 2.0"]
 name = "appwindows"
@@ -23,6 +24,7 @@ classifiers = [
     "Environment :: X11 Applications",
     "Environment :: Win32 (MS Windows)"
 ]
+license-files = ["LICENSE.md"]
 
 [project.urls]
 Repository = "https://github.com/lexter0705/appwindows"
