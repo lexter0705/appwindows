@@ -1,2 +1,0 @@
-screeninfo~=0.8.1
-pybind11~=3.0.0
