@@ -1,4 +1,4 @@
-<img src="./appwindows.svg" alt="" width="40%" >
+<img src="https://raw.githubusercontent.com/lexter0705/appwindows/refs/heads/master/appwindows.svg" alt="" width="40%" >
 
 # Appwindows
 The appwindows library solves the problem of working with a graphical shell on different operating systems.
