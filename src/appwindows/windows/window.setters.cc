@@ -1,5 +1,7 @@
 #include "window.h"
 
+#include <iostream>
+
 #include <windows.h>
 
 #include "../core/exceptions/window_does_not_exist.h"
@@ -27,6 +29,7 @@ void WindowWindows::redraw_and_wait() const {
       TranslateMessage(&msg);
       DispatchMessage(&msg);
     } else break;
+    std::cout < i;
     Sleep(sleep_time);
   }
   UpdateWindow(*window_);
