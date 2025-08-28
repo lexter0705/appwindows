@@ -55,12 +55,12 @@ void bind_window(py::module &m) {
       .def("set_minimize", &Window::set_minimize,
            "Set window active state\n\n"
            "Args:\n"
-           "    active (bool): True to activate window",
-           py::arg("active"))
+           "    is_minimize (bool): True to activate window",
+           py::arg("is_minimize"))
       .def("set_fullscreen", &Window::set_fullscreen,
            "Maximize or restore the window\n\n"
            "Args:\n"
-           "    is_maximize (bool): True to maximize window",
+           "    is_fullscreen (bool): True to window on fullscreen",
            py::arg("is_maximize"))
       .def("resize", &Window::resize,
            "Resize the window\n\n"
@@ -85,7 +85,7 @@ void bind_finder(py::module &m) {
           [](const Finder &self, const std::string &title) {
             return self.get_window_by_title(title);
           },
-          "Find window by its title\n\n"
+          "Find window by its title substring\n\n"
           "Args:\n"
           "    title (str): Window title to search for\n\n"
           "Returns:\n"

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "../core/window.h"
+#include "../core/exceptions/invalid_size.h"
 #include "window.h"
 
 using WIndowX = Window;
@@ -30,7 +31,7 @@ std::shared_ptr<core::Window> FinderXServer::get_window_by_title(
     if (window->get_title() &&
         window->get_title()->find(title) != std::string::npos)
       return window;
-  return nullptr;
+  throw core::exceptions::WindowDoesNotExistException();
 }
 
 std::vector<std::shared_ptr<core::Window>> FinderXServer::get_all_windows()
