@@ -56,7 +56,8 @@ py::array_t<unsigned char> WindowWindows::get_screenshot() {
   const auto is_minimize = IsIconic(*window_) == TRUE;
   if (is_minimize) {
     set_minimize(false);
-    Sleep(1000);
+    to_background();
+    Sleep(100);
   }
   const auto window_size = get_size();
   const auto width = window_size->get_width();
@@ -81,6 +82,7 @@ py::array_t<unsigned char> WindowWindows::get_screenshot() {
   DeleteObject(bitmap);
   DeleteDC(memory_dc);
   ReleaseDC(*window_, window_dc);
+  if (is_minimize) set_minimize(true);
   auto result_array = py::array_t<unsigned char>({height, width, 3});
   auto array_data = result_array.mutable_unchecked<3>();
   for (int y = 0; y < height; ++y)
