@@ -29,7 +29,7 @@ void WindowWindows::redraw_and_wait() const {
       TranslateMessage(&msg);
       DispatchMessage(&msg);
     } else break;
-    std::cout < i;
+    std::cout << i;
     Sleep(sleep_time);
   }
   UpdateWindow(*window_);
