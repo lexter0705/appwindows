@@ -64,6 +64,7 @@ py::array_t<unsigned char> WindowWindows::get_screenshot() {
   if (is_minimize) {
     set_minimize(false);
     to_foreground();
+    Sleep(300);
   }
   PrintWindow(*window_, memory_dc, PW_RENDERFULLCONTENT);
   BITMAPINFOHEADER bitmap_info = {};
