@@ -62,8 +62,9 @@ py::array_t<unsigned char> WindowWindows::get_screenshot() {
   const auto old_bitmap = SelectObject(memory_dc, bitmap);
   const auto is_minimize = IsIconic(*window_) == TRUE;
   if (is_minimize) {
-    ShowWindow(*window_, SW_SHOWNOACTIVATE);
-    redraw_and_wait();
+    set_minimize(false);
+    to_background();
+    Sleep(5000);
   }
   PrintWindow(*window_, memory_dc, PW_RENDERFULLCONTENT);
   BITMAPINFOHEADER bitmap_info = {};
@@ -81,7 +82,7 @@ py::array_t<unsigned char> WindowWindows::get_screenshot() {
   DeleteObject(bitmap);
   DeleteDC(memory_dc);
   ReleaseDC(*window_, window_dc);
-  if (is_minimize) ShowWindow(*window_, SW_MINIMIZE);;
+  if (is_minimize) set_minimize(true);
   auto result_array = py::array_t<unsigned char>({height, width, 3});
   auto array_data = result_array.mutable_unchecked<3>();
   for (int y = 0; y < height; ++y)

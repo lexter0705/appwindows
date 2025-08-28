@@ -29,7 +29,6 @@ class WindowWindows final : public core::Window {
 
  private:
   std::shared_ptr<HWND> window_;
-  void redraw_and_wait() const;
 };
 
 }  // namespace windows
