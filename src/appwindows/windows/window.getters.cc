@@ -63,6 +63,7 @@ py::array_t<unsigned char> WindowWindows::get_screenshot() {
   const auto is_minimize = IsIconic(*window_) == TRUE;
   if (is_minimize) {
     set_minimize(false);
+    to_foreground();
     to_background();
   }
   PrintWindow(*window_, memory_dc, PW_RENDERFULLCONTENT);
