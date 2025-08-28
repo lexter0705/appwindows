@@ -51,7 +51,7 @@ std::unique_ptr<core::Size> WindowWindows::get_size() const {
                                       rect.bottom - rect.top);
 }
 
-py::array_t<unsigned char> WindowWindows::get_screenshot() const {
+py::array_t<unsigned char> WindowWindows::get_screenshot() {
   if (!window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
   const auto window_size = get_size();
   const auto width = window_size->get_width();
@@ -60,9 +60,11 @@ py::array_t<unsigned char> WindowWindows::get_screenshot() const {
   const auto memory_dc = CreateCompatibleDC(window_dc);
   const auto bitmap = CreateCompatibleBitmap(window_dc, width, height);
   const auto old_bitmap = SelectObject(memory_dc, bitmap);
-  RedrawWindow(*window_, nullptr, nullptr,
-               RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN | RDW_FRAME | RDW_UPDATENOW);
-  UpdateWindow(*window_);
+  const auto is_minimize = IsIconic(*window_) != FALSE;
+  if (is_minimize) {
+    set_minimize(false);
+    to_foreground();
+  }
   PrintWindow(*window_, memory_dc, PW_RENDERFULLCONTENT);
   BITMAPINFOHEADER bitmap_info = {};
   bitmap_info.biSize = sizeof(BITMAPINFOHEADER);
@@ -75,6 +77,7 @@ py::array_t<unsigned char> WindowWindows::get_screenshot() const {
       std::make_unique<unsigned char[]>(width * height * 4);
   GetDIBits(memory_dc, bitmap, 0, height, pixel_buffer.get(),
             reinterpret_cast<BITMAPINFO*>(&bitmap_info), DIB_RGB_COLORS);
+  if (is_minimize) set_minimize(true);
   SelectObject(memory_dc, old_bitmap);
   DeleteObject(bitmap);
   DeleteDC(memory_dc);
