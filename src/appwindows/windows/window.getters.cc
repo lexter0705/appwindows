@@ -55,9 +55,8 @@ py::array_t<unsigned char> WindowWindows::get_screenshot() {
   if (!window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
   const auto is_minimize = IsIconic(*window_) == TRUE;
   if (is_minimize) {
-    set_minimize(false);
-    to_background();
-    Sleep(100);
+    ShowWindow(*window_, SW_SHOWNOACTIVATE);
+    Sleep(50);
   }
   const auto window_size = get_size();
   const auto width = window_size->get_width();
