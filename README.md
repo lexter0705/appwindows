@@ -3,18 +3,9 @@
 # Appwindows
 The appwindows library solves the problem of working with a graphical shell on different operating systems.
 # Install
-On windows:
 ```bash
 pip install appwindows
 ```
-On linux xorg:
-```bash
-sudo apt install libx11-dev pkg-config
-pip install appwindows
-```
-# Supported platforms:
-1) Windows
-2) Linux with X Server
 # Docs
 All documentation <a href="https://apparser.gitbook.io/appwindows">here</a>
 # For Developers
