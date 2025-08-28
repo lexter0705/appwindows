@@ -29,6 +29,7 @@ license-files = ["LICENSE.md"]
 [project.urls]
 Repository = "https://github.com/lexter0705/appwindows"
 Issues = "https://github.com/lexter0705/appwindows/issues"
+Docs = "https://apparser.gitbook.io/appwindows"
 
 [tool.mesonpy]
 machine-file = false
