@@ -60,11 +60,9 @@ py::array_t<unsigned char> WindowWindows::get_screenshot() const {
   const auto memory_dc = CreateCompatibleDC(window_dc);
   const auto bitmap = CreateCompatibleBitmap(window_dc, width, height);
   const auto old_bitmap = SelectObject(memory_dc, bitmap);
-  const auto is_minimize = IsIconic(*window_) != FALSE;
-  if (is_minimize) {
-    ShowWindow(*window_, SW_SHOWNOACTIVATE);
-    Sleep(50);
-  }
+  RedrawWindow(*window_, nullptr, nullptr,
+               RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN | RDW_FRAME | RDW_UPDATENOW);
+  UpdateWindow(*window_);
   PrintWindow(*window_, memory_dc, PW_RENDERFULLCONTENT);
   BITMAPINFOHEADER bitmap_info = {};
   bitmap_info.biSize = sizeof(BITMAPINFOHEADER);
@@ -77,7 +75,6 @@ py::array_t<unsigned char> WindowWindows::get_screenshot() const {
       std::make_unique<unsigned char[]>(width * height * 4);
   GetDIBits(memory_dc, bitmap, 0, height, pixel_buffer.get(),
             reinterpret_cast<BITMAPINFO*>(&bitmap_info), DIB_RGB_COLORS);
-  if (is_minimize) ShowWindow(*window_, SW_MINIMIZE);
   SelectObject(memory_dc, old_bitmap);
   DeleteObject(bitmap);
   DeleteDC(memory_dc);
