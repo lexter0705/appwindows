@@ -60,11 +60,11 @@ py::array_t<unsigned char> WindowWindows::get_screenshot() {
   const auto memory_dc = CreateCompatibleDC(window_dc);
   const auto bitmap = CreateCompatibleBitmap(window_dc, width, height);
   const auto old_bitmap = SelectObject(memory_dc, bitmap);
-  const auto is_minimize = IsIconic(*window_) == FALSE;
+  const auto is_minimize = IsIconic(*window_) == TRUE;
   if (is_minimize) {
     set_minimize(false);
     to_background();
-    Sleep(500);
+    Sleep(1000);
   }
   PrintWindow(*window_, memory_dc, PW_RENDERFULLCONTENT);
   BITMAPINFOHEADER bitmap_info = {};
