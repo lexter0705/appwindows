@@ -62,6 +62,7 @@ py::array_t<unsigned char> WindowWindows::get_screenshot() const {
   const auto memory_dc = CreateCompatibleDC(window_dc);
   const auto bitmap = CreateCompatibleBitmap(window_dc, width, height);
   const auto old_bitmap = SelectObject(memory_dc, bitmap);
+  SetActiveWindow(*window_);
   PrintWindow(*window_, memory_dc, PW_RENDERFULLCONTENT);
   BITMAPINFOHEADER bitmap_info = {};
   bitmap_info.biSize = sizeof(BITMAPINFOHEADER);

@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "meson-python>=0.10",
+    "meson-python>=0.13",
     "pybind11>=2.10.0"
 ]
 build-backend = "mesonpy"
