@@ -51,7 +51,7 @@ std::unique_ptr<core::Size> WindowWindows::get_size() const {
                                       rect.bottom - rect.top);
 }
 
-py::array_t<unsigned char> WindowWindows::get_screenshot(){
+py::array_t<unsigned char> WindowWindows::get_screenshot() const {
   if (!window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
   const auto window_size = get_size();
   const auto width = window_size->get_width();
