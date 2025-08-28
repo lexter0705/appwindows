@@ -55,7 +55,7 @@ std::unique_ptr<std::string> WindowXServer::get_title() const {
   return std::make_unique<std::string>(title);
 }
 
-py::array_t<unsigned char> WindowXServer::get_screenshot() const {
+py::array_t<unsigned char> WindowXServer::get_screenshot() {
   auto display = FinderXServer::open_display();
   auto size = get_size();
   auto image = XGetImage(display, window_, 0, 0, size->get_width(),
