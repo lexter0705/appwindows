@@ -12,6 +12,26 @@ namespace windows {
 WindowWindows::WindowWindows(const std::shared_ptr<HWND>& window)
     : window_(window) {}
 
+void WindowWindows::redraw_and_wait() const {
+  if (!window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
+  constexpr auto count_iterations = 20;
+  constexpr auto sleep_time = 200;
+  SendMessage(*window_, WM_SETREDRAW, FALSE, 0);
+  RedrawWindow(*window_, nullptr, nullptr,
+               RDW_INVALIDATE | RDW_ERASE | RDW_ALLCHILDREN | RDW_FRAME);
+  SendMessage(*window_, WM_SETREDRAW, TRUE, 0);
+  InvalidateRect(*window_, nullptr, TRUE);
+  MSG msg;
+  for (int i = 0; i < count_iterations; ++i) {
+    if (PeekMessage(&msg, *window_, WM_PAINT, WM_PAINT, PM_REMOVE)) {
+      TranslateMessage(&msg);
+      DispatchMessage(&msg);
+    } else break;
+    Sleep(sleep_time);
+  }
+  UpdateWindow(*window_);
+}
+
 bool WindowWindows::window_is_valid() const {
   return IsWindow(*window_) != FALSE;
 }
