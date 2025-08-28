@@ -53,6 +53,11 @@ std::unique_ptr<core::Size> WindowWindows::get_size() const {
 
 py::array_t<unsigned char> WindowWindows::get_screenshot() {
   if (!window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
+  const auto is_minimize = IsIconic(*window_) == TRUE;
+  if (is_minimize) {
+    set_minimize(false);
+    Sleep(1000);
+  }
   const auto window_size = get_size();
   const auto width = window_size->get_width();
   const auto height = window_size->get_height();
@@ -60,11 +65,6 @@ py::array_t<unsigned char> WindowWindows::get_screenshot() {
   const auto memory_dc = CreateCompatibleDC(window_dc);
   const auto bitmap = CreateCompatibleBitmap(window_dc, width, height);
   const auto old_bitmap = SelectObject(memory_dc, bitmap);
-  const auto is_minimize = IsIconic(*window_) == TRUE;
-  if (is_minimize) {
-    set_minimize(false);
-    Sleep(1000);
-  }
   PrintWindow(*window_, memory_dc, PW_RENDERFULLCONTENT);
   BITMAPINFOHEADER bitmap_info = {};
   bitmap_info.biSize = sizeof(BITMAPINFOHEADER);
@@ -81,8 +81,6 @@ py::array_t<unsigned char> WindowWindows::get_screenshot() {
   DeleteObject(bitmap);
   DeleteDC(memory_dc);
   ReleaseDC(*window_, window_dc);
-  Sleep(1000);
-  if (is_minimize) set_minimize(true);
   auto result_array = py::array_t<unsigned char>({height, width, 3});
   auto array_data = result_array.mutable_unchecked<3>();
   for (int y = 0; y < height; ++y)
