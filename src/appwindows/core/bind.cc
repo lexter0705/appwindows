@@ -45,7 +45,7 @@ void bind_window(py::module &m) {
           "    Size: Current window dimensions")
       .def(
           "get_screenshot",
-          [](const Window &self) { return self.get_screenshot(); },
+          [](Window &self) {return self.get_screenshot();},
           "Get current window image\n\n"
           "Returns:\n"
           "    ndarray: image in ndarray")
