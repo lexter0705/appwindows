@@ -81,6 +81,7 @@ py::array_t<unsigned char> WindowWindows::get_screenshot() {
   DeleteObject(bitmap);
   DeleteDC(memory_dc);
   ReleaseDC(*window_, window_dc);
+  Sleep(1000);
   if (is_minimize) set_minimize(true);
   auto result_array = py::array_t<unsigned char>({height, width, 3});
   auto array_data = result_array.mutable_unchecked<3>();
