@@ -8,7 +8,7 @@ build-backend = "mesonpy"
 [project]
 dependencies = ["numpy >= 2.0"]
 name = "appwindows"
-version = "1.0.6"
+version = "1.0.7"
 authors = [
     { name = "Terochkin A.S", email = "apparser.development@gmail.com" },
 ]

@@ -9,6 +9,7 @@
 
 #include "../core/window.h"
 #include "../core/exceptions/invalid_size.h"
+#include "../core/exceptions/window_does_not_exist.h"
 #include "window.h"
 
 using WIndowX = Window;
