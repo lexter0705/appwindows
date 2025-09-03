@@ -49,42 +49,22 @@ if host_machine.system() == 'windows'
     platform_args = ['-DWINDOWS_USED=1']
 
 elif host_machine.system() == 'linux'
-    xdg_session_type = run_command('sh', '-c', 'loginctl show-session $(loginctl | grep $(whoami) | awk "{print $1}") -p Type', check: false)
-    session_type = xdg_session_type.stdout().strip()
-    message('!!!!!!!!!!!!!!!!!!!!!!!!!!')
-    message(session_type)
-    message('!!!!!!!!!!!!!!!!!!!!!!!!!!')
-    if session_type == 'Type=wayland'
-        wayland_dep = dependency('wayland-client', required : true)
-        wayland_dep.found()
-        appwindows_sources += files(
-            'src/appwindows/wayland/window.getters.cc',
-            'src/appwindows/wayland/window.setters.cc',
-            'src/appwindows/wayland/finder.cc'
-        )
-        appwindows_inc = [appwindows_inc, include_directories('src/appwindows/wayland')]
-        platform_deps += wayland_dep
-        platform_args += ['-DWAYLAND_USED=1']
-    elif session_type == 'Type=x11'
-        x11_dep = dependency('x11', required : true)
-        xext_dep = dependency('xext', required : false)
-        xfixes_dep = dependency('xfixes', required : false)
-        xinerama_dep = dependency('xinerama', required : false)
-        x11_dep.found()
-        xext_dep.found()
-        xfixes_dep.found()
-        xinerama_dep.found()
-        appwindows_sources += files(
-            'src/appwindows/x_server/window.getters.cc',
-            'src/appwindows/x_server/window.setters.cc',
-            'src/appwindows/x_server/finder.cc'
-        )
-        appwindows_inc = [appwindows_inc, include_directories('src/appwindows/x_server')]
-        platform_deps += [x11_dep, xext_dep, xfixes_dep, xinerama_dep]
-        platform_args += ['-DX_SERVER_USED=1']
-    else
-        warning('Neither Wayland nor X11 found, building without platform-specific features')
-    endif
+    x11_dep = dependency('x11', required : true)
+    xext_dep = dependency('xext', required : false)
+    xfixes_dep = dependency('xfixes', required : false)
+    xinerama_dep = dependency('xinerama', required : false)
+    x11_dep.found()
+    xext_dep.found()
+    xfixes_dep.found()
+    xinerama_dep.found()
+    appwindows_sources += files(
+        'src/appwindows/x_server/window.getters.cc',
+        'src/appwindows/x_server/window.setters.cc',
+        'src/appwindows/x_server/finder.cc'
+    )
+    appwindows_inc = [appwindows_inc, include_directories('src/appwindows/x_server')]
+    platform_deps += [x11_dep, xext_dep, xfixes_dep, xinerama_dep]
+    platform_args += ['-DX_SERVER_USED=1']
 
 else
     error('Unsupported platform: ' + host_machine.system())
