@@ -1,0 +1,3 @@
+[submodule "submodules/libx11"]
+	path = submodules/libx11
+	url = https://gitlab.freedesktop.org/xorg/lib/libx11
