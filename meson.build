@@ -49,21 +49,16 @@ if host_machine.system() == 'windows'
     platform_args = ['-DWINDOWS_USED=1']
 
 elif host_machine.system() == 'linux'
-    x11_dep = dependency('x11', required : true)
-    xext_dep = dependency('xext', required : false)
-    xfixes_dep = dependency('xfixes', required : false)
-    xinerama_dep = dependency('xinerama', required : false)
-    x11_dep.found()
-    xext_dep.found()
-    xfixes_dep.found()
-    xinerama_dep.found()
+    x11 =  external_project('libx11/')
+    x11.add_build_step('build', ['make'])
+    x11.add_install_step('install', ['make', 'install'])
     appwindows_sources += files(
         'src/appwindows/x_server/window.getters.cc',
         'src/appwindows/x_server/window.setters.cc',
         'src/appwindows/x_server/finder.cc'
     )
     appwindows_inc = [appwindows_inc, include_directories('src/appwindows/x_server')]
-    platform_deps += [x11_dep, xext_dep, xfixes_dep, xinerama_dep]
+    platform_deps += [x11]
     platform_args += ['-DX_SERVER_USED=1']
 
 else
