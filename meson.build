@@ -59,7 +59,14 @@ elif host_machine.system() == 'linux'
     appwindows_inc = [appwindows_inc, include_directories('src/appwindows/x_server')]
     platform_deps += [x11_dep]
     platform_args += ['-DX_SERVER_USED=1']
-
+elif host_machine.system() == 'darwin'
+    appwindows_sources += files(
+        'src/appwindows/macos/window.getters.cc',
+        'src/appwindows/macos/window.setters.cc',
+        'src/appwindows/macos/finder.cc'
+    )
+    appwindows_inc = [appwindows_inc, include_directories('src/appwindows/macos')]
+    platform_args += ['-DMACOS_USED=1']
 else
     error('Unsupported platform: ' + host_machine.system())
 endif
