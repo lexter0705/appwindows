@@ -51,7 +51,7 @@ if host_machine.system() == 'windows'
 elif host_machine.system() == 'linux'
     libx11_subproject = subproject('libx11')
     message('Available variables in libx11 subproject:')
-    foreach var_name : libx11_proj.get_variable_names()
+    foreach var_name : libx11_subproject.get_variable_names()
         message('  - ' + var_name)
     endforeach
     libx11_dep = libx11_subproject.get_variable('x11_dep') 
