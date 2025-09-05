@@ -50,7 +50,7 @@ if host_machine.system() == 'windows'
 
 elif host_machine.system() == 'linux'
     libx11_subproject = subproject('libx11')
-    libx11_dep = libx11_subproject.get_variable('x11') 
+    libx11_dep = libx11_subproject.get_variable('x11_dep') 
     appwindows_sources += files(
         'src/appwindows/x_server/window.getters.cc',
         'src/appwindows/x_server/window.setters.cc',
