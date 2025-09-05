@@ -49,19 +49,15 @@ if host_machine.system() == 'windows'
     platform_args = ['-DWINDOWS_USED=1']
 
 elif host_machine.system() == 'linux'
-    libx11_subproject = subproject('libx11')
-    message('Available variables in libx11 subproject:')
-    foreach var_name : libx11_subproject.get_variable_names()
-        message('  - ' + var_name)
-    endforeach
-    libx11_dep = libx11_subproject.get_variable('x11_dep') 
+    x11_dep = dependency('x11', required : true)
+    x11_dep.found()
     appwindows_sources += files(
         'src/appwindows/x_server/window.getters.cc',
         'src/appwindows/x_server/window.setters.cc',
         'src/appwindows/x_server/finder.cc'
     )
     appwindows_inc = [appwindows_inc, include_directories('src/appwindows/x_server')]
-    platform_deps += [libx11_dep]
+    platform_deps += [x11_dep]
     platform_args += ['-DX_SERVER_USED=1']
 
 else
