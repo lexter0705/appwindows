@@ -1,3 +1,3 @@
-from .appwindows import *
-from . import geometry
-from . import exceptions
+from appwindows.appwindows import *
+from appwindows import geometry
+from appwindows import exceptions
