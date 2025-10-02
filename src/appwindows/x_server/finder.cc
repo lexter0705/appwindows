@@ -7,9 +7,9 @@
 #include <stdexcept>
 #include <string>
 
-#include "../core/window.h"
 #include "../core/exceptions/invalid_size.h"
 #include "../core/exceptions/window_does_not_exist.h"
+#include "../core/window.h"
 #include "window.h"
 
 using WIndowX = Window;
@@ -27,11 +27,19 @@ Display* FinderXServer::open_display() {
 
 std::shared_ptr<core::Window> FinderXServer::get_window_by_title(
     const std::string title) const {
-  auto windows = FinderXServer::get_all_windows();
+  const auto windows = FinderXServer::get_all_windows();
   for (auto window : windows)
     if (window->get_title() &&
         window->get_title()->find(title) != std::string::npos)
       return window;
+  throw core::exceptions::WindowDoesNotExistException();
+}
+
+std::shared_ptr<core::Window> FinderXServer::get_window_by_process_id(
+    const int process_id) const {
+  const auto windows = FinderXServer::get_all_windows();
+  for (auto window : windows)
+    if (*window->get_process_id() == process_id) return window;
   throw core::exceptions::WindowDoesNotExistException();
 }
 

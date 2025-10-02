@@ -76,5 +76,15 @@ py::array_t<unsigned char> WindowXServer::get_screenshot() {
   return result;
 }
 
+std::unique_ptr<int> WindowXServer::get_process_id() const {
+  auto display = FinderXServer::open_display();
+  Atom net_wm_pid = XInternAtom(display, "_NET_WM_PID", False);
+  unsigned long* pid = nullptr;
+  XGetWindowProperty(
+    display, window_, net_wm_pid, 0, 1, False, XA_CARDINAL, nullptr, nullptr,
+    nullptr, nullptr, reinterpret_cast<unsigned char**>(&pid));
+  return std::make_unique<int>(static_cast<int>(*pid));
+}
+
 }  // namespace x_server
 }  // namespace appwindows

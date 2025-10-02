@@ -35,6 +35,15 @@ void bind_window(py::module &m) {
           "Returns:\n"
           "    str: Window title")
       .def(
+          "get_process_id",
+          [](const Window &self) {
+            const auto process_id = self.get_process_id();
+            return process_id ? *process_id : 0;
+          },
+          "Get the window process id\n\n"
+          "Returns:\n"
+          "    int: process id")
+      .def(
           "get_size",
           [](const Window &self) {
             auto size = self.get_size();
@@ -44,12 +53,12 @@ void bind_window(py::module &m) {
           "Returns:\n"
           "    Size: Current window dimensions")
       .def(
-          "get_screenshot",
-          [](Window &self) {return self.get_screenshot();},
+          "get_screenshot", [](Window &self) { return self.get_screenshot(); },
           "Get current window image\n\n"
           "Returns:\n"
           "    ndarray: image in ndarray")
-      .def("to_foreground", &Window::to_foreground, "Moved window to forground")
+      .def("to_foreground", &Window::to_foreground,
+           "Moved window to foreground")
       .def("to_background", &Window::to_background,
            "Moved window to background")
       .def("set_minimize", &Window::set_minimize,
@@ -92,11 +101,28 @@ void bind_finder(py::module &m) {
           "    Window | None: Found window or null if window does not exist",
           py::arg("title"))
       .def(
+          "get_window_by_process_id",
+          [](const Finder &self, const int process_id) {
+            return self.get_window_by_process_id(process_id);
+          },
+          "Find window by process id\n\n"
+          "Args:\n"
+          "    process_id (int): Window title to search for\n\n"
+          "Returns:\n"
+          "    Window | None: Found window or null if window does not exist",
+          py::arg("process_id"))
+      .def(
           "get_all_windows",
           [](const Finder &self) { return self.get_all_windows(); },
           "Find all opened windows\n\n"
           "Returns:\n"
-          "    list[Window]: Found windows\n\n");
+          "    list[Window]: Found windows\n\n")
+      .def(
+          "get_all_titles",
+          [](const Finder &self) { return self.get_all_titles(); },
+          "Get all window titles\n\n"
+          "Returns:\n"
+          "    list[str]: Found titles\n\n");
 }
 
 }  // namespace core

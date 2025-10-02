@@ -94,5 +94,12 @@ py::array_t<unsigned char> WindowWindows::get_screenshot() {
   return result_array;
 }
 
+std::unique_ptr<int> WindowWindows::get_process_id() const {
+  if (!window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
+  DWORD process_id = 0;
+  GetWindowThreadProcessId(*window_, &process_id);
+  return std::make_unique<int>(static_cast<int>(process_id));
+}
+
 }  // namespace windows
 }  // namespace appwindows

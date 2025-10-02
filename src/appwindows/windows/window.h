@@ -17,6 +17,7 @@ class WindowWindows final : public core::Window {
   [[nodiscard]] std::unique_ptr<std::string> get_title() const override;
   [[nodiscard]] std::unique_ptr<core::Size> get_size() const override;
   [[nodiscard]] py::array_t<unsigned char> get_screenshot() override;
+  [[nodiscard]] std::unique_ptr<int> get_process_id() const override;
   [[nodiscard]] bool window_is_valid() const;
 
   void set_minimize(bool is_minimize) override;

@@ -20,8 +20,9 @@ class Window {
   virtual std::unique_ptr<std::vector<Point>> get_points() = 0;
   [[nodiscard]] virtual std::unique_ptr<std::string> get_title() const = 0;
   [[nodiscard]] virtual std::unique_ptr<Size> get_size() const = 0;
+  [[nodiscard]] virtual std::unique_ptr<int> get_process_id() const = 0;
   [[nodiscard]] virtual py::array_t<unsigned char> get_screenshot() = 0;
-  
+
   virtual void set_minimize(bool is_minimize) = 0;
   virtual void set_fullscreen(bool is_fullscreen) = 0;
   virtual void resize(Size size) = 0;

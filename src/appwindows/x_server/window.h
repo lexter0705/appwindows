@@ -18,6 +18,7 @@ class WindowXServer final : public core::Window {
   std::unique_ptr<std::vector<core::Point>> get_points() override;
   std::unique_ptr<core::Size> get_size() const override;
   std::unique_ptr<std::string> get_title() const override;
+  std::unique_ptr<int> get_process_id() const override;
   py::array_t<unsigned char> get_screenshot() override;
 
   void set_minimize(bool is_minimize) override;

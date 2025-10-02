@@ -15,9 +15,11 @@ class Finder {
   virtual std::shared_ptr<Window> get_window_by_title(
       std::string title) const = 0;
   [[nodiscard]]
-  virtual std::vector<std::shared_ptr<Window>> 
-      get_all_windows() const = 0;
-
+  virtual std::vector<std::shared_ptr<Window>> get_all_windows() const = 0;
+  [[nodiscard]]
+  virtual std::shared_ptr<Window> get_window_by_process_id(int process_id) const = 0;
+  [[nodiscard]]
+  std::vector<std::unique_ptr<std::string>> get_all_titles() const;
 };
 
 }  // namespace core
