@@ -116,7 +116,13 @@ void bind_finder(py::module &m) {
           [](const Finder &self) { return self.get_all_windows(); },
           "Find all opened windows\n\n"
           "Returns:\n"
-          "    list[Window]: Found windows\n\n");
+          "    list[Window]: Found windows\n\n")
+      .def(
+          "get_all_titles",
+          [](const Finder &self) { return self.get_all_titles(); },
+          "Get all window titles\n\n"
+          "Returns:\n"
+          "    list[str]: Found titles\n\n");
 }
 
 }  // namespace core
