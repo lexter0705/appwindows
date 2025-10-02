@@ -25,6 +25,7 @@ exceptions_inc = include_directories('src/appwindows/core/exceptions')
 appwindows_sources = files(
     'src/appwindows/appwindows.cc',
     'src/appwindows/core/bind.cc',
+    'src/appwindows/core/finder.cc',
     'src/appwindows/core/platform.cc',
     'src/appwindows/core/geometry/size.cc',
     'src/appwindows/core/geometry/point.cc',
