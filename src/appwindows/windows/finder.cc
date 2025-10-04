@@ -24,7 +24,7 @@ std::shared_ptr<core::Window> FinderWindows::get_window_by_title(
   const auto windows = get_all_windows();
   for (auto window : windows)
     if (window->get_title()->find(title) != std::string::npos) return window;
-  throw exceptions::WindowDoesNotExistException();
+  throw core::exceptions::WindowDoesNotExistException();
 }
 
 std::shared_ptr<core::Window> FinderWindows::get_window_by_process_id(
@@ -32,7 +32,7 @@ std::shared_ptr<core::Window> FinderWindows::get_window_by_process_id(
   const auto windows = get_all_windows();
   for (auto window : windows)
     if (*window->get_process_id() == process_id) return window;
-  throw exceptions::WindowDoesNotExistException();
+  throw core::exceptions::WindowDoesNotExistException();
 }
 
 std::vector<std::shared_ptr<core::Window>> FinderWindows::get_all_windows()
