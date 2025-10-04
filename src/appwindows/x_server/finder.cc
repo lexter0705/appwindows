@@ -23,6 +23,28 @@ Display* FinderXServer::open_display() {
   return display;
 }
 
+std::vector<std::string> FinderXServer::get_all_titles() const {
+  std::vector<std::string> titles;
+  for (const auto& i : get_all_windows()) titles.push_back(*i->get_title());
+  return titles;
+}
+
+std::shared_ptr<core::Window> FinderXServer::get_window_by_title(
+    const std::string title) const {
+  const auto windows = get_all_windows();
+  for (auto window : windows)
+    if (window->get_title()->find(title) != std::string::npos) return window;
+  throw exceptions::WindowDoesNotExistException();
+}
+
+std::shared_ptr<core::Window> FinderXServer::get_window_by_process_id(
+    const int process_id) const {
+  const auto windows = get_all_windows();
+  for (auto window : windows)
+    if (*window->get_process_id() == process_id) return window;
+  throw exceptions::WindowDoesNotExistException();
+}
+
 std::vector<std::shared_ptr<core::Window>> FinderXServer::get_all_windows()
     const {
   auto display = FinderXServer::open_display();
