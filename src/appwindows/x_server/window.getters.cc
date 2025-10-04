@@ -81,7 +81,7 @@ std::unique_ptr<int> WindowXServer::get_process_id() const {
   Atom net_wm_pid = XInternAtom(display, "_NET_WM_PID", False);
   unsigned long* pid = nullptr;
   XGetWindowProperty(
-    display, window_, net_wm_pid, 0, 1, False, XA_CARDINAL, nullptr, nullptr,
+    display, window_, net_wm_pid, 0, 1, False, nullptr, nullptr, nullptr,
     nullptr, nullptr, reinterpret_cast<unsigned char**>(&pid));
   return std::make_unique<int>(static_cast<int>(*pid));
 }
