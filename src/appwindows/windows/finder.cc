@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "../core/window.h"
-#include "exceptions/invalid_size.h"
+#include "../core/exceptions/window_does_not_exist.h"
 #include "window.h"
 
 namespace appwindows {

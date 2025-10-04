@@ -7,6 +7,8 @@
 #include <stdexcept>
 #include <string>
 
+#include "../core/exceptions/window_does_not_exist.h"
+
 #include "../core/window.h"
 #include "window.h"
 
