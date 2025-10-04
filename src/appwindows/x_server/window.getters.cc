@@ -81,12 +81,20 @@ py::array_t<unsigned char> WindowXServer::get_screenshot() {
 std::unique_ptr<int> WindowXServer::get_process_id() const {
   auto display = FinderXServer::open_display();
   Atom net_wm_pid = XInternAtom(display, "_NET_WM_PID", False);
+  Atom actual_type;
+  int actual_format;
+  unsigned long nitems, bytes_after;
   unsigned long* pid = nullptr;
-  XGetWindowProperty(
-    display, window_, net_wm_pid, 0, 1, False, XA_CARDINAL, nullptr, nullptr,
-    nullptr, nullptr, reinterpret_cast<unsigned char**>(&pid));
-  auto result = std::make_unique<int>(static_cast<int>(*pid));
-  XFree(pid);
+  int status = XGetWindowProperty(display, window_, net_wm_pid, 0, 1, False,
+                                  XA_CARDINAL, &actual_type, &actual_format,
+                                  &nitems, &bytes_after, 
+                                  reinterpret_cast<unsigned char**>(&pid));
+  
+  std::unique_ptr<int> result = nullptr;
+  if (status == Success && actual_type == XA_CARDINAL && 
+      actual_format == 32 && nitems == 1 && pid)
+    result = std::make_unique<int>(static_cast<int>(*pid));
+  if (pid) XFree(pid);
   XCloseDisplay(display);
   return result;
 }
