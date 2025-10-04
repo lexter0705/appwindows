@@ -88,7 +88,7 @@ std::unique_ptr<int> WindowXServer::get_process_id() const {
   auto result = std::make_unique<int>(static_cast<int>(*pid));
   XFree(pid);
   XCloseDisplay(display);
-  return std::make_unique<int>(static_cast<int>(*pid));
+  return result;
 }
 
 }  // namespace x_server
