@@ -85,6 +85,9 @@ std::unique_ptr<int> WindowXServer::get_process_id() const {
   XGetWindowProperty(
     display, window_, net_wm_pid, 0, 1, False, XA_CARDINAL, nullptr, nullptr,
     nullptr, nullptr, reinterpret_cast<unsigned char**>(&pid));
+  auto result = std::make_unique<int>(static_cast<int>(*pid));
+  XFree(pid)
+  XCloseDisplay(display);
   return std::make_unique<int>(static_cast<int>(*pid));
 }
 
