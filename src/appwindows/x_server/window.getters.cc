@@ -93,7 +93,7 @@ std::unique_ptr<int> WindowXServer::get_process_id() const {
   std::unique_ptr<int> result = nullptr;
   if (status == Success && actual_type == XA_CARDINAL && 
       actual_format == 32 && nitems == 1 && pid)
-    result = std::make_unique<int>(static_cast<int>(*pid));
+  result = std::make_unique<int>(static_cast<int>(*pid));
   if (pid) XFree(pid);
   XCloseDisplay(display);
   return result;
