@@ -6,6 +6,7 @@
 
 #include "../core/geometry/point.h"
 #include "../core/geometry/size.h"
+#include "../core/exceptions/window_does_not_exist.h"
 #include "finder.h"
 
 using WindowX = Window;
@@ -16,6 +17,7 @@ namespace x_server {
 WindowXServer::WindowXServer(const WindowX window) : window_(window) {}
 
 void WindowXServer::to_foreground(const bool is_foreground) {
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotExistException();
   auto display = FinderXServer::open_display();
   Atom wm_state = XInternAtom(display, "_NET_WM_STATE", False);
   Atom to_foreground = XInternAtom(display, "_NET_WM_STATE_ABOVE", False);
@@ -34,6 +36,7 @@ void WindowXServer::to_foreground(const bool is_foreground) {
 }
 
 void WindowXServer::to_background(const bool is_background) {
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotExistException();
   auto display = FinderXServer::open_display();
   Atom wm_state = XInternAtom(display, "_NET_WM_STATE", False);
   Atom to_background = XInternAtom(display, "_NET_WM_STATE_BELOW", False);
@@ -52,6 +55,7 @@ void WindowXServer::to_background(const bool is_background) {
 }
 
 void WindowXServer::set_fullscreen(const bool is_fullscreen) {
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotExistException();
   auto display = FinderXServer::open_display();
   Atom wm_state = XInternAtom(display, "_NET_WM_STATE", False);
   Atom fullscreen_atom =
@@ -71,6 +75,7 @@ void WindowXServer::set_fullscreen(const bool is_fullscreen) {
 }
 
 void WindowXServer::set_minimize(const bool is_minimize) {
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotExistException();
   auto display = FinderXServer::open_display();
   Atom wm_state = XInternAtom(display, "_NET_WM_STATE", False);
   Atom hidden = XInternAtom(display, "_NET_WM_STATE_HIDDEN", False);
@@ -89,6 +94,7 @@ void WindowXServer::set_minimize(const bool is_minimize) {
 }
 
 void WindowXServer::resize(const core::Size size) {
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotExistException();
   auto display = FinderXServer::open_display();
   XResizeWindow(display, window_, size.get_width(), size.get_height());
   XFlush(display);
@@ -96,6 +102,7 @@ void WindowXServer::resize(const core::Size size) {
 }
 
 void WindowXServer::move(const core::Point point) {
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotExistException();
   auto display = FinderXServer::open_display();
   XMoveWindow(display, window_, point.get_x(), point.get_y());
   XFlush(display);
@@ -104,6 +111,7 @@ void WindowXServer::move(const core::Point point) {
 
 void WindowXServer::close() {
   auto display = FinderXServer::open_display();
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotExistException();
   XDestroyWindow(display, window_);
   XFlush(display);
   XCloseDisplay(display);

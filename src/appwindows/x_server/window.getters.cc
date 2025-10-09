@@ -12,6 +12,7 @@
 
 #include "../core/geometry/point.h"
 #include "../core/geometry/size.h"
+#include "../core/exceptions/window_does_not_exist.h"
 #include "finder.h"
 
 namespace py = pybind11;
@@ -19,8 +20,23 @@ namespace py = pybind11;
 namespace appwindows {
 namespace x_server {
 
+std::unique_ptr<bool> WindowXServer::is_valid() const{ 
+  auto display = FinderXServer::open_display();
+  static bool is_valid = true;
+  auto old_error_handler = XSetErrorHandler([](Display* display, XErrorEvent* error) {
+    if (error->error_code == BadWindow) is_valid = false;
+  });
+  XWindowAttributes attrs;
+  XGetWindowAttributes(display, window_, &attrs);
+  XSetErrorHandler(old_error_handler);
+  XCloseDisplay(display);
+  auto is_valid_unique = std::make_unique<bool>(is_valid)
+  return is_valid_unique;
+}
+
 std::unique_ptr<std::vector<core::Point>> WindowXServer::get_points() {
   XWindowAttributes attrs;
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotExistException();
   auto display = FinderXServer::open_display();
   if (!XGetWindowAttributes(display, window_, &attrs)) return nullptr;
   auto points = std::make_unique<std::vector<core::Point>>();
@@ -33,6 +49,7 @@ std::unique_ptr<std::vector<core::Point>> WindowXServer::get_points() {
 }
 
 std::unique_ptr<core::Size> WindowXServer::get_size() const {
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotExistException();
   auto display = FinderXServer::open_display();
   XWindowAttributes attrs;
   if (!XGetWindowAttributes(display, window_, &attrs)) return nullptr;
@@ -41,6 +58,7 @@ std::unique_ptr<core::Size> WindowXServer::get_size() const {
 }
 
 std::unique_ptr<std::string> WindowXServer::get_title() const {
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotExistException();
   auto display = FinderXServer::open_display();
   Atom utf8_string = XInternAtom(display, "UTF8_STRING", False);
   Atom net_wm_name = XInternAtom(display, "_NET_WM_NAME", False);
@@ -58,6 +76,7 @@ std::unique_ptr<std::string> WindowXServer::get_title() const {
 }
 
 py::array_t<unsigned char> WindowXServer::get_screenshot() {
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotExistException();
   auto display = FinderXServer::open_display();
   auto size = get_size();
   auto image = XGetImage(display, window_, 0, 0, size->get_width(),
@@ -79,6 +98,7 @@ py::array_t<unsigned char> WindowXServer::get_screenshot() {
 }
 
 std::unique_ptr<int> WindowXServer::get_process_id() const {
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotExistException();
   auto display = FinderXServer::open_display();
   Atom net_wm_pid = XInternAtom(display, "_NET_WM_PID", False);
   Atom actual_type;

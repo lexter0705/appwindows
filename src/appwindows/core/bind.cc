@@ -44,6 +44,14 @@ void bind_window(py::module &m) {
           "Returns:\n"
           "    int: process id")
       .def(
+          "is_valid",
+          [](const Window &self) {
+            return *self.is_valid();
+          },
+          "Is window exist and valid\n\n"
+          "Returns:\n"
+          "    bool: is valid")
+      .def(
           "get_size",
           [](const Window &self) {
             auto size = self.get_size();

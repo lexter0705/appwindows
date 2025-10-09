@@ -12,7 +12,7 @@ namespace appwindows {
 namespace windows {
 
 std::unique_ptr<std::string> WindowWindows::get_title() const {
-  if (!window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotExistException();
   const int length = GetWindowTextLengthW(*window_);
   if (length == 0) return std::make_unique<std::string>("");
   std::wstring wide_title(length + 1, L'\0');
@@ -28,7 +28,7 @@ std::unique_ptr<std::string> WindowWindows::get_title() const {
 }
 
 std::unique_ptr<std::vector<core::Point>> WindowWindows::get_points() {
-  if (!window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotExistException();
   RECT rect;
   GetWindowRect(*window_, &rect);
   auto points = std::make_unique<std::vector<core::Point>>();
@@ -44,7 +44,7 @@ std::unique_ptr<std::vector<core::Point>> WindowWindows::get_points() {
 }
 
 std::unique_ptr<core::Size> WindowWindows::get_size() const {
-  if (!window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotExistException();
   RECT rect = {0};
   GetWindowRect(*window_, &rect);
   return std::make_unique<core::Size>(rect.right - rect.left,
@@ -52,7 +52,7 @@ std::unique_ptr<core::Size> WindowWindows::get_size() const {
 }
 
 py::array_t<unsigned char> WindowWindows::get_screenshot() {
-  if (!window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotExistException();
   const auto is_minimize = IsIconic(*window_) == TRUE;
   if (is_minimize) {
     ShowWindow(*window_, SW_SHOWNOACTIVATE);
@@ -95,7 +95,7 @@ py::array_t<unsigned char> WindowWindows::get_screenshot() {
 }
 
 std::unique_ptr<int> WindowWindows::get_process_id() const {
-  if (!window_is_valid()) throw core::exceptions::WindowDoesNotExistException();
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotExistException();
   DWORD process_id = 0;
   GetWindowThreadProcessId(*window_, &process_id);
   return std::make_unique<int>(static_cast<int>(process_id));
