@@ -25,13 +25,13 @@ std::unique_ptr<bool> WindowXServer::is_valid() const{
   static bool is_valid = true;
   auto old_error_handler = XSetErrorHandler([](Display* display, XErrorEvent* error) {
     if (error->error_code == BadWindow) is_valid = false;
+    return 0;
   });
   XWindowAttributes attrs;
   XGetWindowAttributes(display, window_, &attrs);
   XSetErrorHandler(old_error_handler);
   XCloseDisplay(display);
-  auto is_valid_unique = std::make_unique<bool>(is_valid)
-  return is_valid_unique;
+  return std::make_unique<bool>(is_valid);
 }
 
 std::unique_ptr<std::vector<core::Point>> WindowXServer::get_points() {
