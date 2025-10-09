@@ -4,15 +4,14 @@
 
 #include <cstring>
 
+#include "../core/exceptions/window_does_not_exist.h"
 #include "../core/geometry/point.h"
 #include "../core/geometry/size.h"
-#include "../core/exceptions/window_does_not_exist.h"
 #include "finder.h"
 
 using WindowX = Window;
 
-namespace appwindows {
-namespace x_server {
+namespace appwindows::x_server {
 
 WindowXServer::WindowXServer(const WindowX window) : window_(window) {}
 
@@ -127,5 +126,4 @@ void WindowXServer::to_background() {
   to_foreground(false);
 }
 
-}  // namespace x_server
-}  // namespace appwindows
+}  // namespace appwindows::x_server

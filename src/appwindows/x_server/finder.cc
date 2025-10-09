@@ -6,17 +6,14 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
-#include <iostream>
 
 #include "../core/exceptions/window_does_not_exist.h"
-
-#include "../core/window.h"
+#include "../core/base_window.h"
 #include "window.h"
 
 using WindowX = Window;
 
-namespace appwindows {
-namespace x_server {
+namespace appwindows::x_server {
 
 FinderXServer::FinderXServer() = default;
 
@@ -24,28 +21,6 @@ Display* FinderXServer::open_display() {
   auto display = XOpenDisplay(nullptr);
   if (!display) throw std::runtime_error("Cannot open X11 display");
   return display;
-}
-
-std::vector<std::string> FinderXServer::get_all_titles() const {
-  std::vector<std::string> titles;
-  for (const auto& i : get_all_windows()) titles.push_back(*i->get_title());
-  return titles;
-}
-
-std::shared_ptr<core::Window> FinderXServer::get_window_by_title(
-    const std::string title) const {
-  const auto windows = get_all_windows();
-  for (auto window : windows)
-    if (window->get_title()->find(title) != std::string::npos) return window;
-  throw core::exceptions::WindowDoesNotExistException();
-}
-
-std::shared_ptr<core::Window> FinderXServer::get_window_by_process_id(
-    const int process_id) const {
-  const auto windows = get_all_windows();
-  for (auto window : windows)
-      if (*window->get_process_id() == process_id) return window;
-  throw core::exceptions::WindowDoesNotExistException();
 }
 
 std::vector<std::shared_ptr<core::Window>> FinderXServer::get_all_windows()
@@ -85,5 +60,4 @@ std::vector<std::shared_ptr<core::Window>> FinderXServer::get_all_windows()
   return windows;
 }
 
-}  // namespace x_server
-}  // namespace appwindows
+}  // namespace appwindows::x_server

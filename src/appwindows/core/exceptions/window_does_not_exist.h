@@ -2,9 +2,7 @@
 
 #include <stdexcept>
 
-namespace appwindows {
-namespace core {
-namespace exceptions {
+namespace appwindows::core::exceptions {
 
 class WindowDoesNotExistException final : public std::runtime_error {
  public:
@@ -12,6 +10,4 @@ class WindowDoesNotExistException final : public std::runtime_error {
       : runtime_error("Window does not exist") {}
 };
 
-}  // namespace exceptions
-}  // namespace core
-}  // namespace appwindows
+}  // namespace appwindows::core::exceptions

@@ -3,9 +3,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace appwindows {
-namespace core {
-namespace exceptions {
+namespace appwindows::core::exceptions {
 
 class InvalidSizeException final : public std::invalid_argument {
  public:
@@ -14,6 +12,4 @@ class InvalidSizeException final : public std::invalid_argument {
                          ") or height(" + std::to_string(height) + ")") {}
 };
 
-}  // namespace exceptions
-}  // namespace core
-}  // namespace appwindows
+}  // namespace appwindows::core::exceptions

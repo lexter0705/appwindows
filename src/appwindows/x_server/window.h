@@ -5,12 +5,11 @@
 #include <memory>
 #include <vector>
 
-#include "../core/window.h"
+#include "../core/base_window.h"
 
 using WindowX = Window;
 
-namespace appwindows {
-namespace x_server {
+namespace appwindows::x_server {
 
 class WindowXServer final : public core::Window {
  public:
@@ -36,5 +35,4 @@ class WindowXServer final : public core::Window {
   WindowX window_;
 };
 
-}  // namespace x_server
-}  // namespace appwindows
+}  // namespace appwindows::x_server

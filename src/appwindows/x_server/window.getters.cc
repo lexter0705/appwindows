@@ -17,16 +17,16 @@
 
 namespace py = pybind11;
 
-namespace appwindows {
-namespace x_server {
+namespace appwindows::x_server {
 
-std::unique_ptr<bool> WindowXServer::is_valid() const{ 
+std::unique_ptr<bool> WindowXServer::is_valid() const {
   auto display = FinderXServer::open_display();
   static bool is_valid = true;
-  auto old_error_handler = XSetErrorHandler([](Display* display, XErrorEvent* error) {
-    if (error->error_code == BadWindow) is_valid = false;
-    return 0;
-  });
+  auto old_error_handler =
+      XSetErrorHandler([](Display* display, XErrorEvent* error) {
+        if (error->error_code == BadWindow) is_valid = false;
+        return 0;
+      });
   XWindowAttributes attrs;
   XGetWindowAttributes(display, window_, &attrs);
   XSetErrorHandler(old_error_handler);
@@ -105,19 +105,18 @@ std::unique_ptr<int> WindowXServer::get_process_id() const {
   int actual_format;
   unsigned long nitems, bytes_after;
   unsigned long* pid = nullptr;
-  int status = XGetWindowProperty(display, window_, net_wm_pid, 0, 1, False,
-                                  XA_CARDINAL, &actual_type, &actual_format,
-                                  &nitems, &bytes_after, 
-                                  reinterpret_cast<unsigned char**>(&pid));
-  
+  int status =
+      XGetWindowProperty(display, window_, net_wm_pid, 0, 1, False, XA_CARDINAL,
+                         &actual_type, &actual_format, &nitems, &bytes_after,
+                         reinterpret_cast<unsigned char**>(&pid));
+
   std::unique_ptr<int> result = nullptr;
-  if (status == Success && actual_type == XA_CARDINAL && 
-      actual_format == 32 && nitems == 1 && pid)
-  result = std::make_unique<int>(static_cast<int>(*pid));
+  if (status == Success && actual_type == XA_CARDINAL && actual_format == 32 &&
+      nitems == 1 && pid)
+    result = std::make_unique<int>(static_cast<int>(*pid));
   if (pid) XFree(pid);
   XCloseDisplay(display);
   return result;
 }
 
-}  // namespace x_server
-}  // namespace appwindows
+}  // namespace appwindows::x_server

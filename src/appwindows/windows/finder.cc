@@ -4,36 +4,13 @@
 
 #include <memory>
 
-#include "../core/window.h"
-#include "../core/exceptions/window_does_not_exist.h"
+#include "../core/base_window.h"
 #include "window.h"
 
-namespace appwindows {
-namespace windows {
+
+namespace appwindows::windows {
 
 FinderWindows::FinderWindows() = default;
-
-std::vector<std::string> FinderWindows::get_all_titles() const {
-  std::vector<std::string> titles;
-  for (const auto& i : get_all_windows()) titles.push_back(*i->get_title());
-  return titles;
-}
-
-std::shared_ptr<core::Window> FinderWindows::get_window_by_title(
-    const std::string title) const {
-  const auto windows = get_all_windows();
-  for (auto window : windows)
-    if (window->get_title()->find(title) != std::string::npos) return window;
-  throw core::exceptions::WindowDoesNotExistException();
-}
-
-std::shared_ptr<core::Window> FinderWindows::get_window_by_process_id(
-    const int process_id) const {
-  const auto windows = get_all_windows();
-  for (auto window : windows)
-    if (*window->get_process_id() == process_id) return window;
-  throw core::exceptions::WindowDoesNotExistException();
-}
 
 std::vector<std::shared_ptr<core::Window>> FinderWindows::get_all_windows()
     const {
@@ -52,5 +29,4 @@ std::vector<std::shared_ptr<core::Window>> FinderWindows::get_all_windows()
   return result;
 }
 
-}  // namespace windows
-}  // namespace appwindows
+} // namespace appwindows::windows

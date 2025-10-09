@@ -1,7 +1,6 @@
 #pragma once
 
-namespace appwindows {
-namespace core {
+namespace appwindows::core {
 
 class Size {
  public:
@@ -14,5 +13,4 @@ class Size {
   int height_;
 };
 
-}  // namespace core
-}  // namespace appwindows
+}  // namespace appwindows::core

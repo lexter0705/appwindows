@@ -8,8 +8,11 @@
 
 #include "../core/exceptions/window_does_not_exist.h"
 
-namespace appwindows {
-namespace windows {
+namespace appwindows::windows {
+
+std::unique_ptr<bool> WindowWindows::is_valid() const {
+  return std::make_unique<bool>(IsWindow(*window_) != FALSE);
+}
 
 std::unique_ptr<std::string> WindowWindows::get_title() const {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotExistException();
@@ -101,5 +104,4 @@ std::unique_ptr<int> WindowWindows::get_process_id() const {
   return std::make_unique<int>(static_cast<int>(process_id));
 }
 
-}  // namespace windows
-}  // namespace appwindows
+}  // namespace appwindows::windows

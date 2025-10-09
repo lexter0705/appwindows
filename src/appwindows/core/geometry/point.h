@@ -1,7 +1,6 @@
 #pragma once
 
-namespace appwindows {
-namespace core {
+namespace appwindows::core {
 
 class Point {
  public:
@@ -18,5 +17,4 @@ class Point {
   int y_;
 };
 
-}  // namespace core
-}  // namespace appwindows
+}  // namespace appwindows::core

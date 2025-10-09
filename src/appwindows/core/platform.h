@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "finder.h"
+#include "base_finder.h"
 
 namespace appwindows {
 

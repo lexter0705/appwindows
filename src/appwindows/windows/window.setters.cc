@@ -6,15 +6,10 @@
 #include "../core/geometry/point.h"
 #include "../core/geometry/size.h"
 
-namespace appwindows {
-namespace windows {
+namespace appwindows::windows {
 
 WindowWindows::WindowWindows(const std::shared_ptr<HWND>& window)
     : window_(window) {}
-
-std::unique_ptr<bool> WindowWindows::is_valid() const {
-  return std::make_unique<bool>(IsWindow(*window_) != FALSE);
-}
 
 void WindowWindows::set_fullscreen(const bool is_fullscreen) {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotExistException();
@@ -44,8 +39,8 @@ void WindowWindows::close() {
 
 void WindowWindows::to_background() {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotExistException();
-    SetWindowPos(*window_, HWND_BOTTOM, 0, 0, 0, 0,
-                 SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
+  SetWindowPos(*window_, HWND_BOTTOM, 0, 0, 0, 0,
+               SWP_NOSIZE | SWP_NOMOVE | SWP_NOACTIVATE);
 }
 
 void WindowWindows::to_foreground() {
@@ -62,5 +57,4 @@ void WindowWindows::set_minimize(const bool is_minimize) {
   ShowWindow(*window_, is_minimize ? SW_MINIMIZE : SW_RESTORE);
 }
 
-}  // namespace windows
-}  // namespace appwindows
+}  // namespace appwindows::windows

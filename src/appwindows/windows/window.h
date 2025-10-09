@@ -5,10 +5,9 @@
 
 #include "../core/geometry/point.h"
 #include "../core/geometry/size.h"
-#include "../core/window.h"
+#include "../core/base_window.h"
 
-namespace appwindows {
-namespace windows {
+namespace appwindows::windows {
 
 class WindowWindows final : public core::Window {
  public:
@@ -32,5 +31,4 @@ class WindowWindows final : public core::Window {
   std::shared_ptr<HWND> window_;
 };
 
-}  // namespace windows
-}  // namespace appwindows
+}  // namespace appwindows::windows

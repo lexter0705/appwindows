@@ -5,25 +5,16 @@
 #include <memory>
 #include <vector>
 
-#include "../core/finder.h"
-#include "../core/window.h"
+#include "../core/base_finder.h"
+#include "../core/base_window.h"
 
-namespace appwindows {
-namespace x_server {
+namespace appwindows::x_server {
 
 class FinderXServer final : public core::Finder {
  public:
   FinderXServer();
   [[nodiscard]]
   std::vector<std::shared_ptr<core::Window>> get_all_windows() const override;
-  [[nodiscard]]
-  std::shared_ptr<core::Window> get_window_by_process_id(int process_id) const override;
-  [[nodiscard]]
-  std::shared_ptr<core::Window> get_window_by_title(std::string title) const override;
-  [[nodiscard]]
-  std::vector<std::string> get_all_titles() const override;
-  static Display* open_display();
 };
 
-}  // namespace x_server
-}  // namespace appwindows
+}  // namespace appwindows::x_server

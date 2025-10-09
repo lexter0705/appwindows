@@ -4,13 +4,12 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include "finder.h"
-#include "window.h"
+#include "base_finder.h"
+#include "base_window.h"
 
 namespace py = pybind11;
 
-namespace appwindows {
-namespace core {
+namespace appwindows::core {
 
 void bind_window(py::module &m) {
   py::class_<Window, std::shared_ptr<Window>>(
@@ -44,10 +43,7 @@ void bind_window(py::module &m) {
           "Returns:\n"
           "    int: process id")
       .def(
-          "is_valid",
-          [](const Window &self) {
-            return *self.is_valid();
-          },
+          "is_valid", [](const Window &self) { return *self.is_valid(); },
           "Is window exist and valid\n\n"
           "Returns:\n"
           "    bool: is valid")
@@ -133,5 +129,4 @@ void bind_finder(py::module &m) {
           "    list[str]: Found titles\n\n");
 }
 
-}  // namespace core
-}  // namespace appwindows
+}  // namespace appwindows::core

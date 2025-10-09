@@ -2,24 +2,16 @@
 
 #include <memory>
 
-#include "../core/finder.h"
-#include "../core/window.h"
+#include "../core/base_finder.h"
+#include "../core/base_window.h"
 
-namespace appwindows {
-namespace windows {
+namespace appwindows::windows {
 
 class FinderWindows final : public core::Finder {
  public:
   FinderWindows();
   [[nodiscard]]
   std::vector<std::shared_ptr<core::Window>> get_all_windows() const override;
-  [[nodiscard]]
-  std::shared_ptr<core::Window> get_window_by_process_id(int process_id) const override;
-  [[nodiscard]]
-  std::shared_ptr<core::Window> get_window_by_title(std::string title) const override;
-  [[nodiscard]]
-  std::vector<std::string> get_all_titles() const override;
 };
 
-}  // namespace windows
-}  // namespace appwindows
+}  // namespace appwindows::windows

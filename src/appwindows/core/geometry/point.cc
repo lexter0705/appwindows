@@ -2,16 +2,15 @@
 
 #include <stdexcept>
 
-namespace appwindows {
-namespace core {
+namespace appwindows::core {
 
 Point::Point(const int x, const int y) : x_(x), y_(y) {}
 
-Point Point::operator+(const Point& other) const{
+Point Point::operator+(const Point& other) const {
   return Point{x_ + other.get_x(), y_ + other.get_y()};
 }
 
-Point Point::operator-(const Point& other) const{
+Point Point::operator-(const Point& other) const {
   return Point{x_ - other.get_x(), y_ - other.get_y()};
 }
 
@@ -22,7 +21,7 @@ Point Point::operator/(const Point& other) const {
   return Point{x_ / other.get_x(), y_ / other.get_y()};
 }
 
-Point Point::operator*(const Point& other) const{
+Point Point::operator*(const Point& other) const {
   return Point{x_ * other.get_x(), y_ * other.get_y()};
 }
 
@@ -30,5 +29,4 @@ int Point::get_x() const { return x_; }
 
 int Point::get_y() const { return y_; }
 
-}  // namespace core
-}  // namespace appwindows
+}  // namespace appwindows::core
