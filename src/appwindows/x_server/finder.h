@@ -15,6 +15,8 @@ class FinderXServer final : public core::Finder {
   FinderXServer();
   [[nodiscard]]
   std::vector<std::shared_ptr<core::Window>> get_all_windows() const override;
+
+  static Display* open_display();
 };
 
 }  // namespace appwindows::x_server
