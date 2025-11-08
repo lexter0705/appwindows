@@ -7,7 +7,6 @@
 #include <stdexcept>
 #include <string>
 
-#include "../core/exceptions/window_does_not_exist.h"
 #include "../core/base_window.h"
 #include "window.h"
 
@@ -22,6 +21,10 @@ Display* FinderXServer::open_display() {
   if (!display) throw std::runtime_error("Cannot open X11 display");
   return display;
 }
+
+std::unique_ptr<std::string> FinderXServer::get_os() const {
+  return std::make_unique<std::string>("Linux::X11");
+};
 
 std::vector<std::shared_ptr<core::Window>> FinderXServer::get_all_windows()
     const {

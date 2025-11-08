@@ -12,6 +12,10 @@ namespace appwindows::windows {
 
 FinderWindows::FinderWindows() = default;
 
+std::unique_ptr<std::string> FinderWindows::get_os() const {
+  return std::make_unique<std::string>("Windows::Windows");
+};
+
 std::vector<std::shared_ptr<core::Window>> FinderWindows::get_all_windows()
     const {
   std::vector<std::shared_ptr<core::Window>> result;

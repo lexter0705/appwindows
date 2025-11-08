@@ -23,7 +23,9 @@ void bind_window(py::module &m) {
           "Get all points associated with the window\n"
           ""
           "Returns:\n"
-          "    list[Point]: List of points")
+          "    list[appwindows.geometry.Point]: List of points\n\n",
+          "Raises:\n",
+          "    appwindows.exceptions.WindowDoesNotValidException: If window is invalid")
       .def(
           "get_title",
           [](const Window &self) {
@@ -32,7 +34,9 @@ void bind_window(py::module &m) {
           },
           "Get the window title\n\n"
           "Returns:\n"
-          "    str: Window title")
+          "    str: Window title\n\n",
+          "Raises:\n",
+          "    appwindows.exceptions.WindowDoesNotValidException: If window is invalid")
       .def(
           "get_process_id",
           [](const Window &self) {
@@ -41,12 +45,16 @@ void bind_window(py::module &m) {
           },
           "Get the window process id\n\n"
           "Returns:\n"
-          "    int: process id")
+          "    int: process id\n\n",
+          "Raises:\n",
+          "    appwindows.exceptions.WindowDoesNotValidException: If window is invalid")
       .def(
           "is_valid", [](const Window &self) { return *self.is_valid(); },
-          "Is window exist and valid\n\n"
+          "Is window valid\n\n"
           "Returns:\n"
-          "    bool: is valid")
+          "    bool: is valid\n\n",
+          "Raises:\n",
+          "    appwindows.exceptions.WindowDoesNotValidException: If window is invalid")
       .def(
           "get_size",
           [](const Window &self) {
@@ -55,37 +63,52 @@ void bind_window(py::module &m) {
           },
           "Get current window size\n\n"
           "Returns:\n"
-          "    Size: Current window dimensions")
+          "    Size: Current window dimensions\n\n",
+          "Raises:\n",
+          "    appwindows.exceptions.WindowDoesNotValidException: If window is invalid")
       .def(
           "get_screenshot", [](Window &self) { return self.get_screenshot(); },
           "Get current window image\n\n"
           "Returns:\n"
-          "    ndarray: image in ndarray")
+          "    ndarray: image in ndarray\n\n",
+          "Raises:\n",
+          "    appwindows.exceptions.WindowDoesNotValidException: If window is invalid")
       .def("to_foreground", &Window::to_foreground,
-           "Moved window to foreground")
+           "Moved window to foreground\n\n",
+           "Raises:\n",
+           "    appwindows.exceptions.WindowDoesNotValidException: If window is invalid")
       .def("to_background", &Window::to_background,
-           "Moved window to background")
+           "Moved window to background",
+           "Raises:\n",
+           "    appwindows.exceptions.WindowDoesNotValidException: If window is invalid")
       .def("set_minimize", &Window::set_minimize,
            "Set window active state\n\n"
            "Args:\n"
-           "    is_minimize (bool): True to activate window",
+           "    is_minimize (bool): True to activate window\n\n",
+           "Raises:\n",
+          "    appwindows.exceptions.WindowDoesNotValidException: If window is invalid",
            py::arg("is_minimize"))
       .def("set_fullscreen", &Window::set_fullscreen,
            "Maximize or restore the window\n\n"
            "Args:\n"
-           "    is_fullscreen (bool): True to window on fullscreen",
+           "    is_fullscreen (bool): True to window on fullscreen\n\n",
+           "Raises:\n",
+          "    appwindows.exceptions.WindowDoesNotValidException: If window is invalid",
            py::arg("is_maximize"))
       .def("resize", &Window::resize,
            "Resize the window\n\n"
            "Args:\n"
            "    size (appwindows.geometry.Size): New window dimensions\n\n"
            "Raises:\n"
-           "    InvalidSizeError: If size is invalid",
+           "    appwindows.exceptions.InvalidSizeError: If size is invalid",
+           "    appwindows.exceptions.WindowDoesNotValidException: If window is invalid",
            py::arg("size"))
       .def("move", &Window::move,
            "Move window to specified position\n\n"
            "Args:\n"
-           "    point (appwindows.geometry.Point): New window position",
+           "    point (appwindows.geometry.Point): New window position\n\n",
+          "Raises:\n",
+          "    appwindows.exceptions.WindowDoesNotValidException: If window is invalid",
            py::arg("point"))
       .def("close", &Window::close, "Close the window");
 }
@@ -102,7 +125,9 @@ void bind_finder(py::module &m) {
           "Args:\n"
           "    title (str): Window title to search for\n\n"
           "Returns:\n"
-          "    Window | None: Found window or null if window does not exist",
+          "    Window: Found window"
+          "Raises:\n",
+          "    appwindows.exceptions.WindowDoesNotValidException: If window is not found",
           py::arg("title"))
       .def(
           "get_window_by_process_id",
@@ -114,6 +139,8 @@ void bind_finder(py::module &m) {
           "    process_id (int): Window title to search for\n\n"
           "Returns:\n"
           "    Window | None: Found window or null if window does not exist",
+          "Raises:\n",
+          "    appwindows.exceptions.WindowDoesNotValidException: If window is not found",
           py::arg("process_id"))
       .def(
           "get_all_windows",
@@ -126,7 +153,13 @@ void bind_finder(py::module &m) {
           [](const Finder &self) { return self.get_all_titles(); },
           "Get all window titles\n\n"
           "Returns:\n"
-          "    list[str]: Found titles\n\n");
+          "    list[str]: Found titles\n\n")
+      .def(
+          "get_os",
+          [](const Finder &self) { return *self.get_os(); },
+          "Get os and graphical shell\n\n"
+          "Returns:\n"
+          "    str: your <<os>>::<<graphical shell>>\n\n");
 }
 
 }  // namespace appwindows::core

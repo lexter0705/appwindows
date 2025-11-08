@@ -1,3 +1,5 @@
+#include "bind_geometry.h"
+
 #include <pybind11/pybind11.h>
 
 #include "point.h"
@@ -5,7 +7,9 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(geometry, m) {
+namespace appwindows::core::geometry {
+
+void bind_geometry(py::module &m){
   py::class_<appwindows::core::Point>(
       m, "Point", "Represents a 2D point with x and y coordinates")
       .def(py::init<int, int>(),
@@ -41,3 +45,5 @@ PYBIND11_MODULE(geometry, m) {
       .def_property_readonly("height", &appwindows::core::Size::get_height,
                              "Height dimension");
 }
+
+}  // namespace appwindows::core::geometry

@@ -12,6 +12,8 @@ class FinderWindows final : public core::Finder {
   FinderWindows();
   [[nodiscard]]
   std::vector<std::shared_ptr<core::Window>> get_all_windows() const override;
+  [[nodiscard]]
+  std::unique_ptr<std::string> get_os() const override;
 };
 
 }  // namespace appwindows::windows
