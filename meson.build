@@ -16,20 +16,20 @@ py3 = import('python').find_installation('python3', pure: false)
 python_install_dir = py3.get_install_dir()
 
 appwindows_inc = include_directories(
-    'src/appwindows',
-    'src/appwindows/core'
+    'src/',
+    'src/core'
 )
-geometry_inc = include_directories('src/appwindows/core/geometry')
-exceptions_inc = include_directories('src/appwindows/core/exceptions')
+geometry_inc = include_directories('src/core/geometry')
+exceptions_inc = include_directories('src/core/exceptions')
 
 appwindows_sources = files(
-    'src/appwindows/appwindows.cc',
-    'src/appwindows/core/bind.cc',
-    'src/appwindows/core/platform.cc',
-    'src/appwindows/core/geometry/size.cc',
-    'src/appwindows/core/geometry/point.cc',
-    'src/appwindows/core/geometry/bind_geometry.cc',
-    'src/appwindows/core/exceptions/bind_exceptions.cc'
+    'src/appwindows.cc',
+    'src/core/bind.cc',
+    'src/core/platform.cc',
+    'src/core/geometry/size.cc',
+    'src/core/geometry/point.cc',
+    'src/core/geometry/bind_geometry.cc',
+    'src/core/exceptions/bind_exceptions.cc'
 )
 
 platform_deps = []
@@ -37,11 +37,11 @@ platform_args = []
 
 if host_machine.system() == 'windows'
     appwindows_sources += files(
-        'src/appwindows/windows/window.getters.cc',
-        'src/appwindows/windows/window.setters.cc',
-        'src/appwindows/windows/finder.cc'
+        'src/windows/window.getters.cc',
+        'src/windows/window.setters.cc',
+        'src/windows/finder.cc'
     )
-    appwindows_inc = [appwindows_inc, include_directories('src/appwindows/windows')]
+    appwindows_inc = [appwindows_inc, include_directories('src/windows')]
     platform_args = ['-DWINDOWS_USED=1']
 
 elif host_machine.system() == 'linux'
@@ -49,11 +49,11 @@ elif host_machine.system() == 'linux'
     is_x11 = x11_dep.found()
     if is_x11
         appwindows_sources += files(
-            'src/appwindows/x_server/window.getters.cc',
-            'src/appwindows/x_server/window.setters.cc',
-            'src/appwindows/x_server/finder.cc'
+            'src/x_server/window.getters.cc',
+            'src/x_server/window.setters.cc',
+            'src/x_server/finder.cc'
         )
-        appwindows_inc = [appwindows_inc, include_directories('src/appwindows/x_server')]
+        appwindows_inc = [appwindows_inc, include_directories('src/x_server')]
         platform_deps += [x11_dep]
         platform_args += ['-DX_SERVER_USED=1']
     else
@@ -62,11 +62,11 @@ elif host_machine.system() == 'linux'
 
 elif host_machine.system() == 'darwin'
     appwindows_sources += files(
-        'src/appwindows/macos/window.getters.cc',
-        'src/appwindows/macos/window.setters.cc',
-        'src/appwindows/macos/finder.cc'
+        'src/macos/window.getters.cc',
+        'src/macos/window.setters.cc',
+        'src/macos/finder.cc'
     )
-    appwindows_inc = [appwindows_inc, include_directories('src/appwindows/macos')]
+    appwindows_inc = [appwindows_inc, include_directories('src/macos')]
     platform_args += ['-DMACOS_USED=1']
     
 else
