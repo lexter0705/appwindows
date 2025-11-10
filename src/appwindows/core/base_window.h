@@ -8,6 +8,7 @@
 
 #include "geometry/point.h"
 #include "geometry/size.h"
+#include "geometry/quad_points.h"
 
 namespace py = pybind11;
 
@@ -16,7 +17,7 @@ namespace appwindows::core {
 class Window {
  public:
   virtual ~Window() = default;
-  virtual std::unique_ptr<std::vector<Point>> get_points() = 0;
+  [[nodiscard]] virtual std::unique_ptr<QuadPoints> get_points() = 0;
   [[nodiscard]] virtual std::unique_ptr<std::string> get_title() const = 0;
   [[nodiscard]] virtual std::unique_ptr<Size> get_size() const = 0;
   [[nodiscard]] virtual std::unique_ptr<int> get_process_id() const = 0;

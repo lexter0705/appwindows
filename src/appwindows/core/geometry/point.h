@@ -9,6 +9,8 @@ class Point {
   Point operator-(const Point& other) const;
   Point operator*(const Point& other) const;
   Point operator/(const Point& other) const;
+  bool operator==(const Point& other) const;
+  bool operator!=(const Point& other) const;
   [[nodiscard]] int get_x() const;
   [[nodiscard]] int get_y() const;
 

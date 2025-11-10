@@ -25,6 +25,14 @@ Point Point::operator*(const Point& other) const {
   return Point{x_ * other.get_x(), y_ * other.get_y()};
 }
 
+bool Point::operator==(const Point& other) const {
+  return x_ == other.get_x() && y_ == other.get_y();
+}
+
+bool Point::operator!=(const Point& other) const {
+  return x_ != other.get_x() || y_ != other.get_y();
+}
+
 int Point::get_x() const { return x_; }
 
 int Point::get_y() const { return y_; }

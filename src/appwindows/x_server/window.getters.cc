@@ -10,8 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "../core/geometry/point.h"
-#include "../core/geometry/size.h"
 #include "../core/exceptions/window_does_not_valid.h"
 #include "finder.h"
 
@@ -34,16 +32,15 @@ std::unique_ptr<bool> WindowXServer::is_valid() const {
   return std::make_unique<bool>(is_valid);
 }
 
-std::unique_ptr<std::vector<core::Point>> WindowXServer::get_points() {
+std::unique_ptr<core::QuadPoints> WindowXServer::get_points() {
   XWindowAttributes attrs;
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
   auto display = FinderXServer::open_display();
   if (!XGetWindowAttributes(display, window_, &attrs)) return nullptr;
-  auto points = std::make_unique<std::vector<core::Point>>();
-  points->push_back({attrs.x, attrs.y});
-  points->push_back({attrs.x + attrs.width, attrs.y});
-  points->push_back({attrs.x + attrs.width, attrs.y + attrs.height});
-  points->push_back({attrs.x, attrs.y + attrs.height});
+  auto points = std::make_unique<core::QuadPoints>(core::Point{attrs.x, attrs.y},
+                                                   core::Point{attrs.x + attrs.width, attrs.y},
+                                                   core::Point{attrs.x + attrs.width, attrs.y + attrs.height},
+                                                   core::Point{attrs.x, attrs.y + attrs.height});
   XCloseDisplay(display);
   return points;
 }

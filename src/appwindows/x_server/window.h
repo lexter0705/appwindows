@@ -6,6 +6,9 @@
 #include <vector>
 
 #include "../core/base_window.h"
+#include "../core/geometry/quad_points.h"
+#include "../core/geometry/point.h"
+#include "../core/geometry/size.h"
 
 using WindowX = Window;
 
@@ -14,7 +17,7 @@ namespace appwindows::x_server {
 class WindowXServer final : public core::Window {
  public:
   explicit WindowXServer(WindowX window);
-  [[nodiscard]] std::unique_ptr<std::vector<core::Point>> get_points() override;
+  [[nodiscard]] std::unique_ptr<core::QuadPoints> get_points() override;
   [[nodiscard]] std::unique_ptr<core::Size> get_size() const override;
   [[nodiscard]] std::unique_ptr<std::string> get_title() const override;
   [[nodiscard]] std::unique_ptr<int> get_process_id() const override;

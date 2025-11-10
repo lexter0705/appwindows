@@ -5,6 +5,7 @@
 
 #include "../core/geometry/point.h"
 #include "../core/geometry/size.h"
+#include "../core/geometry/quad_points.h"
 #include "../core/base_window.h"
 
 namespace appwindows::windows {
@@ -12,7 +13,7 @@ namespace appwindows::windows {
 class WindowWindows final : public core::Window {
  public:
   explicit WindowWindows(const std::shared_ptr<HWND>& window);
-  std::unique_ptr<std::vector<core::Point>> get_points() override;
+  [[nodiscard]] std::unique_ptr<core::QuadPoints> get_points() override;
   [[nodiscard]] std::unique_ptr<std::string> get_title() const override;
   [[nodiscard]] std::unique_ptr<core::Size> get_size() const override;
   [[nodiscard]] py::array_t<unsigned char> get_screenshot() override;

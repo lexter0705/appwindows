@@ -34,15 +34,14 @@ std::unique_ptr<std::vector<core::Point>> WindowWindows::get_points() {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
   RECT rect;
   GetWindowRect(*window_, &rect);
-  auto points = std::make_unique<std::vector<core::Point>>();
-  points->reserve(4);
-  points->emplace_back(static_cast<int>(rect.left), static_cast<int>(rect.top));
-  points->emplace_back(static_cast<int>(rect.right),
-                       static_cast<int>(rect.top));
-  points->emplace_back(static_cast<int>(rect.right),
-                       static_cast<int>(rect.bottom));
-  points->emplace_back(static_cast<int>(rect.left),
-                       static_cast<int>(rect.bottom));
+  auto points = std::make_unique<core::QuadPoints>(core::Point{static_cast<int>(rect.left),
+                                                               static_cast<int>(rect.top)},
+                                                   core::Point{static_cast<int>(rect.right),
+                                                               static_cast<int>(rect.top)},
+                                                   core::Point{static_cast<int>(rect.right),
+                                                               static_cast<int>(rect.bottom)},
+                                                   core::Point{static_cast<int>(rect.left), 
+                                                               static_cast<int>(rect.bottob)});
   return points;
 }
 

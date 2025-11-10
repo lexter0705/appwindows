@@ -1,3 +1,3 @@
-from appwindows.appwindows.geometry import Size, Point
+from appwindows.appwindows.geometry import Size, Point, QuadPoints
 
-__all__ = ["Size", "Point"]
+__all__ = ["Size", "Point", "QuadPoints"]
