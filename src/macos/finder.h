@@ -1,22 +1,18 @@
 #pragma once
 
 #include <memory>
-#include <string>
+#include <vector>
 
-#include "../core/finder.h"
-#include "../core/window.h"
+#include "../core/base_finder.h"
+#include "../core/base_window.h"
 
-namespace appwindows {
-namespace macos {
+namespace appwindows::macos {
 
-class FinderMacos final : public core::Finder {
- public:
-  FinderMacos();
-  [[nodiscard]] std::shared_ptr<core::Window> get_window_by_title(
-      std::string title) const override;
-  [[nodiscard]] std::vector<std::shared_ptr<core::Window>> get_all_windows()
-      const override;
+class FinderMacOS final : public core::Finder {
+public:
+  FinderMacOS();
+  [[nodiscard]] std::vector<std::shared_ptr<core::Window>> get_all_windows() const override;
+  [[nodiscard]] std::unique_ptr<std::string> get_os() const override;
 };
 
-}  // namespace macos
-}  // namespace appwindows
+}  // namespace appwindows::macos

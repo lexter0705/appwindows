@@ -7,7 +7,6 @@
 #include "../core/base_window.h"
 #include "window.h"
 
-
 namespace appwindows::windows {
 
 FinderWindows::FinderWindows() = default;
@@ -33,4 +32,4 @@ std::vector<std::shared_ptr<core::Window>> FinderWindows::get_all_windows()
   return result;
 }
 
-} // namespace appwindows::windows
+}  // namespace appwindows::windows

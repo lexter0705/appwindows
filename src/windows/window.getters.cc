@@ -30,18 +30,15 @@ std::unique_ptr<std::string> WindowWindows::get_title() const {
   return std::make_unique<std::string>(std::move(utf8_title));
 }
 
-std::unique_ptr<std::vector<core::Point>> WindowWindows::get_points() {
+std::unique_ptr<core::QuadPoints> WindowWindows::get_points() {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
   RECT rect;
   GetWindowRect(*window_, &rect);
-  auto points = std::make_unique<core::QuadPoints>(core::Point{static_cast<int>(rect.left),
-                                                               static_cast<int>(rect.top)},
-                                                   core::Point{static_cast<int>(rect.right),
-                                                               static_cast<int>(rect.top)},
-                                                   core::Point{static_cast<int>(rect.right),
-                                                               static_cast<int>(rect.bottom)},
-                                                   core::Point{static_cast<int>(rect.left), 
-                                                               static_cast<int>(rect.bottob)});
+  auto points = std::make_unique<core::QuadPoints>(
+      core::Point{static_cast<int>(rect.left), static_cast<int>(rect.top)},
+      core::Point{static_cast<int>(rect.right), static_cast<int>(rect.top)},
+      core::Point{static_cast<int>(rect.right), static_cast<int>(rect.bottom)},
+      core::Point{static_cast<int>(rect.left), static_cast<int>(rect.bottom)});
   return points;
 }
 

@@ -3,10 +3,10 @@
 #include <pybind11/numpy.h>
 #include <windows.h>
 
-#include "../core/geometry/point.h"
-#include "../core/geometry/size.h"
-#include "../core/geometry/quad_points.h"
 #include "../core/base_window.h"
+#include "../core/geometry/point.h"
+#include "../core/geometry/quad_points.h"
+#include "../core/geometry/size.h"
 
 namespace appwindows::windows {
 
