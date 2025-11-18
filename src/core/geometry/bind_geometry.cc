@@ -56,7 +56,7 @@ void bind_geometry(py::module &m){
            "    left_top (appwindows.geometry.Point): left top point\n"
            "    right_top (appwindows.geometry.Point): right top point\n"
            "    right_bottom (appwindows.geometry.Point): right bottom point\n"
-           "    left_bottom (appwindows.geometry.Point): left bottom point\n\n",
+           "    left_bottom (appwindows.geometry.Point): left bottom point",
            py::arg("left_top"), py::arg("right_top"), py::arg("right_bottom"), py::arg("left_bottom"))
       .def_property_readonly("left_top", &appwindows::core::QuadPoints::get_left_top,
                              "Left top point")

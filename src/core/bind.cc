@@ -78,7 +78,7 @@ void bind_window(py::module &m) {
            "Raises:\n"
            "    appwindows.exceptions.WindowDoesNotValidException: If window is invalid")
       .def("to_background", &Window::to_background,
-           "Moved window to background"
+           "Moved window to background\n\n"
            "Raises:\n"
            "    appwindows.exceptions.WindowDoesNotValidException: If window is invalid")
       .def("set_minimize", &Window::set_minimize,
@@ -125,7 +125,7 @@ void bind_finder(py::module &m) {
           "Args:\n"
           "    title (str): Window title to search for\n\n"
           "Returns:\n"
-          "    Window: Found window"
+          "    Window: Found window\n\n"
           "Raises:\n"
           "    appwindows.exceptions.WindowDoesNotFoundxception: If window is not found",
           py::arg("title"))
@@ -138,7 +138,7 @@ void bind_finder(py::module &m) {
           "Args:\n"
           "    process_id (int): Window title to search for\n\n"
           "Returns:\n"
-          "    Window | None: Found window or null if window does not exist"
+          "    Window | None: Found window or null if window does not exist\n\n"
           "Raises:\n"
           "    appwindows.exceptions.WindowDoesNotFoundxception: If window is not found",
           py::arg("process_id"))
