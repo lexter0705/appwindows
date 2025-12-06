@@ -14,14 +14,14 @@ PYBIND11_MODULE(appwindows, m) {
       "The appwindows library solves the problem of working with a graphical "
       "shell on different operating systems.";
 
-  appwindows::core::bind_window(m);
-  appwindows::core::bind_finder(m);
-
-  auto geometry = m.def_submodule("geometry", "classes for work with geometry"); 
-  auto exceptions = m.def_submodule("exceptions", "exception classes"); 
+  auto geometry = m.def_submodule("geometry", "classes for work with geometry");
+  auto exceptions = m.def_submodule("exceptions", "exception classes");
 
   appwindows::core::geometry::bind_geometry(geometry);
   appwindows::core::exceptions::bind_exceptions(exceptions);
+
+  appwindows::core::bind_window(m);
+  appwindows::core::bind_finder(m);
 
   m.def("get_finder", &appwindows::get_finder,
         "Get the window finder instance\n\n"
