@@ -6,6 +6,7 @@ project('appwindows', 'cpp',
             'buildtype=release',
             'default_library=shared',
             'b_ndebug=if-release',
+            'b_vscrt=static_from_buildtype'
         ]
 )
 
