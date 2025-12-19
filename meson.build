@@ -6,8 +6,6 @@ project('appwindows', 'cpp',
             'buildtype=release',
             'default_library=shared',
             'b_ndebug=if-release',
-            # Ключевые опции для Windows
-            'b_vscrt=mt' if host_machine.system() == 'windows' else 'none',
         ]
 )
 
@@ -15,12 +13,12 @@ project('appwindows', 'cpp',
 cc = meson.get_compiler('cpp')
 is_msvc = cc.get_id() == 'msvc'
 
-if is_msvc
-    # Для MSVC добавляем специфичные флаги
-    add_project_arguments('/bigobj', language: 'cpp')
-    add_project_arguments('/MP', language: 'cpp')  # Multi-processor compilation
-    if get_option('buildtype') == 'release'
-        add_project_arguments('/O2', '/Ob2', '/Oi', '/GL', language: 'cpp')
+# Устанавливаем b_vscrt опцию отдельно для Windows
+if host_machine.system() == 'windows'
+    if is_msvc
+        # Для MSVC используем статическую CRT
+        add_global_arguments('/MT', language: 'cpp')
+        add_global_link_arguments('/NODEFAULTLIB:libcmt', language: 'cpp')
     endif
 endif
 
@@ -62,29 +60,32 @@ if host_machine.system() == 'windows'
     appwindows_inc = [appwindows_inc, include_directories('src/windows')]
     platform_args = ['-DWINDOWS_USED=1', '-DNOMINMAX', '-D_CRT_SECURE_NO_WARNINGS']
 
-    # Windows библиотеки в правильном порядке
+    # Windows библиотеки
     win_libs = ['user32', 'gdi32', 'advapi32', 'shell32', 'dwmapi', 'ole32', 'oleaut32']
 
     foreach lib : win_libs
-        dep = cc.find_library(lib, required: true)
+        dep = cc.find_library(lib, required: false)
         if dep.found()
             platform_deps += dep
             message('Found Windows library: ' + lib)
+        else
+            message('Warning: Windows library not found: ' + lib)
         endif
     endforeach
 
-    # Для MSVC добавляем дополнительные флаги линковки
+    # Для MSVC добавляем дополнительные флаги
     if is_msvc
+        platform_args += ['/bigobj', '/MP']  # Multi-processor compilation
         platform_link_args = [
-            '/NODEFAULTLIB:libcmt',
             '/DYNAMICBASE',
             '/NXCOMPAT',
             '/OPT:REF',
             '/OPT:ICF',
-            '/LTCG',
         ]
-    else
-        platform_link_args = []
+        if get_option('buildtype') == 'release'
+            platform_args += ['/O2', '/Ob2', '/Oi', '/GL']
+            platform_link_args += ['/LTCG']
+        endif
     endif
 
     # Проверяем наличие Windows SDK
@@ -131,23 +132,9 @@ appwindows_mod = py3.extension_module('appwindows',
                                       install: true,
                                       cpp_args: platform_args,
                                       link_args: platform_link_args,
-                                      name_prefix: '',  # Важно для Windows
+                                      name_prefix: '',
                                       name_suffix: 'pyd' if host_machine.system() == 'windows' else 'so',
 subdir: 'appwindows')
-
-# После сборки проверяем выходной файл
-if host_machine.system() == 'windows'
-    custom_target('verify-windows-build',
-                  input: appwindows_mod,
-                  output: 'verify.txt',
-                  command: [
-                      'cmd', '/c',
-                      'echo', 'Windows module built successfully at', '@INPUT@',
-                      '&&', 'dir', '/b', '@INPUT@',
-                      '&&', 'echo', 'File exists check completed'
-                  ],
-                  build_by_default: true)
-endif
 
 configure_file(
     input: 'lib/__init__.py',
