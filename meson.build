@@ -6,7 +6,6 @@ project('appwindows', 'cpp',
             'buildtype=release',
             'default_library=shared',
             'b_ndebug=if-release',
-            'b_vscrt=static_from_buildtype'
         ]
 )
 
@@ -35,6 +34,7 @@ appwindows_sources = files(
 
 platform_deps = []
 platform_args = []
+platform_link_args = []
 
 if host_machine.system() == 'windows'
     appwindows_sources += files(
@@ -44,6 +44,24 @@ if host_machine.system() == 'windows'
     )
     appwindows_inc = [appwindows_inc, include_directories('src/windows')]
     platform_args = ['-DWINDOWS_USED=1']
+
+    # Ключевое исправление: добавьте Windows библиотеки
+    platform_link_args = [
+        '-luser32',
+        '-lgdi32',
+        '-ladvapi32',
+        '-lshell32',
+        '-ldwmapi'
+    ]
+
+    # Для Meson на Windows нужно использовать declare_dependency
+    platform_deps += [
+        meson.get_compiler('cpp').find_library('user32'),
+        meson.get_compiler('cpp').find_library('gdi32'),
+        meson.get_compiler('cpp').find_library('advapi32'),
+        meson.get_compiler('cpp').find_library('shell32'),
+        meson.get_compiler('cpp').find_library('dwmapi'),
+    ]
 
 elif host_machine.system() == 'linux'
     x11_dep = dependency('x11', required: false)
@@ -69,7 +87,7 @@ elif host_machine.system() == 'darwin'
     )
     appwindows_inc = [appwindows_inc, include_directories('src/macos')]
     platform_args += ['-DMACOS_USED=1']
-    
+
 else
     error('Unsupported platform: ' + host_machine.system())
 endif
@@ -80,6 +98,7 @@ appwindows_mod = py3.extension_module('appwindows',
                                       include_directories: [appwindows_inc, exceptions_inc, geometry_inc],
                                       install: true,
                                       cpp_args: platform_args,
+                                      link_args: platform_link_args,
                                       subdir: 'appwindows')
 
 configure_file(

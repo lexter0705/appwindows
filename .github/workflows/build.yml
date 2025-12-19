@@ -43,9 +43,3 @@ jobs:
         with:
           name: wheels-${{ matrix.os }}
           path: ./wheelhouse/*.whl
-
-      - name: Debug Meson build args (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          meson setup builddir --backend=ninja
-          meson configure builddir
