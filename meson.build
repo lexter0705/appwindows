@@ -9,19 +9,6 @@ project('appwindows', 'cpp',
         ]
 )
 
-# Проверка и настройка компилятора для Windows
-cc = meson.get_compiler('cpp')
-is_msvc = cc.get_id() == 'msvc'
-
-# Устанавливаем b_vscrt опцию отдельно для Windows
-if host_machine.system() == 'windows'
-    if is_msvc
-        # Для MSVC используем статическую CRT
-        add_global_arguments('/MT', language: 'cpp')
-        add_global_link_arguments('/NODEFAULTLIB:libcmt', language: 'cpp')
-    endif
-endif
-
 pybind11_dep = dependency('pybind11', required: true)
 python_dep = dependency('python3', required: true)
 
@@ -47,54 +34,15 @@ appwindows_sources = files(
 
 platform_deps = []
 platform_args = []
-platform_link_args = []
 
 if host_machine.system() == 'windows'
-    message('Building for Windows')
-
     appwindows_sources += files(
         'src/windows/window.getters.cc',
         'src/windows/window.setters.cc',
         'src/windows/finder.cc'
     )
     appwindows_inc = [appwindows_inc, include_directories('src/windows')]
-    platform_args = ['-DWINDOWS_USED=1', '-DNOMINMAX', '-D_CRT_SECURE_NO_WARNINGS']
-
-    # Windows библиотеки
-    win_libs = ['user32', 'gdi32', 'advapi32', 'shell32', 'dwmapi', 'ole32', 'oleaut32']
-
-    foreach lib : win_libs
-        dep = cc.find_library(lib, required: false)
-        if dep.found()
-            platform_deps += dep
-            message('Found Windows library: ' + lib)
-        else
-            message('Warning: Windows library not found: ' + lib)
-        endif
-    endforeach
-
-    # Для MSVC добавляем дополнительные флаги
-    if is_msvc
-        platform_args += ['/bigobj', '/MP']  # Multi-processor compilation
-        platform_link_args = [
-            '/DYNAMICBASE',
-            '/NXCOMPAT',
-            '/OPT:REF',
-            '/OPT:ICF',
-        ]
-        if get_option('buildtype') == 'release'
-            platform_args += ['/O2', '/Ob2', '/Oi', '/GL']
-            platform_link_args += ['/LTCG']
-        endif
-    endif
-
-    # Проверяем наличие Windows SDK
-    message('Checking for Windows headers...')
-    if cc.has_header('windows.h')
-        message('Windows.h found')
-    else
-        error('Windows.h not found!')
-    endif
+    platform_args = ['-DWINDOWS_USED=1']
 
 elif host_machine.system() == 'linux'
     x11_dep = dependency('x11', required: false)
@@ -109,7 +57,7 @@ elif host_machine.system() == 'linux'
         platform_deps += [x11_dep]
         platform_args += ['-DX_SERVER_USED=1']
     else
-        error('For successful compile need x11 library')
+        error('For succsesful compile need x11 library')
     endif
 
 elif host_machine.system() == 'darwin'
@@ -131,7 +79,6 @@ appwindows_mod = py3.extension_module('appwindows',
                                       include_directories: [appwindows_inc, exceptions_inc, geometry_inc],
                                       install: true,
                                       cpp_args: platform_args,
-                                      link_args: platform_link_args,
                                       subdir: 'appwindows')
 
 configure_file(
