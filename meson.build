@@ -133,8 +133,7 @@ appwindows_mod = py3.extension_module('appwindows',
                                       cpp_args: platform_args,
                                       link_args: platform_link_args,
                                       name_prefix: '',
-                                      name_suffix: 'pyd' if host_machine.system() == 'windows' else 'so',
-subdir: 'appwindows')
+                                      subdir: 'appwindows')
 
 configure_file(
     input: 'lib/__init__.py',
