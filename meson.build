@@ -9,11 +9,14 @@ project('appwindows', 'cpp',
         ]
 )
 
+# Проверка и настройка компилятора для Windows
 cc = meson.get_compiler('cpp')
 is_msvc = cc.get_id() == 'msvc'
 
+# Устанавливаем b_vscrt опцию отдельно для Windows
 if host_machine.system() == 'windows'
     if is_msvc
+        # Для MSVC используем статическую CRT
         add_global_arguments('/MT', language: 'cpp')
         add_global_link_arguments('/NODEFAULTLIB:libcmt', language: 'cpp')
     endif
@@ -57,6 +60,7 @@ if host_machine.system() == 'windows'
     appwindows_inc = [appwindows_inc, include_directories('src/windows')]
     platform_args = ['-DWINDOWS_USED=1', '-DNOMINMAX', '-D_CRT_SECURE_NO_WARNINGS']
 
+    # Windows библиотеки
     win_libs = ['user32', 'gdi32', 'advapi32', 'shell32', 'dwmapi', 'ole32', 'oleaut32']
 
     foreach lib : win_libs
@@ -69,8 +73,9 @@ if host_machine.system() == 'windows'
         endif
     endforeach
 
+    # Для MSVC добавляем дополнительные флаги
     if is_msvc
-        platform_args += ['/bigobj', '/MP']
+        platform_args += ['/bigobj', '/MP']  # Multi-processor compilation
         platform_link_args = [
             '/DYNAMICBASE',
             '/NXCOMPAT',
@@ -83,6 +88,7 @@ if host_machine.system() == 'windows'
         endif
     endif
 
+    # Проверяем наличие Windows SDK
     message('Checking for Windows headers...')
     if cc.has_header('windows.h')
         message('Windows.h found')
