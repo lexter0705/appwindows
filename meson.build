@@ -6,8 +6,23 @@ project('appwindows', 'cpp',
             'buildtype=release',
             'default_library=shared',
             'b_ndebug=if-release',
+            # Ключевые опции для Windows
+            'b_vscrt=mt' if host_machine.system() == 'windows' else 'none',
         ]
 )
+
+# Проверка и настройка компилятора для Windows
+cc = meson.get_compiler('cpp')
+is_msvc = cc.get_id() == 'msvc'
+
+if is_msvc
+    # Для MSVC добавляем специфичные флаги
+    add_project_arguments('/bigobj', language: 'cpp')
+    add_project_arguments('/MP', language: 'cpp')  # Multi-processor compilation
+    if get_option('buildtype') == 'release'
+        add_project_arguments('/O2', '/Ob2', '/Oi', '/GL', language: 'cpp')
+    endif
+endif
 
 pybind11_dep = dependency('pybind11', required: true)
 python_dep = dependency('python3', required: true)
@@ -37,31 +52,48 @@ platform_args = []
 platform_link_args = []
 
 if host_machine.system() == 'windows'
+    message('Building for Windows')
+
     appwindows_sources += files(
         'src/windows/window.getters.cc',
         'src/windows/window.setters.cc',
         'src/windows/finder.cc'
     )
     appwindows_inc = [appwindows_inc, include_directories('src/windows')]
-    platform_args = ['-DWINDOWS_USED=1']
+    platform_args = ['-DWINDOWS_USED=1', '-DNOMINMAX', '-D_CRT_SECURE_NO_WARNINGS']
 
-    # Ключевое исправление: добавьте Windows библиотеки
-    platform_link_args = [
-        '-luser32',
-        '-lgdi32',
-        '-ladvapi32',
-        '-lshell32',
-        '-ldwmapi'
-    ]
+    # Windows библиотеки в правильном порядке
+    win_libs = ['user32', 'gdi32', 'advapi32', 'shell32', 'dwmapi', 'ole32', 'oleaut32']
 
-    # Для Meson на Windows нужно использовать declare_dependency
-    platform_deps += [
-        meson.get_compiler('cpp').find_library('user32'),
-        meson.get_compiler('cpp').find_library('gdi32'),
-        meson.get_compiler('cpp').find_library('advapi32'),
-        meson.get_compiler('cpp').find_library('shell32'),
-        meson.get_compiler('cpp').find_library('dwmapi'),
-    ]
+    foreach lib : win_libs
+        dep = cc.find_library(lib, required: true)
+        if dep.found()
+            platform_deps += dep
+            message('Found Windows library: ' + lib)
+        endif
+    endforeach
+
+    # Для MSVC добавляем дополнительные флаги линковки
+    if is_msvc
+        platform_link_args = [
+            '/NODEFAULTLIB:libcmt',
+            '/DYNAMICBASE',
+            '/NXCOMPAT',
+            '/OPT:REF',
+            '/OPT:ICF',
+            '/LTCG',
+        ]
+    else
+        platform_link_args = []
+    endif
+
+    # Проверяем наличие Windows SDK
+    message('Checking for Windows headers...')
+    if cc.has_header('windows.h')
+        message('Windows.h found')
+    else
+        error('Windows.h not found!')
+    endif
 
 elif host_machine.system() == 'linux'
     x11_dep = dependency('x11', required: false)
@@ -76,7 +108,7 @@ elif host_machine.system() == 'linux'
         platform_deps += [x11_dep]
         platform_args += ['-DX_SERVER_USED=1']
     else
-        error('For succsesful compile need x11 library')
+        error('For successful compile need x11 library')
     endif
 
 elif host_machine.system() == 'darwin'
@@ -99,7 +131,23 @@ appwindows_mod = py3.extension_module('appwindows',
                                       install: true,
                                       cpp_args: platform_args,
                                       link_args: platform_link_args,
-                                      subdir: 'appwindows')
+                                      name_prefix: '',  # Важно для Windows
+                                      name_suffix: 'pyd' if host_machine.system() == 'windows' else 'so',
+subdir: 'appwindows')
+
+# После сборки проверяем выходной файл
+if host_machine.system() == 'windows'
+    custom_target('verify-windows-build',
+                  input: appwindows_mod,
+                  output: 'verify.txt',
+                  command: [
+                      'cmd', '/c',
+                      'echo', 'Windows module built successfully at', '@INPUT@',
+                      '&&', 'dir', '/b', '@INPUT@',
+                      '&&', 'echo', 'File exists check completed'
+                  ],
+                  build_by_default: true)
+endif
 
 configure_file(
     input: 'lib/__init__.py',
