@@ -56,34 +56,6 @@ jobs:
 
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: ""
 
-      - name: Check Windows deps
-        if: runner.os == 'Windows'
-        run: |
-          python -c "
-          import sys
-          if sys.platform == 'win32':
-              import subprocess
-              import glob
-              import os
-              wheels = glob.glob('wheelhouse/*.whl')
-              if wheels:
-                  subprocess.run([sys.executable, '-m', 'pip', 'install', '--force-reinstall', wheels[0]])
-                  import site
-                  import importlib.util
-                  package_path = site.getsitepackages()[0] + '\\appwindows\\appwindows*.pyd'
-                  import glob
-                  dlls = glob.glob(package_path)
-                  if dlls:
-                      print(f'Found module: {dlls[0]}')
-                      try:
-                          result = subprocess.run(['dumpbin', '/dependents', dlls[0]], 
-                                                  capture_output=True, text=True, shell=True)
-                          print('Deps:')
-                          print(result.stdout)
-                      except:
-                          print('dumpbin notfound')
-          "
-
       - name: Upload wheels as artifact
         uses: actions/upload-artifact@v4
         with:
