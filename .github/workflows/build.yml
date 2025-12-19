@@ -9,55 +9,39 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-22.04, windows-2022]
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
-        include:
-          - os: windows-2022
-            python-version: "3.10"
-            cibw-args: --output-dir wheelhouse --only cp310-win_amd64
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: '3.10'
 
-      - name: Install cibuildwheel
-        run: pip install cibuildwheel==2.20.0
+      - name: Install build dependencies
+        run: |
+          pip install meson ninja pybind11
 
-      - name: Install system dependencies (Linux only)
+      - name: Install system dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y libx11-dev pkg-config
 
-      - name: Build wheels
-        run: python -m cibuildwheel --output-dir wheelhouse
-        env:
-          CIBW_BUILD: "cp38-* cp39-* cp310-* cp311-* cp312-* cp313-* cp314-*"
-          CIBW_SKIP: "*-musllinux_*"
-          CIBW_ARCHS_LINUX: "x86_64"
-          CIBW_ARCHS_WINDOWS: "AMD64"
-          CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux2014_x86_64
-          CIBW_BEFORE_BUILD_LINUX: "yum install -y libX11-devel pkgconfig"
+      - name: Build with meson
+        run: |
+          meson setup build --prefix=$PWD/install
+          meson compile -C build
+          meson install -C build
 
-          CIBW_ENVIRONMENT_WINDOWS: >
-            PYBIND11_INTERNALS_VERSION=4
-            PYBIND11_NOPYTHON=1
+      - name: Create wheel
+        run: |
+          pip install wheel setuptools
+          python setup.py bdist_wheel
 
-          CIBW_ENVIRONMENT: >
-            CFLAGS="-MD"
-            CXXFLAGS="-MD"
-
-          CIBW_BEFORE_BUILD_WINDOWS: >
-            set MSVC_STATIC_RUNTIME=1
-
-          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: ""
-
-      - name: Upload wheels as artifact
+      - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels-${{ matrix.os }}-py${{ matrix.python-version }}
-          path: ./wheelhouse/*.whl
+          name: wheels-${{ matrix.os }}
+          path: dist/*.whl
