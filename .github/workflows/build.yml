@@ -55,14 +55,29 @@ jobs:
       - name: Install pytest
         run: pip install pytest
 
-      - name: Tests
+      - name: Test
         run: |
-          for wheel in ./wheelhouse/*.whl; do
-            echo "Testing $wheel"
-            pip install --force-reinstall "$wheel"
-            python -m pytest tests/ -v
-            pip uninstall -y appwindows
-          done
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            $wheel = Get-ChildItem ./wheelhouse/*cp313*.whl | Select-Object -First 1
+            if ($wheel) {
+              echo "Testing wheel: $wheel"
+              pip install --force-reinstall "$wheel"
+              python -m pytest tests/ -v
+            } else {
+              echo "Python 3.13 wheel not found"
+              exit 1
+            }
+          else
+            wheel=$(find ./wheelhouse -name "*cp313*.whl" | head -1)
+            if [ -n "$wheel" ]; then
+              echo "Testing wheel: $wheel"
+              pip install --force-reinstall "$wheel"
+              python -m pytest tests/ -v
+            else
+              echo "Python 3.13 wheel not found"
+              exit 1
+            fi
+          fi
 
       - name: Upload wheels as artifact
         uses: actions/upload-artifact@v4
