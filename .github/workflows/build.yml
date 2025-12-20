@@ -22,13 +22,11 @@ jobs:
       - name: Install cibuildwheel
         run: |
           pip install cibuildwheel==3.3.0
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            pip install delvewheel
-          fi
 
       - name: Install build tools (Windows only)
         if: runner.os == 'Windows'
         run: |
+          pip install delvewheel
           choco install visualstudio2022buildtools -y --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
           echo "Setting up MSVC environment"
 
