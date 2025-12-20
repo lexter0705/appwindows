@@ -81,20 +81,7 @@ appwindows_mod = py3.extension_module('appwindows',
                                       cpp_args: platform_args,
                                       subdir: 'appwindows')
 
-configure_file(
-    input: 'lib/__init__.py',
-    output: '__init__.py',
-    configuration: configuration_data(),
-    install: true,
-    install_dir: python_install_dir / 'appwindows'
-)
-
-install_data(
-    'lib/geometry/__init__.py',
-    install_dir: python_install_dir / 'appwindows/geometry'
-)
-
-install_data(
-    'lib/exceptions/__init__.py',
-    install_dir: python_install_dir / 'appwindows/exceptions'
+install_subdir('lib',
+               install_dir: python_install_dir / 'appwindows',
+               strip_directory: true
 )

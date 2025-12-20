@@ -1,14 +1,14 @@
 [build-system]
 requires = [
     "meson-python>=0.13",
-    "pybind11>=2.10.0"
+    "pybind11>=2.10.0",
 ]
 build-backend = "mesonpy"
 
 [project]
 dependencies = ["numpy >= 2.0"]
 name = "appwindows"
-version = "1.2.0"
+version = "1.2.1"
 authors = [
     { name = "Terochkin A.S", email = "apparser.development@gmail.com" },
 ]
@@ -22,9 +22,9 @@ classifiers = [
     "Operating System :: Microsoft :: Windows :: Windows 11",
     "Operating System :: POSIX :: Linux",
     "Environment :: X11 Applications",
-    "Environment :: Win32 (MS Windows)"
+    "Environment :: Win32 (MS Windows)",
+    "Typing :: Stubs Only"
 ]
-license-files = ["LICENSE.md"]
 
 [project.urls]
 Repository = "https://github.com/lexter0705/appwindows"

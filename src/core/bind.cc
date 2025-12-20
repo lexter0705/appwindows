@@ -23,7 +23,7 @@ void bind_window(py::module &m) {
           },
           "Get all points associated with the window\n\n"
           "Returns:\n"
-          "    list[appwindows.geometry.Point]: List of points\n\n"
+          "    appwindows.geometry.QuadPoints: QuadPoints object with all points\n\n"
           "Raises:\n"
           "    appwindows.exceptions.WindowDoesNotValidException: If window is invalid")
       .def(
