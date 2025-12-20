@@ -27,6 +27,9 @@ jobs:
         if: runner.os == 'Windows'
         uses: microsoft/setup-msbuild@v1
 
+      - name: Install delvewheel (Windows only)
+        run: pip install delvewheel
+
       - name: Install system dependencies (Linux only)
         if: runner.os == 'Linux'
         run: |
