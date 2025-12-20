@@ -55,8 +55,14 @@ jobs:
       - name: Install pytest
         run: pip install pytest
 
-      - name: Run tests
-        run: python -m pytest tests/ -v
+      - name: Tests
+        run: |
+          for wheel in ./wheelhouse/*.whl; do
+            echo "Testing $wheel"
+            pip install --force-reinstall "$wheel"
+            python -m pytest tests/ -v
+            pip uninstall -y appwindows
+          done
 
       - name: Upload wheels as artifact
         uses: actions/upload-artifact@v4
