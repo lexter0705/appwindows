@@ -50,8 +50,6 @@ jobs:
           CIBW_BEFORE_BUILD_WINDOWS: "pip install meson ninja pybind11"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair --wheel-dir {dest_dir} {wheel}"
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: "auditwheel repair --wheel-dir {dest_dir} {wheel}"
-          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: >
-            delvewheel repair --wheel-dir {dest_dir} {wheel} --no-mangle-all
           CIBW_ENVIRONMENT_WINDOWS: >
             PYBIND11_INCLUDE="${{ github.workspace }}/pybind11/include"
             PYBIND11_ABI=1
