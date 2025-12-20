@@ -20,12 +20,17 @@ jobs:
           python-version: '3.13'
 
       - name: Install cibuildwheel
-        run: pip install cibuildwheel==3.3.0
+        run: |
+          pip install cibuildwheel==3.3.0
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            pip install delvewheel
+          fi
 
-      - name: Install system dependencies (Windows only)
+      - name: Install build tools (Windows only)
         if: runner.os == 'Windows'
         run: |
-          choco install vcredist-all -y
+          choco install visualstudio2022buildtools -y --package-parameters "--add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
+          echo "Setting up MSVC environment"
 
       - name: Install system dependencies (Linux only)
         if: runner.os == 'Linux'
@@ -42,11 +47,14 @@ jobs:
           CIBW_ARCHS_WINDOWS: "AMD64"
           CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux2014_x86_64
           CIBW_BEFORE_BUILD_LINUX: "yum install -y libX11-devel pkgconfig"
-
-          CIBW_BEFORE_BUILD_WINDOWS: pip install meson ninja
-          CIBW_ENVIRONMENT_WINDOWS: PYBIND11_INCLUDE="$PWD/include"
+          CIBW_BEFORE_BUILD_WINDOWS: "pip install meson ninja pybind11"
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair --wheel-dir {dest_dir} {wheel}"
+          CIBW_REPAIR_WHEEL_COMMAND_LINUX: "auditwheel repair --wheel-dir {dest_dir} {wheel}"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: >
-            delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}
+            delvewheel repair --wheel-dir {dest_dir} {wheel} --no-mangle-all
+          CIBW_ENVIRONMENT_WINDOWS: >
+            PYBIND11_INCLUDE="${{ github.workspace }}/pybind11/include"
+            PYBIND11_ABI=1
 
       - name: Install pytest
         run: pip install pytest
