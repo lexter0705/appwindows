@@ -44,7 +44,7 @@ std::unique_ptr<core::QuadPoints> WindowWindows::get_points() {
 
 std::unique_ptr<core::Size> WindowWindows::get_size() const {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-  RECT rect = {0};
+  RECT rect;
   GetWindowRect(*window_, &rect);
   return std::make_unique<core::Size>(rect.right - rect.left,
                                       rect.bottom - rect.top);

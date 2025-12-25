@@ -18,18 +18,22 @@ void WindowWindows::set_fullscreen(const bool is_fullscreen) {
 
 void WindowWindows::resize(const core::Size size) {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-  RECT rect;
-  GetWindowRect(*window_, &rect);
-  SetWindowPos(*window_, nullptr, rect.left, rect.top, size.get_width(),
-               size.get_height(), SWP_NOZORDER | SWP_NOACTIVATE);
+  const LONG style = GetWindowLong(*window_, GWL_STYLE);
+  const LONG exStyle = GetWindowLong(*window_, GWL_EXSTYLE);
+  const BOOL hasMenu = (GetMenu(*window_) != NULL);
+  RECT rect = {0, 0, size.get_width(), size.get_height()};
+  AdjustWindowRectEx(&rect, style, hasMenu, exStyle);
+  SetWindowPos(*window_, nullptr,
+              0,0,
+              rect.right - rect.left, rect.bottom - rect.top,
+              SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
 }
 
 void WindowWindows::move(const core::Point point) {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-  const std::unique_ptr<core::Size> size = get_size();
   SetWindowPos(*window_, nullptr, point.get_x(), point.get_y(),
-               size->get_width(), size->get_height(),
-               SWP_NOZORDER | SWP_NOSIZE | SWP_NOACTIVATE);
+               0, 0,
+                SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE);
 }
 
 void WindowWindows::close() {
