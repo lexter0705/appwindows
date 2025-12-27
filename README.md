@@ -1,6 +1,6 @@
 <img src="https://raw.githubusercontent.com/lexter0705/appwindows/refs/heads/master/appwindows.svg" alt="" width="40%" >
 
-[![Total Downloads](https://static.pepy.tech/badge/appwindows/total)](https://pepy.tech/project/appwindows)
+[![Py-Pi Downloads](https://img.shields.io/pypi/dm/appwindows.svg)](https://pepy.tech/project/appwindows)
 
 # Appwindows
 The appwindows library solves the problem of working with a graphical shell on different operating systems.
