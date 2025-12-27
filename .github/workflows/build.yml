@@ -26,8 +26,7 @@ jobs:
           python-version: '3.13'
 
       - name: Install cibuildwheel
-        run: |
-          pip install cibuildwheel==3.3.0
+        run: pip install cibuildwheel==2.16.5
 
       - name: Set up MSVC (Windows only)
         if: runner.os == 'Windows'
@@ -46,7 +45,7 @@ jobs:
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
-          CIBW_BUILD: "cp313-*"
+          CIBW_BUILD: "cp38-* cp39-* cp310-* cp311-* cp312-* cp313-*"
           CIBW_SKIP: "*-musllinux_* pp* *-win32 *-i686"
           CIBW_ARCHS_LINUX: "x86_64"
           CIBW_ARCHS_WINDOWS: "AMD64"
@@ -59,23 +58,6 @@ jobs:
             PYBIND11_INCLUDE="${{ github.workspace }}/pybind11/include"
             PYBIND11_ABI=1
 
-      - name: List built wheels (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          echo "Built wheels:"
-          ls -la ./wheelhouse/
-          echo "Wheel files:"
-          find ./wheelhouse -name "*.whl"
-
-      - name: List built wheels (Windows)
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          echo "Built wheels:"
-          dir ./wheelhouse/
-          echo "Wheel files:"
-          find ./wheelhouse -name "*.whl"
-
       - name: Upload wheels as artifact
         uses: actions/upload-artifact@v4
         with:
@@ -87,6 +69,7 @@ jobs:
     name: Test on ${{ matrix.os }}
     needs: build_wheels
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15  # Добавлен таймаут
     strategy:
       matrix:
         os: [ubuntu-22.04, windows-2019]
@@ -105,8 +88,8 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-tk xvfb libgtk-3-0 libgbm-dev libxshmfence-dev libx11-dev libxext-dev
-          pip install pytest pillow numpy
+          sudo apt-get install -y python3-tk xvfb libgtk-3-0 libgbm-dev libxshmfence-dev libx11-dev libxext-dev libxtst-dev libxi-dev
+          pip install pytest pillow numpy pytest-xvfb
 
       - name: Install dependencies (Windows)
         if: runner.os == 'Windows'
@@ -119,49 +102,34 @@ jobs:
           name: wheels-${{ matrix.os }}
           path: ./wheelhouse
 
-      - name: List downloaded wheels (Linux)
-        if: runner.os == 'Linux'
+      - name: Install wheel
         run: |
-          echo "Downloaded wheels:"
-          ls -la ./wheelhouse/
-          echo "Wheel files:"
-          find ./wheelhouse -name "*.whl"
-
-      - name: List downloaded wheels (Windows)
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          echo "Downloaded wheels:"
-          dir ./wheelhouse/
-          echo "Wheel files:"
-          find ./wheelhouse -name "*.whl"
-
-      - name: Install wheel (Linux)
-        if: runner.os == 'Linux'
-        run: |
+          python -c "import glob; import sys; wheels = glob.glob('./wheelhouse/*cp313*.whl'); print(f'Found wheels: {wheels}'); wheel = wheels[0] if wheels else ''; print(f'Selected wheel: {wheel}'); sys.exit(0 if wheel else 1)"
           wheel=$(find ./wheelhouse -name "*cp313*.whl" -print -quit)
-          echo "Testing wheel: $wheel"
           pip install --force-reinstall "$wheel"
-
-      - name: Install wheel (Windows)
-        if: runner.os == 'Windows'
         shell: bash
-        run: |
-          wheel=$(find ./wheelhouse -name "*cp313*.whl" -print -quit)
-          echo "Testing wheel: $wheel"
-          pip install --force-reinstall "$wheel"
 
-      - name: Run tests with Xvfb (Linux)
+      - name: Run tests with debug info (Linux)
         if: runner.os == 'Linux'
         run: |
-          xvfb-run -a --server-args="-screen 0 1024x768x24" pytest tests/ -v
-        env:
-          DISPLAY: :99.0
-          PYTHONPATH: ${{ github.workspace }}
-
-      - name: Run tests (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          pytest tests/ -v
+          echo "Running tests with Xvfb debug mode..."
+          set -x
+          Xvfb :99 -screen 0 1024x768x24 &
+          export DISPLAY=:99
+          sleep 2
+          python -c "import tkinter; print('Tkinter available:', tkinter.TkVersion)"
+          pytest tests/ -v --capture=no --no-header --no-summary
+          kill %1
         env:
           PYTHONPATH: ${{ github.workspace }}
+
+      - name: Run tests with debug info (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          echo "Running tests on Windows..."
+          set -x
+          python -c "import tkinter; print('Tkinter available:', tkinter.TkVersion)"
+          pytest tests/ -v --capture=no --no-header --no-summary
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          DISPLAY: headless

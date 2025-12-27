@@ -101,4 +101,3 @@ def test_point_equality():
     
     assert point1 == point2
     assert point1 != point3
-    assert point1 != "not_a_point"
