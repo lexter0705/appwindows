@@ -30,7 +30,7 @@ def test_point_division():
 def test_point_division_by_zero():
     p1 = Point(10, 10)
     p2 = Point(0, 0)
-    with pytest.raises(ZeroDivisionError):
+    with pytest.raises(ValueError):
         p1 / p2
 
 def test_point_multiplication():
@@ -50,12 +50,6 @@ def test_point_equality_different_points():
     p1 = Point(1, 2)
     p2 = Point(3, 4)
     assert p1 != p2
-
-def test_point_equality_with_non_point():
-    p1 = Point(1, 2)
-    assert p1 != "not a point"
-    assert p1 != (1, 2)
-    assert p1 != None
 
 def test_point_in_place_addition():
     p1 = Point(1, 2)

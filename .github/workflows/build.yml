@@ -59,10 +59,22 @@ jobs:
             PYBIND11_INCLUDE="${{ github.workspace }}/pybind11/include"
             PYBIND11_ABI=1
 
-      - name: List built wheels
+      - name: List built wheels (Linux)
+        if: runner.os == 'Linux'
         run: |
           echo "Built wheels:"
           ls -la ./wheelhouse/
+          echo "Wheel files:"
+          find ./wheelhouse -name "*.whl"
+
+      - name: List built wheels (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          echo "Built wheels:"
+          dir ./wheelhouse/
+          echo "Wheel files:"
+          find ./wheelhouse -name "*.whl"
 
       - name: Upload wheels as artifact
         uses: actions/upload-artifact@v4
@@ -107,7 +119,33 @@ jobs:
           name: wheels-${{ matrix.os }}
           path: ./wheelhouse
 
-      - name: Install wheel
+      - name: List downloaded wheels (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          echo "Downloaded wheels:"
+          ls -la ./wheelhouse/
+          echo "Wheel files:"
+          find ./wheelhouse -name "*.whl"
+
+      - name: List downloaded wheels (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          echo "Downloaded wheels:"
+          dir ./wheelhouse/
+          echo "Wheel files:"
+          find ./wheelhouse -name "*.whl"
+
+      - name: Install wheel (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          wheel=$(find ./wheelhouse -name "*cp313*.whl" -print -quit)
+          echo "Testing wheel: $wheel"
+          pip install --force-reinstall "$wheel"
+
+      - name: Install wheel (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
         run: |
           wheel=$(find ./wheelhouse -name "*cp313*.whl" -print -quit)
           echo "Testing wheel: $wheel"
