@@ -1,6 +1,6 @@
 <img src="https://raw.githubusercontent.com/lexter0705/appwindows/refs/heads/master/appwindows.svg" alt="" width="40%" >
 
-[![Py-Pi Downloads](https://img.shields.io/pypi/dm/appwindows.svg)](https://pepy.tech/project/appwindows)
+[![Py-Pi Downloads](https://img.shields.io/pypi/dm/appwindows.svg)](https://pypi.org/project/appwindows/)
 
 # Appwindows
 The appwindows library solves the problem of working with a graphical shell on different operating systems.
@@ -9,7 +9,8 @@ The appwindows library solves the problem of working with a graphical shell on d
 pip install appwindows
 ```
 # Docs
-All documentation <a href="https://apparser.gitbook.io/appwindows">here</a>
+All documentation <a href="https://apparser.gitbook.io/appwindows">here</a> <br>
+Link to <a href="https://pypi.org/project/appwindows/">PyPi</a>
 # For Developers
 1) If something doesn't work - open issue.
 2) If you want something fixed - open issue.
