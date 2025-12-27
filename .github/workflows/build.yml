@@ -1,6 +1,13 @@
-name: Build wheels
+name: Build and Test Wheels
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  release:
+    types: [created]
+  workflow_dispatch:
 
 jobs:
   build_wheels:
@@ -9,10 +16,13 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-22.04, windows-2019]
+      fail-fast: false
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -28,51 +38,118 @@ jobs:
         uses: microsoft/setup-msbuild@v1
 
       - name: Install delvewheel (Windows only)
+        if: runner.os == 'Windows'
         run: pip install delvewheel
 
       - name: Install system dependencies (Linux only)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libx11-dev pkg-config
+          sudo apt-get install -y libx11-dev pkg-config libxext-dev libxrender-dev libxtst-dev libxi-dev
 
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
-          CIBW_BUILD: "cp38-* cp39-* cp310-* cp311-* cp312-* cp313-* cp314-*"
-          CIBW_SKIP: "*-musllinux_*"
+          CIBW_BUILD: "cp38-* cp39-* cp310-* cp311-* cp312-* cp313-*"
+          CIBW_SKIP: "*-musllinux_* pp* *-win32 *-i686"
           CIBW_ARCHS_LINUX: "x86_64"
           CIBW_ARCHS_WINDOWS: "AMD64"
           CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux2014_x86_64
-          CIBW_BEFORE_BUILD_LINUX: "yum install -y libX11-devel pkgconfig"
+          CIBW_BEFORE_BUILD_LINUX: "yum install -y libX11-devel libXext-devel pkgconfig"
           CIBW_BEFORE_BUILD_WINDOWS: "pip install meson ninja pybind11"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair --wheel-dir {dest_dir} {wheel}"
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: "auditwheel repair --wheel-dir {dest_dir} {wheel}"
           CIBW_ENVIRONMENT_WINDOWS: >
             PYBIND11_INCLUDE="${{ github.workspace }}/pybind11/include"
             PYBIND11_ABI=1
-
-      - name: Install pytest
-        run: pip install pytest
-
-      - name: Test (Windows only)
-        if: runner.os == 'Windows'
-        run: |
-            $wheel = Get-ChildItem ./wheelhouse/*cp313*.whl | Select-Object -First 1
-            echo "Testing wheel: $wheel"
-            pip install --force-reinstall "$wheel"
-            python -m pytest tests/ -v
-
-      - name: Test (Linux only)
-        if: runner.os == 'Linux'
-        run: |
-            wheel=$(find ./wheelhouse -name "*cp313*.whl" | head -1)
-            echo "Testing wheel: $wheel"
-            pip install --force-reinstall "$wheel"
-            python -m pytest tests/ -v
+          CIBW_TEST_REQUIRES: "pytest numpy pillow"
+          CIBW_TEST_COMMAND: "pytest {project}/tests -v"
 
       - name: Upload wheels as artifact
         uses: actions/upload-artifact@v4
         with:
           name: wheels-${{ matrix.os }}
           path: ./wheelhouse/*.whl
+          retention-days: 7
+
+  test_wheels:
+    name: Test on ${{ matrix.os }} / Python ${{ matrix.python-version }}
+    needs: build_wheels
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, windows-2019]
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
+      fail-fast: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-tk xvfb libgtk-3-0 libgbm-dev libxshmfence-dev libx11-dev libxext-dev libxtst-dev libxi-dev
+          pip install pytest pytest-xvfb pytest-cov pillow numpy
+
+      - name: Install dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          pip install pytest pytest-cov pillow numpy
+
+      - name: Download wheels
+        uses: actions/download-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}
+          path: ./wheelhouse
+
+      - name: Find and install wheel (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          wheel=$(find ./wheelhouse -name "*cp$(echo ${{ matrix.python-version }} | tr -d .)*${{ runner.arch }}.whl" | head -1 || find ./wheelhouse -name "*cp$(echo ${{ matrix.python-version }} | cut -d'.' -f1,2 | tr -d .)*${{ runner.arch }}.whl" | head -1)
+          echo "Selected wheel: $wheel"
+          if [ -z "$wheel" ]; then
+            echo "No matching wheel found for Python ${{ matrix.python-version }}"
+            exit 1
+          fi
+          pip install --force-reinstall "$wheel"
+
+      - name: Find and install wheel (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          pyver=$(echo ${{ matrix.python-version }} | tr -d '.')
+          pyver_short="${pyver:0:2}"
+          wheel=$(find ./wheelhouse -name "*cp${pyver_short}-cp${pyver_short}*.whl" -o -name "*cp${pyver_short}-cp${pyver_short}m*.whl" | head -1)
+          echo "Selected wheel: $wheel"
+          if [ -z "$wheel" ]; then
+            echo "No matching wheel found for Python ${{ matrix.python-version }}"
+            exit 1
+          fi
+          pip install --force-reinstall "$wheel"
+
+      - name: Run tests with Xvfb (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          xvfb-run -a --server-args="-screen 0 1024x768x24" pytest tests/ -v --cov=appwindows --cov-report=xml
+        env:
+          DISPLAY: :99.0
+
+      - name: Run tests (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          pytest tests/ -v --cov=appwindows --cov-report=xml
+
+      - name: Upload coverage reports
+        if: matrix.python-version == '3.10'
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: ${{ runner.os }},py${{ matrix.python-version }}
+          name: ${{ runner.os }}-py${{ matrix.python-version }}

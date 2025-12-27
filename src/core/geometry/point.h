@@ -13,6 +13,7 @@ class Point {
   bool operator!=(const Point& other) const;
   [[nodiscard]] int get_x() const;
   [[nodiscard]] int get_y() const;
+  [[nodiscard]] std::string to_string() const noexcept { return "Point(x = " + x_ + ", y = " + y_ + ")"; };
 
  private:
   int x_;
