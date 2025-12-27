@@ -1,14 +1,14 @@
 #pragma once
 
+#include <pybind11/numpy.h>
+
 #include <memory>
 #include <string>
 #include <vector>
 
-#include <pybind11/numpy.h>
-
 #include "geometry/point.h"
-#include "geometry/size.h"
 #include "geometry/quad_points.h"
+#include "geometry/size.h"
 
 namespace py = pybind11;
 

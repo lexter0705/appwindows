@@ -4,9 +4,8 @@
 #include <string>
 #include <vector>
 
-#include "base_window.h"
-
 #include "./exceptions/window_does_not_found.h"
+#include "base_window.h"
 
 namespace appwindows::core {
 
@@ -17,7 +16,7 @@ class Finder {
   virtual std::vector<std::shared_ptr<Window>> get_all_windows() const = 0;
   [[nodiscard]]
   virtual std::unique_ptr<std::string> get_os() const = 0;
-  
+
   [[nodiscard]] virtual std::vector<std::string> get_all_titles() const {
     std::vector<std::string> titles;
     for (const auto& i : get_all_windows()) titles.push_back(*i->get_title());

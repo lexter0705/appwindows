@@ -23,17 +23,15 @@ void WindowWindows::resize(const core::Size size) {
   const BOOL hasMenu = (GetMenu(*window_) != NULL);
   RECT rect = {0, 0, size.get_width(), size.get_height()};
   AdjustWindowRectEx(&rect, style, hasMenu, exStyle);
-  SetWindowPos(*window_, nullptr,
-              0,0,
-              rect.right - rect.left, rect.bottom - rect.top,
-              SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
+  SetWindowPos(*window_, nullptr, 0, 0, rect.right - rect.left,
+               rect.bottom - rect.top,
+               SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE);
 }
 
 void WindowWindows::move(const core::Point point) {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-  SetWindowPos(*window_, nullptr, point.get_x(), point.get_y(),
-               0, 0,
-                SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE);
+  SetWindowPos(*window_, nullptr, point.get_x(), point.get_y(), 0, 0,
+               SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE);
 }
 
 void WindowWindows::close() {

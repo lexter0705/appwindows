@@ -1,9 +1,8 @@
 #include "window.h"
 
+#include <X11/Xatom.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include <X11/Xatom.h>
-
 #include <pybind11/numpy.h>
 
 #include <memory>
@@ -37,10 +36,11 @@ std::unique_ptr<core::QuadPoints> WindowXServer::get_points() {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
   auto display = FinderXServer::open_display();
   if (!XGetWindowAttributes(display, window_, &attrs)) return nullptr;
-  auto points = std::make_unique<core::QuadPoints>(core::Point{attrs.x, attrs.y},
-                                                   core::Point{attrs.x + attrs.width, attrs.y},
-                                                   core::Point{attrs.x + attrs.width, attrs.y + attrs.height},
-                                                   core::Point{attrs.x, attrs.y + attrs.height});
+  auto points = std::make_unique<core::QuadPoints>(
+      core::Point{attrs.x, attrs.y},
+      core::Point{attrs.x + attrs.width, attrs.y},
+      core::Point{attrs.x + attrs.width, attrs.y + attrs.height},
+      core::Point{attrs.x, attrs.y + attrs.height});
   XCloseDisplay(display);
   return points;
 }

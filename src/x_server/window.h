@@ -6,8 +6,8 @@
 #include <vector>
 
 #include "../core/base_window.h"
-#include "../core/geometry/quad_points.h"
 #include "../core/geometry/point.h"
+#include "../core/geometry/quad_points.h"
 #include "../core/geometry/size.h"
 
 using WindowX = Window;

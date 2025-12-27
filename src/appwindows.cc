@@ -2,8 +2,8 @@
 #include <pybind11/stl.h>
 
 #include "./core/bind.h"
-#include "./core/geometry/bind_geometry.h"
 #include "./core/exceptions/bind_exceptions.h"
+#include "./core/geometry/bind_geometry.h"
 #include "./core/platform.h"
 
 namespace py = pybind11;
