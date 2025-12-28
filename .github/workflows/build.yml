@@ -146,7 +146,9 @@ jobs:
             xvfb \
             xauth \
             x11-apps \
-            python3-tk
+            python3-tk \
+            libtk8.6 \
+            libtcl8.6
           
           pip install pytest pytest-timeout pillow numpy
 
@@ -169,24 +171,95 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}
 
-      - name: Run tests with Xvfb (Linux)
+      - name: Setup X11 environment for tkinter (Linux)
         if: runner.os == 'Linux'
         run: |
-          # Запуск Xvfb с необходимыми расширениями для X11
-          Xvfb :99 -screen 0 1024x768x24 -ac +extension GLX +extension MIT-SHM +extension XINERAMA +extension XFIXES +extension DAMAGE +extension COMPOSITE +render -noreset &
+          # Создаем Xauthority файл
+          export XAUTHORITY=$(mktemp)
+          chmod 600 $XAUTHORITY
+          
+          # Генерируем авторизацию
+          xauth add :99 . $(mcookie)
+          
+          # Запускаем Xvfb с полной поддержкой для tkinter
+          Xvfb :99 \
+            -screen 0 1024x768x24 \
+            -ac \
+            +extension GLX \
+            +extension MIT-SHM \
+            +extension XINERAMA \
+            +extension XFIXES \
+            +extension DAMAGE \
+            +extension COMPOSITE \
+            +extension XTEST \
+            +render \
+            -noreset \
+            -auth $XAUTHORITY &
           XVFB_PID=$!
           
           # Ждем инициализации
-          sleep 2
+          sleep 3
           
           # Устанавливаем переменные окружения
           export DISPLAY=:99
-          export XAUTHORITY=$(mktemp)
           
-          # Запускаем тесты
-          pytest tests/ -v
+          # Проверяем, что X server запущен и доступен
+          if ! xdpyinfo -display $DISPLAY > /dev/null 2>&1; then
+            echo "::error::X server is not accessible"
+            exit 1
+          fi
           
-          # Очищаем
-          kill $XVFB_PID
+          # Тест для tkinter - создаем простое окно
+          python -c "
+          import tkinter as tk
+          import time
+          
+          print('Creating tkinter test window...')
+          root = tk.Tk()
+          root.title('Tkinter Test')
+          root.geometry('300x200+50+50')
+          label = tk.Label(root, text='Tkinter window created successfully!')
+          label.pack(pady=20)
+          root.update()
+          print('Tkinter window created and updated')
+          
+          # Даем время на отображение
+          time.sleep(1)
+          root.destroy()
+          print('Tkinter window destroyed successfully')
+          "
+                  
+                  # Проверяем, что окно было создано через X11
+                  sleep 1
+                  xwininfo -root -tree -display $DISPLAY || true
+                  
+                  # Сохраняем переменные
+                  echo "XVFB_PID=$XVFB_PID" >> $GITHUB_ENV
+          echo "DISPLAY=$DISPLAY" >> $GITHUB_ENV
+          echo "XAUTHORITY=$XAUTHORITY" >> $GITHUB_ENV
         env:
           PYTHONPATH: ${{ github.workspace }}
+
+      - name: Run tests with X11 access (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          # Дополнительные переменные для X11
+          export XLIB_SKIP_ARGB_VISUALS=1
+          export GDK_BACKEND=x11
+          
+          # Запускаем тесты с отладкой
+          pytest tests/ -v --capture=no
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          DISPLAY: ${{ env.DISPLAY }}
+          XAUTHORITY: ${{ env.XAUTHORITY }}
+
+      - name: Cleanup X11 environment (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          if [ -n "$XVFB_PID" ] && ps -p $XVFB_PID > /dev/null; then
+            kill $XVFB_PID || true
+          fi
+          if [ -n "$XAUTHORITY" ] && [ -f "$XAUTHORITY" ]; then
+            rm -f $XAUTHORITY || true
+          fi
