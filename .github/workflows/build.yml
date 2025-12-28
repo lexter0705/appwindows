@@ -41,7 +41,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libx11-dev pkg-config libxext-dev libxrender-dev libxtst-dev libxi-dev
+          sudo apt-get install -y libx11-dev pkg-config libxext-dev libxrender-dev libxtst-dev libxi-dev libgbm-dev libxshmfence-dev libgl1-mesa-glx libgl1-mesa-dri
 
       - name: Build wheels
         run: python -m cibuildwheel --output-dir wheelhouse
@@ -58,23 +58,6 @@ jobs:
           CIBW_ENVIRONMENT_WINDOWS: >
             PYBIND11_INCLUDE="${{ github.workspace }}/pybind11/include"
             PYBIND11_ABI=1
-
-      - name: List built wheels (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          echo "Built wheels:"
-          ls -la ./wheelhouse/
-          echo "Wheel files:"
-          find ./wheelhouse -name "*.whl"
-
-      - name: List built wheels (Windows)
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          echo "Built wheels:"
-          dir ./wheelhouse/
-          echo "Wheel files:"
-          find ./wheelhouse -name "*.whl"
 
       - name: Upload wheels as artifact
         uses: actions/upload-artifact@v4
@@ -102,30 +85,59 @@ jobs:
         with:
           python-version: '3.13'
 
-      - name: Install dependencies (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-tk xvfb libgtk-3-0 libgbm-dev libxshmfence-dev libx11-dev libxext-dev
-          pip install pytest pillow numpy
-
       - name: Install dependencies (Windows)
         if: runner.os == 'Windows'
         run: |
           pip install pytest pillow numpy
+
+      - name: Install dependencies (Linux) - GUI version
+        if: runner.os == 'Linux'
+        run: |
+          # Установка всех необходимых GUI зависимостей
+          sudo apt-get update
+          sudo apt-get install -y \
+            python3-tk \
+            xvfb \
+            xauth \
+            libxrender1 \
+            libxtst6 \
+            libxi6 \
+            libgl1-mesa-glx \
+            libgl1-mesa-dri \
+            libgbm-dev \
+            libxshmfence-dev \
+            libxkbcommon0 \
+            libwayland-client0 \
+            libwayland-server0 \
+            libegl1-mesa \
+            libegl1-mesa-dev \
+            libgles2-mesa-dev \
+            libdrm-dev \
+            libdrm2 \
+            libdrm-amdgpu1 \
+            libdrm-intel1 \
+            libdrm-nouveau2 \
+            libdrm-radeon1 \
+            libx11-xcb1 \
+            libxcb-dri2-0 \
+            libxcb-dri3-0 \
+            libxcb-glx0 \
+            libxcb-present0 \
+            libxcb-sync1 \
+            libxcb-xfixes0 \
+            libxshmfence1
+          
+          # Установка Python зависимостей
+          pip install pytest pytest-xvfb pytest-timeout pillow numpy
+          
+          # Отладка: проверка установки tkinter
+          python -c "import tkinter; print('Tkinter version:', tkinter.TkVersion); print('Tcl version:', tkinter.TclVersion)"
 
       - name: Download wheels
         uses: actions/download-artifact@v4
         with:
           name: wheels-${{ matrix.os }}
           path: ./wheelhouse
-
-      - name: Install wheel (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          wheel=$(find ./wheelhouse -name "*cp313*.whl" -print -quit)
-          echo "Testing wheel: $wheel"
-          pip install --force-reinstall "$wheel"
 
       - name: Install wheel (Windows)
         if: runner.os == 'Windows'
@@ -135,13 +147,12 @@ jobs:
           echo "Testing wheel: $wheel"
           pip install --force-reinstall "$wheel"
 
-      - name: Run tests with Xvfb (Linux)
+      - name: Install wheel (Linux)
         if: runner.os == 'Linux'
         run: |
-          xvfb-run -a --server-args="-screen 0 1024x768x24" pytest tests/ -v
-        env:
-          DISPLAY: :99.0
-          PYTHONPATH: ${{ github.workspace }}
+          wheel=$(find ./wheelhouse -name "*cp313*.whl" -print -quit)
+          echo "Testing wheel: $wheel"
+          pip install --force-reinstall "$wheel"
 
       - name: Run tests (Windows)
         if: runner.os == 'Windows'
@@ -149,3 +160,77 @@ jobs:
           pytest tests/ -v
         env:
           PYTHONPATH: ${{ github.workspace }}
+
+      - name: Setup Xvfb environment (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          export XAUTHORITY=$(mktemp /tmp/.Xauthority.XXXXXX)
+          chmod 600 $XAUTHORITY
+          echo "Starting Xvfb..."
+          Xvfb :99 -screen 0 1024x768x24 -ac +extension GLX +render -noreset -listen tcp &
+          XVFB_PID=$!
+          sleep 3
+          if ! ps -p $XVFB_PID > /dev/null; then
+            echo "::error::Xvfb failed to start"
+            exit 1
+          fi
+          export DISPLAY=:99
+          export XAUTHORITY=$XAUTHORITY
+          echo "Display: $DISPLAY"
+          echo "XAUTHORITY: $XAUTHORITY"
+          xdpyinfo || echo "xdpyinfo failed (expected in headless mode)"
+          python -c "
+            import sys
+            import tkinter as tk
+          try:
+            root = tk.Tk()
+            root.title('Test Window')
+            root.geometry('200x100')
+            label = tk.Label(root, text='Hello from CI!')
+            label.pack(pady=20)
+            root.update_idletasks()
+            root.update()
+            print('✅ Tkinter window created successfully')
+            root.destroy()
+          except Exception as e:
+            print(f'❌ Tkinter failed: {e}')
+              sys.exit(1)
+          "
+          
+          # Сохраняем PID для последующего завершения
+          echo "XVFB_PID=$XVFB_PID" >> $GITHUB_ENV
+          echo "DISPLAY=$DISPLAY" >> $GITHUB_ENV
+          echo "XAUTHORITY=$XAUTHORITY" >> $GITHUB_ENV
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Run GUI tests with timeout (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          echo "Running GUI tests with pytest-xvfb..."
+          
+          # Запускаем тесты с таймаутом и детальным выводом
+          pytest tests/ \
+            -v \
+            --capture=no \
+            --timeout=30 \
+            --no-header \
+            --no-summary \
+            -k "not slow"  # Исключаем медленные тесты если нужно
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          DISPLAY: ${{ env.DISPLAY }}
+          XAUTHORITY: ${{ env.XAUTHORITY }}
+          LD_LIBRARY_PATH: /usr/lib/x86_64-linux-gnu:/usr/lib
+
+      - name: Cleanup Xvfb (Linux)
+        if: runner.os == 'Linux' && env.XVFB_PID != ''
+        run: |
+          echo "Cleaning up Xvfb process..."
+          if [ -n "$XVFB_PID" ] && ps -p $XVFB_PID > /dev/null; then
+            kill $XVFB_PID || true
+            wait $XVFB_PID || true
+          fi
+          if [ -n "$XAUTHORITY" ] && [ -f "$XAUTHORITY" ]; then
+            rm -f $XAUTHORITY || true
+          fi
