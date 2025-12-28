@@ -54,11 +54,9 @@ jobs:
             libxdamage-dev \
             libxcomposite-dev \
             libxkbcommon-dev \
-            libwayland-dev \
             libgl1-mesa-dev \
             libegl1-mesa-dev \
             libgbm-dev \
-            libxshmfence-dev \
             pkg-config
 
       - name: Build wheels
@@ -83,11 +81,9 @@ jobs:
               libXdamage-devel \
               libXcomposite-devel \
               libxkbcommon-devel \
-              wayland-devel \
               mesa-libGL-devel \
               mesa-libEGL-devel \
               libgbm-devel \
-              libxshmfence-devel \
               pkgconfig
           CIBW_BEFORE_BUILD_WINDOWS: "pip install meson ninja pybind11"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair --wheel-dir {dest_dir} {wheel}"
@@ -107,7 +103,7 @@ jobs:
     name: Test on ${{ matrix.os }}
     needs: build_wheels
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
+    timeout-minutes: 15
     strategy:
       matrix:
         os: [ubuntu-22.04, windows-2019]
@@ -127,29 +123,31 @@ jobs:
         run: |
           pip install pytest pillow numpy
 
-      - name: Install Xorg + XFCE (Linux)
+      - name: Install X11 runtime dependencies (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            xorg \
-            xfce4 \
-            xfce4-goodies \
-            x11-apps \
-            x11-utils \
-            xauth \
-            python3-tk \
             libx11-6 \
             libxext6 \
             libxrender1 \
             libxtst6 \
             libxi6 \
+            libxinerama1 \
+            libxcursor1 \
+            libxrandr2 \
+            libxfixes3 \
+            libxdamage1 \
+            libxcomposite1 \
+            libxkbcommon0 \
             libgl1-mesa-glx \
             libegl1-mesa \
             libgbm1 \
-            libxshmfence1
+            xvfb \
+            xauth \
+            x11-apps \
+            python3-tk
           
-          # Установка Python зависимостей
           pip install pytest pytest-timeout pillow numpy
 
       - name: Download wheels
@@ -171,52 +169,24 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}
 
-      - name: Setup Xorg + XFCE (Linux)
+      - name: Run tests with Xvfb (Linux)
         if: runner.os == 'Linux'
         run: |
-          # Создание конфигурации X server
-          mkdir -p ~/.config/xfce4
-          echo "startxfce4" > ~/.xinitrc
-          chmod +x ~/.xinitrc
-          
-          # Запуск X server в фоне
-          sudo Xorg -noreset +extension GLX +extension RANDR +extension RENDER -logfile ./xorg.log -config /etc/X11/xorg.conf :1 &
+          # Запуск Xvfb с необходимыми расширениями для X11
+          Xvfb :99 -screen 0 1024x768x24 -ac +extension GLX +extension MIT-SHM +extension XINERAMA +extension XFIXES +extension DAMAGE +extension COMPOSITE +render -noreset &
           XVFB_PID=$!
           
-          sleep 5
+          # Ждем инициализации
+          sleep 2
           
-          # Установка переменных окружения
-          export DISPLAY=:1
-          export XAUTHORITY=/home/runner/.Xauthority
+          # Устанавливаем переменные окружения
+          export DISPLAY=:99
+          export XAUTHORITY=$(mktemp)
           
-          # Запуск XFCE в фоне
-          startxfce4 &
-          XFCE_PID=$!
-          
-          sleep 10
-          
-          # Сохранение PID для очистки
-          echo "XVFB_PID=$XVFB_PID" >> $GITHUB_ENV
-          echo "XFCE_PID=$XFCE_PID" >> $GITHUB_ENV
-          echo "DISPLAY=$DISPLAY" >> $GITHUB_ENV
-        env:
-          PYTHONPATH: ${{ github.workspace }}
-
-      - name: Run tests on XFCE (Linux)
-        if: runner.os == 'Linux'
-        run: |
+          # Запускаем тесты
           pytest tests/ -v
+          
+          # Очищаем
+          kill $XVFB_PID
         env:
           PYTHONPATH: ${{ github.workspace }}
-          DISPLAY: ${{ env.DISPLAY }}
-
-      - name: Cleanup XFCE environment (Linux)
-        if: runner.os == 'Linux' && env.XVFB_PID != ''
-        run: |
-          if [ -n "$XFCE_PID" ] && ps -p $XFCE_PID > /dev/null; then
-            kill -TERM $XFCE_PID || true
-          fi
-          
-          if [ -n "$XVFB_PID" ] && ps -p $XVFB_PID > /dev/null; then
-            sudo kill -TERM $XVFB_PID || sudo kill -KILL $XVFB_PID || true
-          fi
