@@ -107,7 +107,7 @@ jobs:
     name: Test on ${{ matrix.os }}
     needs: build_wheels
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    timeout-minutes: 30
     strategy:
       matrix:
         os: [ubuntu-22.04, windows-2019]
@@ -127,38 +127,30 @@ jobs:
         run: |
           pip install pytest pillow numpy
 
-      - name: Install X11 runtime dependencies (Linux)
+      - name: Install Xorg + XFCE (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y \
+            xorg \
+            xfce4 \
+            xfce4-goodies \
+            x11-apps \
+            x11-utils \
+            xauth \
+            python3-tk \
             libx11-6 \
             libxext6 \
             libxrender1 \
             libxtst6 \
             libxi6 \
-            libxinerama1 \
-            libxcursor1 \
-            libxrandr2 \
-            libxfixes3 \
-            libxdamage1 \
-            libxcomposite1 \
-            libxkbcommon0 \
-            libwayland-client0 \
             libgl1-mesa-glx \
             libegl1-mesa \
             libgbm1 \
-            libxshmfence1 \
-            python3-tk \
-            xvfb \
-            xauth \
-            x11-apps \
-            x11-utils
-
-      - name: Install test dependencies (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          pip install pytest pytest-xvfb pytest-timeout pillow numpy
+            libxshmfence1
+          
+          # Установка Python зависимостей
+          pip install pytest pytest-timeout pillow numpy
 
       - name: Download wheels
         uses: actions/download-artifact@v4
@@ -179,10 +171,52 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}
 
-      - name: Run tests with Xvfb (Linux)
+      - name: Setup Xorg + XFCE (Linux)
         if: runner.os == 'Linux'
         run: |
-          xvfb-run -a --server-args="-screen 0 1024x768x24 -ac +extension GLX +render -noreset" pytest tests/ -v
+          # Создание конфигурации X server
+          mkdir -p ~/.config/xfce4
+          echo "startxfce4" > ~/.xinitrc
+          chmod +x ~/.xinitrc
+          
+          # Запуск X server в фоне
+          sudo Xorg -noreset +extension GLX +extension RANDR +extension RENDER -logfile ./xorg.log -config /etc/X11/xorg.conf :1 &
+          XVFB_PID=$!
+          
+          sleep 5
+          
+          # Установка переменных окружения
+          export DISPLAY=:1
+          export XAUTHORITY=/home/runner/.Xauthority
+          
+          # Запуск XFCE в фоне
+          startxfce4 &
+          XFCE_PID=$!
+          
+          sleep 10
+          
+          # Сохранение PID для очистки
+          echo "XVFB_PID=$XVFB_PID" >> $GITHUB_ENV
+          echo "XFCE_PID=$XFCE_PID" >> $GITHUB_ENV
+          echo "DISPLAY=$DISPLAY" >> $GITHUB_ENV
         env:
           PYTHONPATH: ${{ github.workspace }}
-          DISPLAY: :99.0
+
+      - name: Run tests on XFCE (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          pytest tests/ -v
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          DISPLAY: ${{ env.DISPLAY }}
+
+      - name: Cleanup XFCE environment (Linux)
+        if: runner.os == 'Linux' && env.XVFB_PID != ''
+        run: |
+          if [ -n "$XFCE_PID" ] && ps -p $XFCE_PID > /dev/null; then
+            kill -TERM $XFCE_PID || true
+          fi
+          
+          if [ -n "$XVFB_PID" ] && ps -p $XVFB_PID > /dev/null; then
+            sudo kill -TERM $XVFB_PID || sudo kill -KILL $XVFB_PID || true
+          fi
