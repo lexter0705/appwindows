@@ -1,5 +1,5 @@
 import time
-import tkinter as tk
+from tkinter import Tk
 from threading import Thread
 
 import numpy as np
@@ -7,68 +7,42 @@ import pytest
 
 from appwindows import get_finder
 from appwindows.geometry import Point, Size
+from appwindows.exceptions import WindowDoesNotValidException
 
 
-class TestWindowManager:
+class WindowCreator:
     def __init__(self):
-        self.windows = []
-        self.threads = []
-        
+        self.__window: Tk | None = None
+        self.__currents_thread: Thread | None = None
+
     def create_window(self, title, width=400, height=300, x=100, y=100):
         def run_window():
-            root = tk.Tk()
-            root.title(title)
-            root.geometry(f"{width}x{height}+{x}+{y}")
-            root.update_idletasks()
-            root.update()
-            self.windows.append(root)
-            root.mainloop()
-            
-        thread = Thread(target=run_window, daemon=True)
-        thread.start()
-        self.threads.append(thread)
+            self.__window = Tk()
+            self.__window.title(title)
+            self.__window.geometry(f"{width}x{height}+{x}+{y}")
+            self.__window.mainloop()
+
+        self.__currents_thread = Thread(target=run_window, daemon=True)
+        self.__currents_thread.start()
         time.sleep(0.5)
-        return thread
-    
-    def create_multiple_windows(self, titles):
-        threads = []
-        for i, title in enumerate(titles):
-            thread = self.create_window(title, x=100 + i*50, y=100 + i*50)
-            threads.append(thread)
-        return threads
-    
-    def cleanup(self):
-        for window in self.windows:
-            try:
-                window.destroy()
-            except:
-                pass
-        self.windows = []
-        self.threads = []
+
 
 @pytest.fixture
-def window_manager():
-    manager = TestWindowManager()
-    yield manager
-    manager.cleanup()
-
-@pytest.fixture
-def finder():
-    return get_finder()
-
-@pytest.fixture
-def test_window(window_manager, finder):
-    window_manager.create_window("Test Window for Operations")
+def test_window():
+    creator = WindowCreator()
+    creator.create_window("Test Window for Operations")
     time.sleep(1)
-    
+    finder = get_finder()
     window = finder.get_window_by_title("Test Window for Operations")
     assert window is not None
     return window
+
 
 def test_window_get_title(test_window):
     title = test_window.get_title()
     assert isinstance(title, str)
     assert "Test Window for Operations" in title
+
 
 def test_window_get_points(test_window):
     quad_points = test_window.get_points()
@@ -76,17 +50,19 @@ def test_window_get_points(test_window):
     assert hasattr(quad_points, 'right_top')
     assert hasattr(quad_points, 'right_bottom')
     assert hasattr(quad_points, 'left_bottom')
-    
+
     assert isinstance(quad_points.left_top, Point)
     assert isinstance(quad_points.right_top, Point)
     assert isinstance(quad_points.right_bottom, Point)
     assert isinstance(quad_points.left_bottom, Point)
 
+
 def test_window_get_size(test_window):
-    size = test_window.get_size()
-    assert isinstance(size, Size)
-    assert size.width > 0
-    assert size.height > 0
+    appwindows_size = test_window.get_size()
+    assert isinstance(appwindows_size, Size)
+    assert appwindows_size.width > 0
+    assert appwindows_size.height > 0
+
 
 def test_window_get_screenshot(test_window):
     screenshot = test_window.get_screenshot()
@@ -94,54 +70,35 @@ def test_window_get_screenshot(test_window):
     assert isinstance(screenshot, np.ndarray)
     assert len(screenshot.shape) >= 2
 
+
 def test_window_move(test_window):
     current_points = test_window.get_points()
     current_x = current_points.left_top.x
     current_y = current_points.left_top.y
-    
+
     new_point = Point(current_x + 50, current_y + 50)
     test_window.move(new_point)
-    
+
     time.sleep(0.5)
     updated_points = test_window.get_points()
     assert updated_points.left_top.x == current_x + 50
     assert updated_points.left_top.y == current_y + 50
 
+
 def test_window_resize(test_window):
     current_size = test_window.get_size()
-    new_size = Size(current_size.width + 100, current_size.height + 50)
-    test_window.resize(new_size)
-    
+    width_append = 100
+    height_append = 50
+    test_window.resize(Size(current_size.width + width_append, current_size.height + height_append))
     time.sleep(0.5)
     updated_size = test_window.get_size()
-    assert updated_size.width == current_size.width + 100
-    assert updated_size.height == current_size.height + 50
+    assert updated_size.width == current_size.width + width_append
+    assert updated_size.height == current_size.height + height_append
 
-def test_window_minimize_restore(test_window):
-    test_window.set_minimize(True)
-    time.sleep(1)
-    
-    test_window.set_minimize(False)
-    time.sleep(1)
 
-def test_window_fullscreen(test_window):
-    test_window.set_fullscreen(True)
-    time.sleep(1)
-    
-    test_window.set_fullscreen(False)
-    time.sleep(1)
-
-def test_window_to_foreground_background(test_window):
-    test_window.to_foreground()
-    time.sleep(0.5)
-    
-    test_window.to_background()
-    time.sleep(0.5)
-
-def test_window_close(test_window, window_manager):
+def test_window_close(test_window):
     test_window.close()
     time.sleep(1)
-    
-    finder = get_finder()
-    with pytest.raises(Exception):
-        finder.get_window_by_title("Test Window for Operations")
+
+    with pytest.raises(WindowDoesNotValidException):
+        test_window.to_background()

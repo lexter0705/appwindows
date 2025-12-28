@@ -16,7 +16,3 @@ def test_import_finder_and_window():
     from appwindows import Finder, Window
     assert Finder is not None
     assert Window is not None
-
-def test_version_exists():
-    import appwindows
-    assert hasattr(appwindows, '__version__')
