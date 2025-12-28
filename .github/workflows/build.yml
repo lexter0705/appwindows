@@ -102,164 +102,205 @@ jobs:
   test_wheels:
     name: Test on ${{ matrix.os }}
     needs: build_wheels
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
     strategy:
       matrix:
-        os: [ubuntu-22.04, windows-2019]
+        os: [linux, windows]
       fail-fast: false
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.13
+      - name: Set up Python 3.13 (Windows)
+        if: matrix.os == 'windows'
         uses: actions/setup-python@v5
         with:
           python-version: '3.13'
 
       - name: Install dependencies (Windows)
-        if: runner.os == 'Windows'
+        if: matrix.os == 'windows'
         run: |
           pip install pytest pillow numpy
 
-      - name: Install X11 runtime dependencies (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libx11-6 \
-            libxext6 \
-            libxrender1 \
-            libxtst6 \
-            libxi6 \
-            libxinerama1 \
-            libxcursor1 \
-            libxrandr2 \
-            libxfixes3 \
-            libxdamage1 \
-            libxcomposite1 \
-            libxkbcommon0 \
-            libgl1-mesa-glx \
-            libegl1-mesa \
-            libgbm1 \
-            xvfb \
-            xauth \
-            x11-apps \
-            python3-tk \
-            libtk8.6 \
-            libtcl8.6
-          
-          pip install pytest pytest-timeout pillow numpy
-
-      - name: Download wheels
+      - name: Download wheels (Windows)
+        if: matrix.os == 'windows'
         uses: actions/download-artifact@v4
         with:
-          name: wheels-${{ matrix.os }}
+          name: wheels-windows-2019
           path: ./wheelhouse
 
-      - name: Install wheel
+      - name: Install wheel (Windows)
+        if: matrix.os == 'windows'
+        shell: bash
         run: |
           wheel=$(find ./wheelhouse -name "*cp313*.whl" -print -quit)
           pip install --force-reinstall "$wheel"
-        shell: bash
 
       - name: Run tests (Windows)
-        if: runner.os == 'Windows'
+        if: matrix.os == 'windows'
         run: |
           pytest tests/ -v
         env:
           PYTHONPATH: ${{ github.workspace }}
 
-      - name: Setup X11 environment for tkinter (Linux)
-        if: runner.os == 'Linux'
+      - name: Download wheels (Linux)
+        if: matrix.os == 'linux'
+        uses: actions/download-artifact@v4
+        with:
+          name: wheels-ubuntu-22.04
+          path: ./wheelhouse
+
+      - name: Build and run XFCE Docker container (Linux)
+        if: matrix.os == 'linux'
         run: |
-          # Создаем Xauthority файл
-          export XAUTHORITY=$(mktemp)
-          chmod 600 $XAUTHORITY
+          # Создаем Dockerfile
+          cat > Dockerfile << 'EOF'
+          FROM ubuntu:22.04
           
-          # Генерируем авторизацию
-          xauth add :99 . $(mcookie)
+          ENV DEBIAN_FRONTEND=noninteractive
           
-          # Запускаем Xvfb с полной поддержкой для tkinter
-          Xvfb :99 \
-            -screen 0 1024x768x24 \
-            -ac \
-            +extension GLX \
-            +extension MIT-SHM \
-            +extension XINERAMA \
-            +extension XFIXES \
-            +extension DAMAGE \
-            +extension COMPOSITE \
-            +extension XTEST \
-            +render \
-            -noreset \
-            -auth $XAUTHORITY &
+          # Установка базовых зависимостей
+          RUN apt-get update && \
+              apt-get install -y \
+              sudo \
+              apt-utils \
+              ca-certificates \
+              curl \
+              wget \
+              git \
+              python3 \
+              python3-pip \
+              python3-dev \
+              python3-tk \
+              libpython3-dev \
+              xvfb \
+              xauth \
+              x11-apps \
+              x11-utils \
+              libx11-6 \
+              libxext6 \
+              libxrender1 \
+              libxtst6 \
+              libxi6 \
+              libxinerama1 \
+              libxcursor1 \
+              libxrandr2 \
+              libxfixes3 \
+              libxdamage1 \
+              libxcomposite1 \
+              libxkbcommon0 \
+              libgl1-mesa-glx \
+              libegl1-mesa \
+              libgbm1 \
+              libxshmfence1 \
+              libtk8.6 \
+              libtcl8.6 \
+              && rm -rf /var/lib/apt/lists/*
+          
+          # Установка XFCE
+          RUN apt-get update && \
+              apt-get install -y \
+              xorg \
+              xfce4 \
+              xfce4-goodies \
+              xfwm4 \
+              xfce4-panel \
+              xfce4-session \
+              xfce4-settings \
+              xfdesktop4 \
+              thunar \
+              && rm -rf /var/lib/apt/lists/*
+          
+          # Установка Python зависимостей
+          RUN pip3 install --upgrade pip && \
+              pip3 install pytest pytest-timeout pillow numpy
+          
+          # Создание пользователя
+          RUN useradd -m -s /bin/bash runner && \
+              echo "runner ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+          
+          USER runner
+          WORKDIR /home/runner
+          
+          # Скрипт запуска
+          COPY start-x11.sh /home/runner/start-x11.sh
+          RUN chmod +x /home/runner/start-x11.sh
+          
+          # Копирование кода и wheels
+          COPY . /home/runner/app
+          WORKDIR /home/runner/app
+          
+          CMD ["/home/runner/start-x11.sh"]
+          EOF
+          
+          # Создаем скрипт запуска X11
+          cat > start-x11.sh << 'EOF'
+          #!/bin/bash
+          
+          set -e
+          
+          echo "Starting X11 server..."
+          
+          # Создаем конфигурацию X server
+          mkdir -p ~/.config/xfce4
+          
+          # Запускаем X server
+          sudo Xorg -noreset +extension GLX +extension RANDR +extension RENDER -logfile ./xorg.log :1 &
           XVFB_PID=$!
+          echo "X server started with PID: $XVFB_PID"
           
-          # Ждем инициализации
-          sleep 3
+          sleep 5
           
           # Устанавливаем переменные окружения
-          export DISPLAY=:99
+          export DISPLAY=:1
+          export XAUTHORITY=/home/runner/.Xauthority
           
-          # Проверяем, что X server запущен и доступен
-          if ! xdpyinfo -display $DISPLAY > /dev/null 2>&1; then
-            echo "::error::X server is not accessible"
-            exit 1
-          fi
+          # Создаем Xauthority файл
+          xauth generate $DISPLAY . trusted
           
-          # Тест для tkinter - создаем простое окно
-          python -c "
-          import tkinter as tk
-          import time
+          echo "Starting XFCE session..."
           
-          print('Creating tkinter test window...')
-          root = tk.Tk()
-          root.title('Tkinter Test')
-          root.geometry('300x200+50+50')
-          label = tk.Label(root, text='Tkinter window created successfully!')
-          label.pack(pady=20)
-          root.update()
-          print('Tkinter window created and updated')
+          # Запускаем XFCE session
+          startxfce4 &
+          XFCE_PID=$!
+          echo "XFCE session started with PID: $XFCE_PID"
           
-          # Даем время на отображение
-          time.sleep(1)
-          root.destroy()
-          print('Tkinter window destroyed successfully')
-          "
-                  
-                  # Проверяем, что окно было создано через X11
-                  sleep 1
-                  xwininfo -root -tree -display $DISPLAY || true
-                  
-                  # Сохраняем переменные
-                  echo "XVFB_PID=$XVFB_PID" >> $GITHUB_ENV
-          echo "DISPLAY=$DISPLAY" >> $GITHUB_ENV
-          echo "XAUTHORITY=$XAUTHORITY" >> $GITHUB_ENV
-        env:
-          PYTHONPATH: ${{ github.workspace }}
-
-      - name: Run tests with X11 access (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          # Дополнительные переменные для X11
-          export XLIB_SKIP_ARGB_VISUALS=1
-          export GDK_BACKEND=x11
+          sleep 10
           
-          # Запускаем тесты с отладкой
-          pytest tests/ -v --capture=no
-        env:
-          PYTHONPATH: ${{ github.workspace }}
-          DISPLAY: ${{ env.DISPLAY }}
-          XAUTHORITY: ${{ env.XAUTHORITY }}
-
-      - name: Cleanup X11 environment (Linux)
-        if: runner.os == 'Linux'
-        run: |
-          if [ -n "$XVFB_PID" ] && ps -p $XVFB_PID > /dev/null; then
-            kill $XVFB_PID || true
-          fi
-          if [ -n "$XAUTHORITY" ] && [ -f "$XAUTHORITY" ]; then
-            rm -f $XAUTHORITY || true
-          fi
+          echo "X11 environment is ready"
+          echo "DISPLAY: $DISPLAY"
+          echo "XAUTHORITY: $XAUTHORITY"
+          
+          # Устанавливаем wheel
+          WHEEL=$(find /home/runner/app/wheelhouse -name "*cp313*.whl" -print -quit)
+          echo "Installing wheel: $WHEEL"
+          pip install --force-reinstall "$WHEEL"
+          
+          # Устанавливаем PYTHONPATH
+          export PYTHONPATH=/home/runner/app
+          
+          # Запускаем тесты
+          echo "Running tests..."
+          pytest /home/runner/app/tests/ -v --capture=no
+          
+          # Очищаем
+          echo "Cleaning up..."
+          kill $XFCE_PID || true
+          sudo kill $XVFB_PID || true
+          
+          exit 0
+          EOF
+          
+          # Собираем Docker образ
+          echo "Building Docker image..."
+          docker build -t appwindows-test .
+          
+          # Запускаем контейнер
+          echo "Running Docker container..."
+          docker run --privileged \
+            --env DISPLAY=$DISPLAY \
+            --volume /tmp/.X11-unix:/tmp/.X11-unix \
+            --volume $(pwd):/home/runner/app \
+            -t appwindows-test
