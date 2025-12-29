@@ -1,0 +1,189 @@
+name: unit_tests
+
+on:
+  workflow_run:
+    workflows: ["Build Wheels"]
+    types: [completed]
+    branches: [main, master]
+
+jobs:
+  test_windows:
+    name: Test on Windows
+    runs-on: windows-2019
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Download wheels from build workflow
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build.yml
+          workflow_conclusion: success
+          name: wheels-windows-2019
+          path: ./wheelhouse
+          run_id: ${{ github.event.workflow_run.id }}
+
+      - name: Install dependencies
+        run: |
+          pip install pytest pillow numpy
+
+      - name: Install wheel
+        shell: bash
+        run: |
+          wheel=$(Get-ChildItem ./wheelhouse/*cp313*.whl | Select-Object -First 1)
+          if ($wheel) {
+            pip install --force-reinstall "$wheel"
+          } else {
+            Write-Error "No wheel found for Python 3.13"
+            exit 1
+          }
+
+      - name: Run tests
+        run: |
+          pytest tests/ -v
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+  test_linux:
+    name: Test on Linux
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Download wheels from build workflow
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build.yml
+          workflow_conclusion: success
+          name: wheels-ubuntu-22.04
+          path: ./wheelhouse
+          run_id: ${{ github.event.workflow_run.id }}
+
+      - name: Install X11 runtime dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libx11-6 \
+            libxext6 \
+            libxrender1 \
+            libxtst6 \
+            libxi6 \
+            libxinerama1 \
+            libxcursor1 \
+            libxrandr2 \
+            libxfixes3 \
+            libxdamage1 \
+            libxcomposite1 \
+            libxkbcommon0 \
+            libgl1-mesa-glx \
+            libegl1-mesa \
+            libgbm1 \
+            xvfb \
+            xauth \
+            x11-apps \
+            x11-utils \
+            python3-tk \
+            libtk8.6 \
+            libtcl8.6
+            
+          pip install pytest pytest-timeout pillow numpy
+
+      - name: Install wheel
+        run: |
+          wheel=$(find ./wheelhouse -name "*cp313*.whl" -print -quit)
+          if [ -n "$wheel" ]; then
+            pip install --force-reinstall "$wheel"
+          else
+            echo "::error::No wheel found for Python 3.13"
+            exit 1
+          fi
+        shell: bash
+
+      - name: Setup X11 environment
+        run: |
+          mkdir -p /tmp/xvfb_logs
+          LOG_FILE="/tmp/xvfb_logs/xvfb_$(date +%s).log"
+          
+          sudo rm -f /tmp/.X*-lock || true
+          sudo rm -rf /tmp/.X11-unix/* || true
+          
+          sudo mkdir -p /tmp/.X11-unix
+          sudo chmod 1777 /tmp/.X11-unix
+          
+          export XAUTHORITY=$(mktemp /tmp/.Xauthority.XXXXXX)
+          chmod 600 $XAUTHORITY
+          
+          mcookie_value=$(mcookie)
+          xauth -f $XAUTHORITY add :99 . $mcookie_value
+          
+          echo "Starting Xvfb on display :99"
+          sudo -E Xvfb :99 \
+            -screen 0 1024x768x24 \
+            -ac \
+            -noreset \
+            -auth $XAUTHORITY \
+            -logfile "$LOG_FILE" \
+            -verbose &
+          
+          XVFB_PID=$!
+          echo "Xvfb PID: $XVFB_PID"
+          sleep 3
+          
+          export DISPLAY=:99
+          
+          for i in {1..10}; do
+            sleep 1
+            if xdpyinfo -display $DISPLAY > /dev/null 2>&1; then
+              echo "✅ X server accessible"
+              break
+            fi
+            if [ $i -eq 10 ]; then
+              echo "::error::X server not accessible"
+              cat "$LOG_FILE" || true
+              exit 1
+            fi
+          done
+          
+          echo "XVFB_PID=$XVFB_PID" >> $GITHUB_ENV
+          echo "DISPLAY=$DISPLAY" >> $GITHUB_ENV
+          echo "XAUTHORITY=$XAUTHORITY" >> $GITHUB_ENV
+          echo "XVFB_LOG=$LOG_FILE" >> $GITHUB_ENV
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Run tests
+        run: |
+          export XLIB_SKIP_ARGB_VISUALS=1
+          pytest tests/ -v --capture=no
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          DISPLAY: ${{ env.DISPLAY }}
+          XAUTHORITY: ${{ env.XAUTHORITY }}
+
+      - name: Cleanup
+        if: always()
+        run: |
+          if [ -n "$XVFB_PID" ] && ps -p $XVFB_PID > /dev/null; then
+            sudo kill $XVFB_PID || true
+          fi
+          if [ -n "$XAUTHORITY" ] && [ -f "$XAUTHORITY" ]; then
+            rm -f $XAUTHORITY || true
+          fi
+          sudo rm -f /tmp/.X99-lock || true
+        env:
+          XVFB_PID: ${{ env.XVFB_PID }}
+          XAUTHORITY: ${{ env.XAUTHORITY }}
