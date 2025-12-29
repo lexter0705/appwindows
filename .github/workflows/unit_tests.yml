@@ -1,8 +1,8 @@
-name: Test Wheels
+name: unit_tests
 
 on:
   workflow_run:
-    workflows: ["Build Wheels"]
+    workflows: ["build"]
     types: [completed]
     branches: [main, master]
 
