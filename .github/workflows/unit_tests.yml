@@ -65,6 +65,8 @@ jobs:
       - name: Install and start xephyr
         run: | 
               sudo apt-get update && sudo apt install xorg xserver-xorg-core xinit xvfb xserver-xephyr x11vnc x11-utils -y
+              touch ~/.Xauthority
+              xauth generate :0 . trusted 
               startx
               Xephyr -br -ac -noreset -screen 800x600 :0
         shell: bash
