@@ -101,26 +101,9 @@ jobs:
           pip install --force-reinstall "$wheel"
         shell: bash
 
-      - name: Run tests with Xvfb and window manager
+      - name: Run tests with X11 environment
         run: |
-          # Start Xvfb with required extensions
-          Xvfb :99 -screen 0 1024x768x24 +extension RANDR +extension GLX +extension XINERAMA +extension XFIXES &
-          XVFB_PID=$!
-          export DISPLAY=:99
-          sleep 3
-          
-          # Start window manager
-          fluxbox &
-          FLUXBOX_PID=$!
-          sleep 2
-          
-          # Run tests
-          python -m pytest tests/ -v
-          
-          # Cleanup
-          kill $FLUXBOX_PID 2>/dev/null || true
-          kill $XVFB_PID 2>/dev/null || true
+          python ./tests/run_tests_with_xvfb.py
         env:
           PYTHONPATH: ${{ github.workspace }}
-          DISPLAY: ":99"
         shell: bash
