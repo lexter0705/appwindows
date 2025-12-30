@@ -28,33 +28,28 @@ jobs:
           name: wheels-windows-2019
           path: ./wheelhouse
           run_id: ${{ github.event.workflow_run.id }}
-
+          
       - name: Install dependencies
         run: |
           pip install pytest pillow numpy
-
-      - name: Install wheel
         shell: powershell
+        
+      - name: Install wheel
         run: |
           $wheel = Get-ChildItem -Path "./wheelhouse/*cp313*.whl" -ErrorAction SilentlyContinue | Select-Object -First 1
-          if ($wheel) {
-            Write-Host "Found wheel: $($wheel.FullName)"
-            pip install --force-reinstall "$($wheel.FullName)"
-          } else {
-            Write-Error "❌ No wheel found for Python 3.13"
-            Write-Host "Available files in wheelhouse:"
-            Get-ChildItem -Path "./wheelhouse"
-            exit 1
-          }
-
+          Write-Host "Found wheel: $($wheel.FullName)"
+          pip install --force-reinstall "$($wheel.FullName)"
+        shell: powershell
+        
       - name: Run tests
         run: |
           pytest tests/ -v
         env:
           PYTHONPATH: ${{ github.workspace }}
-
+        shell: powershell
+        
   test_linux:
-    name: Test on Linux with XFCE Docker
+    name: Test on Linux
     runs-on: ubuntu-22.04
     timeout-minutes: 15
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
@@ -62,44 +57,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download wheels from build workflow
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          workflow: build.yml
-          workflow_conclusion: success
-          name: wheels-ubuntu-22.04
-          path: ./wheelhouse
-          run_id: ${{ github.event.workflow_run.id }}
+      - name: Install and start XVFB
+        run: | 
+              sudo apt-get update && sudo apt install xvfb x11vnc x11-utils -y
+              Xvfb :99 -screen 0 1920x1080x24 &
+        shell: bash
 
-      - name: Install Docker properly
+      - name: Install dependencies
         run: |
-          sudo apt-get remove -y docker docker-engine docker.io containerd runc || true
-          sudo apt-get update
-          sudo apt-get install -y ca-certificates curl gnupg
-          sudo install -m 0755 -d /etc/apt/keyrings
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-          sudo chmod a+r /etc/apt/keyrings/docker.gpg
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-          sudo apt-get update
-          sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-          sudo systemctl enable docker
-          sudo systemctl start docker
-          sudo usermod -aG docker $USER
-          newgrp docker
-          docker --version
-          docker run hello-world
-
-      - name: Run tests in XFCE Docker container
-        run: |
-          docker run -it --rm \
-            --env="DISPLAY" \
-            --volume="/tmp/.X11-unix:/tmp/.X11-unix" \
-            --volume="$(pwd):/app" \
-            --workdir="/app" \
-            x11docker/xfce:latest \
-            bash -c "
               pip install pytest pillow numpy
-              wheel=\$(find ./wheelhouse -name \"*cp313*.whl\" -print -quit)
-              pip install --force-reinstall \"\$wheel\"
-              pytest tests/ -v
-            "
+        shell: bash
+              
+      - name: Install wheel
+        run: |
+          set -e
+          wheel=$(find ./wheelhouse -name "*cp313*.whl" -print -quit 2>/dev/null || true) 
+          pip install --force-reinstall "$wheel"
+        shell: bash
+        
+      - name: Run tests
+        run: | 
+              export DISPLAY=:99
+              pytest /tests -v
+        shell: bash
+            
