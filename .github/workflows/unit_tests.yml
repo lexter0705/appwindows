@@ -48,9 +48,11 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}
         shell: powershell
         
-  test_linux:
-    name: Test on Linux
+  run-in-docker:
     runs-on: ubuntu-22.04
+    container:
+      image: accetto/ubuntu-vnc-xfce:latest
+    name: Test on Linux
     timeout-minutes: 15
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
@@ -62,11 +64,6 @@ jobs:
         with:
           python-version: '3.13'
           
-      - name: Install and start xephyr
-        run: | 
-              sudo apt-get update && sudo apt install xorg xserver-xorg-core xinit xvfb xserver-xephyr x11vnc x11-utils -y
-        shell: bash
-
       - name: Install dependencies
         run: |
               pip install pytest pillow numpy
@@ -90,6 +87,6 @@ jobs:
         
       - name: Run tests
         run: | 
-              xvfb-run pytest tests/ -v
+              pytest tests/ -v
         shell: bash
             
