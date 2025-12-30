@@ -64,7 +64,7 @@ jobs:
           
       - name: Install and start XVFB
         run: | 
-              sudo apt-get update && sudo apt install xvfb x11vnc x11-utils -y
+              sudo apt-get update && sudo apt install xvfb xserver-xephyr x11vnc x11-utils -y
         shell: bash
 
       - name: Install dependencies
