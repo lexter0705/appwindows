@@ -66,9 +66,9 @@ jobs:
         run: | 
               sudo apt-get update && sudo apt install xorg xserver-xorg-core xinit xvfb xserver-xephyr x11vnc x11-utils -y
               touch ~/.Xauthority
-              xauth generate :0 . trusted 
+              xauth generate :99 . trusted 
               startx
-              Xephyr -br -ac -noreset -screen 800x600 :0
+              Xephyr -br -ac -noreset -screen 800x600 :99
         shell: bash
 
       - name: Install dependencies
@@ -94,7 +94,7 @@ jobs:
         
       - name: Run tests
         run: | 
-              export DISPLAY=:1 xterm
+              export DISPLAY=:99 xterm
               pytest tests/ -v
         shell: bash
             
