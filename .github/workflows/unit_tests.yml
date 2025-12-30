@@ -62,14 +62,15 @@ jobs:
         with:
           python-version: '3.13'
           
-      - name: Install and start XVFB
+      - name: Install and start xephyr
         run: | 
               sudo apt-get update && sudo apt install xvfb xserver-xephyr x11vnc x11-utils -y
+              Xephyr -br -ac -noreset -screen 800x600 :1
         shell: bash
 
       - name: Install dependencies
         run: |
-              pip install pytest pillow numpy pytest-xvfb
+              pip install pytest pillow numpy
         shell: bash
         
       - name: Download wheels
@@ -90,6 +91,7 @@ jobs:
         
       - name: Run tests
         run: | 
-              pytest tests/ -v --xvfb-backend xephyr
+              export DISPLAY=:1 xterm
+              pytest tests/ -v
         shell: bash
             
