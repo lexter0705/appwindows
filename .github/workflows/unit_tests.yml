@@ -65,12 +65,11 @@ jobs:
       - name: Install and start XVFB
         run: | 
               sudo apt-get update && sudo apt install xvfb x11vnc x11-utils -y
-              Xvfb :99 -screen 0 1920x1080x24 &
         shell: bash
 
       - name: Install dependencies
         run: |
-              pip install pytest pillow numpy
+              pip install pytest pillow numpy pytest-xvfb
         shell: bash
         
       - name: Download wheels
@@ -91,7 +90,6 @@ jobs:
         
       - name: Run tests
         run: | 
-              export DISPLAY=:99
               pytest tests/ -v
         shell: bash
             
