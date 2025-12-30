@@ -92,6 +92,6 @@ jobs:
       - name: Run tests
         run: | 
               export DISPLAY=:99
-              pytest /tests -v
+              pytest tests/ -v
         shell: bash
             
