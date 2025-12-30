@@ -70,15 +70,3 @@ class WindowCreator:
                     proc.kill()
             
             subprocess.run(['pkill', '-f', 'yad'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        else:
-            for window in self.__windows:
-                window.quit()
-                window.destroy()
-
-            for thread in self.__threads:
-                if thread.is_alive():
-                    thread.join(timeout=1)
-
-        self.__processes.clear()
-        self.__threads.clear()
-        self.__windows.clear()
