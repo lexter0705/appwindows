@@ -48,27 +48,55 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}
         shell: powershell
         
-  run-in-docker:
+  test_linux:
     runs-on: ubuntu-22.04
-    container:
-      image: accetto/ubuntu-vnc-xfce-g3:22.04
     name: Test on Linux
-    timeout-minutes: 15
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    timeout-minutes: 15
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Set up Python 3.13
-        run:
-            sudo apt install python3.13
-        shell: bash
-          
-      - name: Install dependencies
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install X11 dependencies
         run: |
-              python3.13 -m pip install pytest pillow numpy
+          sudo apt-get update
+          sudo apt-get install -y \
+            xvfb \
+            x11-utils \
+            x11-apps \
+            libx11-dev \
+            libxext-dev \
+            libxrender-dev \
+            libxtst-dev \
+            libxi-dev \
+            libxinerama-dev \
+            libxcursor-dev \
+            libxrandr-dev \
+            libxfixes-dev \
+            libxdamage-dev \
+            libxcomposite-dev \
+            libxkbcommon-dev \
+            mesa-utils \
+            libgl1-mesa-glx \
+            libgl1-mesa-dev \
+            libegl1-mesa-dev \
+            libgbm-dev \
+            tk \
+            python3-tk \
+            pkg-config
         shell: bash
-        
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pillow numpy
+        shell: bash
+
       - name: Download wheels
         uses: dawidd6/action-download-artifact@v2
         with:
@@ -81,12 +109,30 @@ jobs:
       - name: Install wheel
         run: |
           set -e
-          wheel=$(find ./wheelhouse -name "*cp313*.whl" -print -quit 2>/dev/null || true) 
-          python3.13 -m pip install --force-reinstall "$wheel"
+          wheel=$(find ./wheelhouse -name "*cp313*.whl" -print -quit 2>/dev/null || true)
+          echo "Found wheel: $wheel"
+          pip install --force-reinstall "$wheel"
         shell: bash
-        
-      - name: Run tests
+
+      - name: Run tests with Xvfb
         run: |
-              python3.13 -m pytest tests/ -v
+          # Start virtual X server
+          Xvfb :99 -screen 0 1024x768x24 &
+          export DISPLAY=:99
+          
+          sleep 3
+          
+          python -m pytest tests/ -v --tb=short
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          DISPLAY: ":99"
         shell: bash
-            
+
+      - name: Debug Xvfb
+        if: failure()
+        run: |
+          echo "Xvfb debug info:"
+          ps aux | grep Xvfb
+          echo "Display info:"
+          xdpyinfo -display :99 || echo "Cannot connect to display"
+        shell: bash
