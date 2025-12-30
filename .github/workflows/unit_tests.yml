@@ -62,38 +62,27 @@ jobs:
         with:
           python-version: '3.13'
 
-      - name: Install X11 dependencies
+      - name: Install X11 and window manager dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             xvfb \
             x11-utils \
-            x11-apps \
             libx11-dev \
             libxext-dev \
-            libxrender-dev \
             libxtst-dev \
             libxi-dev \
             libxinerama-dev \
-            libxcursor-dev \
-            libxrandr-dev \
-            libxfixes-dev \
-            libxdamage-dev \
-            libxcomposite-dev \
-            libxkbcommon-dev \
             mesa-utils \
             libgl1-mesa-glx \
-            libgl1-mesa-dev \
-            libegl1-mesa-dev \
-            libgbm-dev \
             tk \
             python3-tk \
-            pkg-config
+            fluxbox \
+            wmctrl
         shell: bash
 
       - name: Install Python dependencies
         run: |
-          python -m pip install --upgrade pip
           pip install pytest pillow numpy
         shell: bash
 
@@ -108,47 +97,30 @@ jobs:
 
       - name: Install wheel
         run: |
-          set -e
-          wheel=$(find ./wheelhouse -name "*cp313*.whl" -print -quit 2>/dev/null || true)
-          echo "Found wheel: $wheel"
+          wheel=$(find ./wheelhouse -name "*cp313*.whl" -print -quit)
           pip install --force-reinstall "$wheel"
         shell: bash
 
-      - name: Run tests with full X11 environment
+      - name: Run tests with Xvfb and window manager
         run: |
-          # Устанавливаем xvfb-run и оконный менеджер
-          sudo apt-get install -y xvfb openbox x11-utils
+          # Start Xvfb with required extensions
+          Xvfb :99 -screen 0 1024x768x24 +extension RANDR +extension GLX +extension XINERAMA +extension XFIXES &
+          XVFB_PID=$!
+          export DISPLAY=:99
+          sleep 3
           
-          # Создаем минимальную конфигурацию Openbox
-          mkdir -p ~/.config/openbox
-          cat > ~/.config/openbox/rc.xml << 'EOF'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <openbox_config xmlns="http://openbox.org/3.4/rc">
-          <applications>
-          <application class="*">
-          <decor>yes</decor>
-          </application>
-          </applications>
-          </openbox_config>
-          EOF
+          # Start window manager
+          fluxbox &
+          FLUXBOX_PID=$!
+          sleep 2
           
-          # Запускаем тесты через xvfb-run с оконным менеджером
-          xvfb-run --auto-servernum --server-args="-screen 0 1024x768x24" \
-          openbox --startup "python -m pytest tests/ -v" &
+          # Run tests
+          python -m pytest tests/ -v
           
-          TEST_PID=$!
-          
-          # Ждем завершения тестов
-          wait $TEST_PID
+          # Cleanup
+          kill $FLUXBOX_PID 2>/dev/null || true
+          kill $XVFB_PID 2>/dev/null || true
         env:
           PYTHONPATH: ${{ github.workspace }}
-        shell: bash
-
-      - name: Debug Xvfb
-        if: failure()
-        run: |
-          echo "Xvfb debug info:"
-          ps aux | grep Xvfb
-          echo "Display info:"
-          xdpyinfo -display :99 || echo "Cannot connect to display"
+          DISPLAY: ":99"
         shell: bash
