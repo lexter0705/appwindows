@@ -64,8 +64,9 @@ jobs:
           
       - name: Install and start xephyr
         run: | 
-              sudo apt-get update && sudo apt install xvfb xserver-xephyr x11vnc x11-utils -y
-              Xephyr -br -ac -noreset -screen 800x600 :1
+              sudo apt-get update && sudo apt install xorg xserver-xorg-core xinit xvfb xserver-xephyr x11vnc x11-utils -y
+              startx
+              Xephyr -br -ac -noreset -screen 800x600 :0
         shell: bash
 
       - name: Install dependencies
