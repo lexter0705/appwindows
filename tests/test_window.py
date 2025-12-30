@@ -1,6 +1,8 @@
 import time
-from tkinter import Tk
 from threading import Thread
+
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel
+from PySide6.QtCore import Qt, QTimer
 
 import numpy as np
 import pytest
@@ -9,23 +11,7 @@ from appwindows import get_finder
 from appwindows.geometry import Point, Size
 from appwindows.exceptions import WindowDoesNotValidException
 
-
-class WindowCreator:
-    def __init__(self):
-        self.__window: Tk | None = None
-        self.__currents_thread: Thread | None = None
-
-    def create_window(self, title, width=400, height=300, x=100, y=100):
-        def run_window():
-            self.__window = Tk()
-            self.__window.title(title)
-            self.__window.geometry(f"{width}x{height}+{x}+{y}")
-            self.__window.mainloop()
-
-        self.__currents_thread = Thread(target=run_window, daemon=True)
-        self.__currents_thread.start()
-        time.sleep(0.5)
-
+from window_creator import WindowCreator
 
 @pytest.fixture
 def test_window():

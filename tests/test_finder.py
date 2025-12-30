@@ -3,31 +3,16 @@ import time
 from tkinter import Tk
 from threading import Thread
 
+from PySide6.QtWidgets import QApplication, QMainWindow, QLabel
+from PySide6.QtCore import Qt, QTimer
+
 import pytest
 
 from appwindows import get_finder
 from appwindows.exceptions import WindowDoesNotFoundException
 from appwindows.geometry import Size
 
-
-class WindowCreator:
-    def __init__(self):
-        self.__window: Tk | None = None
-        self.__currents_thread: Thread | None = None
-
-    def create_window(self, title, width=400, height=300, x=100, y=100):
-        def run_window():
-            self.__window = Tk()
-            self.__window.title(title)
-            self.__window.geometry(f"{width}x{height}+{x}+{y}")
-            self.__window.mainloop()
-
-        self.__currents_thread = Thread(target=run_window, daemon=True)
-        self.__currents_thread.start()
-        time.sleep(0.5)
-
-    def get_real_size(self) -> Size:
-        return Size(*self.__window.size())
+from window_creator import WindowCreator
 
 
 @pytest.fixture
@@ -53,11 +38,9 @@ def test_get_all_windows(finder):
 
 
 def test_get_all_titles(finder):
-    creators: list[WindowCreator] = []
+    creator = WindowCreator()
     titles = ["Window A", "Window B", "Window C"]
     for i in titles:
-        creator = WindowCreator()
-        creators.append(creator)
         creator.create_window(i)
 
     time.sleep(1)

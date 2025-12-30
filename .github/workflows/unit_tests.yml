@@ -62,23 +62,19 @@ jobs:
         with:
           python-version: '3.13'
 
-      - name: Install X11 and window manager dependencies
+      - name: Install X11 utilities
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             xvfb \
             x11-utils \
-            libx11-dev \
-            libxext-dev \
-            libxtst-dev \
-            libxi-dev \
-            libxinerama-dev \
-            mesa-utils \
-            libgl1-mesa-glx \
-            tk \
-            python3-tk \
-            fluxbox \
-            wmctrl
+            xterm \
+            xdotool \
+            wmctrl \
+            xorg-x11-server-utils \
+            zenity \
+            yad \
+            xmessage
         shell: bash
 
       - name: Install Python dependencies
@@ -101,9 +97,16 @@ jobs:
           pip install --force-reinstall "$wheel"
         shell: bash
 
-      - name: Run tests with X11 environment
+      - name: Run tests with xterm windows
         run: |
-          python ./tests/run_tests_with_xvfb.py
+          # Запускаем Xvfb
+          Xvfb :99 -screen 0 1024x768x24 &
+          export DISPLAY=:99
+          sleep 2
+          
+          # Запускаем тесты
+          python -m pytest tests/ -v
         env:
           PYTHONPATH: ${{ github.workspace }}
+          DISPLAY: ":99"
         shell: bash
