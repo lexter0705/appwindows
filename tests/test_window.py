@@ -1,8 +1,4 @@
 import time
-from threading import Thread
-
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel
-from PySide6.QtCore import Qt, QTimer
 
 import numpy as np
 import pytest
@@ -13,9 +9,10 @@ from appwindows.exceptions import WindowDoesNotValidException
 
 from window_creator import WindowCreator
 
+creator = WindowCreator()
+
 @pytest.fixture
 def test_window():
-    creator = WindowCreator()
     creator.create_window("Test Window for Operations")
     time.sleep(1)
     finder = get_finder()
@@ -88,3 +85,7 @@ def test_window_close(test_window):
 
     with pytest.raises(WindowDoesNotValidException):
         test_window.to_background()
+
+
+def test_close_all():
+    creator.cleanup()

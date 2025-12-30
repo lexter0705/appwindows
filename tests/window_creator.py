@@ -15,35 +15,36 @@ class WindowCreator:
 
     def create_window(self, title, width=400, height=300, x=100, y=100):
         if sys.platform == "linux":
-            return self.__create_xterm_window(title, width, height, x, y)
+            return self.__create_yad_window(title, width, height, x, y)
         else:
             return self.__create_tkinter_window(title, width, height, x, y)
 
-    def __create_xterm_window(self, title, width, height, x, y):
+    def __create_yad_window(self, title, width, height, x, y):
         cmd = [
-            'xterm',
-            '-title', title,
-            '-geometry', f'{width}x{height}+{x}+{y}',
-            '-bg', 'white',
-            '-fg', 'black',
-            '-e', 'sleep 3600'
+            'yad',
+            '--title', title,
+            '--width', str(width),
+            '--height', str(height),
+            '--posx', str(x),
+            '--posy', str(y),
+            '--text', 'Test Window',
+            '--button', 'Close:0',
+            '--buttons-layout', 'center',
+            '--geometry', f'{width}x{height}+{x}+{y}',
+            '--undecorated=false',
+            '--skip-taskbar',
+            '--sticky',
+            '--on-top',
+            '--center'  
         ]
-
         proc = subprocess.Popen(
             cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             start_new_session=True
         )
-
         self.__processes.append(proc)
-        time.sleep(2)
-
-        if proc.poll() is None:
-            return True
-
-        stdout, stderr = proc.communicate()
-        return False
+        time.sleep(1)
 
     def __create_tkinter_window(self, title, width, height, x, y):
         def run_window():
@@ -59,17 +60,16 @@ class WindowCreator:
         thread.start()
         self.__threads.append(thread)
         time.sleep(0.5)
-        return True
 
     def cleanup(self):
         if sys.platform == "linux":
             for proc in self.__processes:
                 proc.terminate()
-                proc.wait(timeout=2)
+                proc.wait(timeout=1)
                 if proc.poll() is None:
                     proc.kill()
-
-            subprocess.run(['pkill', '-f', 'xterm.*sleep'], timeout=3)
+            
+            subprocess.run(['pkill', '-f', 'yad'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         else:
             for window in self.__windows:
                 window.quit()

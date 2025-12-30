@@ -71,10 +71,8 @@ jobs:
             xterm \
             xdotool \
             wmctrl \
-            xorg-x11-server-utils \
             zenity \
             yad \
-            xmessage
         shell: bash
 
       - name: Install Python dependencies

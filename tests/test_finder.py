@@ -1,11 +1,5 @@
 import time
 
-from tkinter import Tk
-from threading import Thread
-
-from PySide6.QtWidgets import QApplication, QMainWindow, QLabel
-from PySide6.QtCore import Qt, QTimer
-
 import pytest
 
 from appwindows import get_finder
@@ -14,6 +8,7 @@ from appwindows.geometry import Size
 
 from window_creator import WindowCreator
 
+creator = WindowCreator()
 
 @pytest.fixture
 def finder():
@@ -21,8 +16,7 @@ def finder():
 
 
 def test_get_all_windows(finder):
-    window_creator = WindowCreator()
-    window_creator.create_window("Test Window 1")
+    creator.create_window("Test Window 1")
     time.sleep(1)
 
     windows = finder.get_all_windows()
@@ -54,8 +48,7 @@ def test_get_all_titles(finder):
 
 
 def test_get_window_by_title(finder):
-    window_creator = WindowCreator()
-    window_creator.create_window("Target Window")
+    creator.create_window("Target Window")
     time.sleep(1)
 
     window = finder.get_window_by_title("Target Window")
@@ -64,8 +57,7 @@ def test_get_window_by_title(finder):
 
 
 def test_get_window_by_title_substring(finder):
-    window_creator = WindowCreator()
-    window_creator.create_window("Main Application Window")
+    creator.create_window("Main Application Window")
     time.sleep(1)
 
     window = finder.get_window_by_title("Application")
@@ -82,3 +74,7 @@ def test_get_os_info(finder):
     os_info = finder.get_os()
     assert isinstance(os_info, str)
     assert len(os_info) > 0
+
+
+def test_close_all():
+    creator.cleanup()
