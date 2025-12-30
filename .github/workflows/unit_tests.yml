@@ -51,16 +51,11 @@ jobs:
   run-in-docker:
     runs-on: ubuntu-22.04
     container:
-      image: accetto/ubuntu-vnc-xfce:latest
+      image: accetto/ubuntu-vnc-xfce-g3:22.04
     name: Test on Linux
     timeout-minutes: 15
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
-      - name: Install Node
-        run: |
-              sudo apt update && sudo apt upgrade -y
-              sudo apt install nodejs npm -y
-              
       - name: Checkout code
         uses: actions/checkout@v4
         
