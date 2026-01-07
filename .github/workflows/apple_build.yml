@@ -30,7 +30,7 @@ jobs:
           python -m cibuildwheel --output-dir wheelhouse --platform macos
         env:
           CIBW_BUILD: "cp313-*"
-          CIBW_ARCHS_MACOS: "universal2"
+          CIBW_ARCHS_MACOS: "arm64"
           CIBW_ENVIRONMENT_MACOS: |
             MACOSX_DEPLOYMENT_TARGET=14.0
             LDFLAGS="-framework ApplicationServices"
