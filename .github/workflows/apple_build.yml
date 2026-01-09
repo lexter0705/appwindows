@@ -1,4 +1,4 @@
-name: build
+name: apple_build
 
 on:
   push:

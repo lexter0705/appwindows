@@ -6,6 +6,12 @@
 
 # Appwindows
 The appwindows library solves the problem of working with a graphical shell on different operating systems.
+
+# Supported platforms:
+1) Windows
+2) MacOs
+3) Linux with XServer
+
 # Install
 ```bash
 pip install appwindows

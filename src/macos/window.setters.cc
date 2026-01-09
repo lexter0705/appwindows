@@ -2,7 +2,7 @@
 #include "window.h"
 
 #include <ApplicationServices/ApplicationServices.h>
-#include <AXUIElement.h>
+#include <ApplicationServices/AXUIElement.h>
 
 #include "../core/exceptions/window_does_not_valid.h"
 #include "../core/geometry/point.h"

@@ -88,26 +88,29 @@ std::unique_ptr<core::Size> WindowMacOS::get_size() const {
 
 py::array_t<unsigned char> WindowMacOS::get_screenshot() {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-  CGImageRef screenshot =
-      CGWindowListCreateImage(CGRectNull, kCGWindowListOptionIncludingWindow,
-                              window_id_, kCGWindowImageBoundsIgnoreFraming);
+  CGImageRef screenshot = CGWindowListCreateImage(
+      CGRectNull, kCGWindowListOptionIncludingWindow, window_id_,
+      kCGWindowImageBoundsIgnoreFraming);
+
   size_t width = CGImageGetWidth(screenshot);
   size_t height = CGImageGetHeight(screenshot);
   size_t bytes_per_row = CGImageGetBytesPerRow(screenshot);
-  CFDataRef data_ref =
-      CGDataProviderCopyData(CGImageGetDataProvider(screenshot));
+
+  CFDataRef data_ref = CGDataProviderCopyData(CGImageGetDataProvider(screenshot));
   const unsigned char* data = CFDataGetBytePtr(data_ref);
-  auto result = py::array_t<unsigned char>(
-      {static_cast<py::ssize_t>(height), static_cast<py::ssize_t>(width), 4});
+  auto result = py::array_t<unsigned char>({
+      static_cast<py::ssize_t>(height),
+      static_cast<py::ssize_t>(width),
+      static_cast<py::ssize_t>(3)});
+
   auto buf = result.mutable_data();
   for (size_t y = 0; y < height; ++y) {
     for (size_t x = 0; x < width; ++x) {
       size_t src_index = y * bytes_per_row + x * 4;
-      size_t dst_index = (y * width + x) * 4;
+      size_t dst_index = (y * width + x) * 3;
       buf[dst_index + 0] = data[src_index + 2];
       buf[dst_index + 1] = data[src_index + 1];
       buf[dst_index + 2] = data[src_index + 0];
-      buf[dst_index + 3] = data[src_index + 3];
     }
   }
   CFRelease(data_ref);
