@@ -2,9 +2,9 @@ name: apple_unit_tests
 
 on:
   workflow_run:
-    workflows: ["apple_build"]
-    types: [completed]
-    branches: [apple_develop]
+    workflows: [ apple_build ]
+    types: [ completed ]
+    branches: [ apple_develop ]
 
 jobs:
   test_macos:
@@ -23,7 +23,7 @@ jobs:
       - name: Download wheels from build workflow
         uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: apple_build.yml
+          workflow: apple_build
           workflow_conclusion: success
           name: macos-wheels
           path: ./wheelhouse
