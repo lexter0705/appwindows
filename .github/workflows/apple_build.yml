@@ -11,9 +11,6 @@ jobs:
   build_wheels:
     name: Build macOS wheels
     runs-on: macos-latest
-    strategy:
-      matrix:
-        arch: [x86_64, arm64]
 
     steps:
       - name: Checkout code
@@ -28,23 +25,41 @@ jobs:
         run: |
           pip install meson-python cibuildwheel
 
-      - name: Build macOS wheel for ${{ matrix.arch }}
+      - name: Build for arm64
         run: |
-          python -m cibuildwheel --output-dir wheelhouse --platform macos
+          python -m cibuildwheel --output-dir wheelhouse-arm64 --platform macos
         env:
           CIBW_BUILD: "cp313-*"
-          CIBW_ARCHS_MACOS: ${{ matrix.arch }}
+          CIBW_ARCHS_MACOS: "arm64"
           CIBW_ENVIRONMENT_MACOS: |
             MACOSX_DEPLOYMENT_TARGET=12.0
             LDFLAGS="-framework ApplicationServices"
-            ARCHFLAGS="-arch ${{ matrix.arch }}"
+            ARCHFLAGS="-arch arm64"
           CIBW_BEFORE_BUILD_MACOS: |
             pip install pybind11
-          CIBW_TEST_SKIP: "*_arm64"
+
+      - name: Build for x86_64
+        run: |
+          python -m cibuildwheel --output-dir wheelhouse-x86_64 --platform macos
+        env:
+          CIBW_BUILD: "cp313-*"
+          CIBW_ARCHS_MACOS: "x86_64"
+          CIBW_ENVIRONMENT_MACOS: |
+            MACOSX_DEPLOYMENT_TARGET=12.0
+            LDFLAGS="-framework ApplicationServices"
+            ARCHFLAGS="-arch x86_64"
+          CIBW_BEFORE_BUILD_MACOS: |
+            pip install pybind11
+
+      - name: Combine wheels
+        run: |
+          mkdir -p wheelhouse
+          cp wheelhouse-arm64/*.whl wheelhouse/
+          cp wheelhouse-x86_64/*.whl wheelhouse/
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: macos-wheels-${{ matrix.arch }}
+          name: macos-wheels
           path: ./wheelhouse/*.whl
           retention-days: 7
