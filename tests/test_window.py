@@ -7,9 +7,10 @@ from appwindows import get_finder
 from appwindows.geometry import Point, Size
 from appwindows.exceptions import WindowDoesNotValidException
 
-from window_creator import WindowCreator
+from window_creators import get_creator
 
-creator = WindowCreator()
+creator = get_creator()
+
 
 @pytest.fixture
 def test_window():

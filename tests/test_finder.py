@@ -4,11 +4,10 @@ import pytest
 
 from appwindows import get_finder
 from appwindows.exceptions import WindowDoesNotFoundException
-from appwindows.geometry import Size
 
-from window_creator import WindowCreator
+from window_creators import get_creator
 
-creator = WindowCreator()
+creator = get_creator()
 
 @pytest.fixture
 def finder():
@@ -32,7 +31,6 @@ def test_get_all_windows(finder):
 
 
 def test_get_all_titles(finder):
-    creator = WindowCreator()
     titles = ["Window A", "Window B", "Window C"]
     for i in titles:
         creator.create_window(i)

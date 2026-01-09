@@ -9,8 +9,8 @@ on:
 
 jobs:
   build_wheels:
-    name: Build macOS wheels (x86_64 & arm64)
-    runs-on: macos-14
+    name: Build macOS wheels
+    runs-on: macos-latest
     strategy:
       matrix:
         arch: [x86_64, arm64]
