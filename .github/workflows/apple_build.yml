@@ -10,7 +10,7 @@ on:
 jobs:
   build_wheels:
     name: Build macOS wheels (x86_64 & arm64)
-    runs-on: macos-12
+    runs-on: macos-14
     strategy:
       matrix:
         arch: [x86_64, arm64]
