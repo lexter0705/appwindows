@@ -9,7 +9,7 @@ on:
 
 jobs:
   build_wheels:
-    name: Build macOS wheel
+    name: Build macOS wheels (x86_64 & arm64)
     runs-on: macos-12
     strategy:
       matrix:
@@ -28,7 +28,7 @@ jobs:
         run: |
           pip install meson-python cibuildwheel
 
-      - name: Build macOS wheel
+      - name: Build macOS wheel for ${{ matrix.arch }}
         run: |
           python -m cibuildwheel --output-dir wheelhouse --platform macos
         env:
@@ -37,6 +37,7 @@ jobs:
           CIBW_ENVIRONMENT_MACOS: |
             MACOSX_DEPLOYMENT_TARGET=12.0
             LDFLAGS="-framework ApplicationServices"
+            ARCHFLAGS="-arch ${{ matrix.arch }}"
           CIBW_BEFORE_BUILD_MACOS: |
             pip install pybind11
           CIBW_TEST_SKIP: "*_arm64"
@@ -44,6 +45,6 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: macos-wheel
+          name: macos-wheels-${{ matrix.arch }}
           path: ./wheelhouse/*.whl
           retention-days: 7
