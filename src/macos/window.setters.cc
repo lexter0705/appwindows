@@ -2,7 +2,6 @@
 #include "window.h"
 
 #include <ApplicationServices/ApplicationServices.h>
-#include <ApplicationServices/AXUIElement.h>
 
 #include "../core/exceptions/window_does_not_valid.h"
 #include "../core/geometry/point.h"
@@ -18,7 +17,8 @@ void WindowMacOS::set_minimize(bool is_minimize) {
   AXUIElementCopyAttributeValues(app, kAXWindowsAttribute, 0, 100, &windows);
   if (windows && CFArrayGetCount(windows) > 0) {
     AXUIElementRef window = (AXUIElementRef)CFArrayGetValueAtIndex(windows, 0);
-    CFStringRef minAttr = is_minimize ? kAXMinimizedAttribute : kAXNormalWindowAttribute;
+    CFStringRef minAttr =
+        is_minimize ? kAXMinimizedAttribute : kAXNormalWindowAttribute;
     AXUIElementSetAttributeValue(window, minAttr, kCFBooleanTrue);
   }
   if (windows) CFRelease(windows);
@@ -33,8 +33,10 @@ void WindowMacOS::set_fullscreen(bool is_fullscreen) {
   AXUIElementCopyAttributeValues(app, kAXWindowsAttribute, 0, 100, &windows);
   if (windows && CFArrayGetCount(windows) > 0) {
     AXUIElementRef window = (AXUIElementRef)CFArrayGetValueAtIndex(windows, 0);
-    CFBooleanRef fullscreenValue = is_fullscreen ? kCFBooleanTrue : kCFBooleanFalse;
-    AXUIElementSetAttributeValue(window, kAXFullscreenAttribute, fullscreenValue);
+    CFBooleanRef fullscreenValue =
+        is_fullscreen ? kCFBooleanTrue : kCFBooleanFalse;
+    AXUIElementSetAttributeValue(window, kAXFullscreenAttribute,
+                                 fullscreenValue);
   }
   if (windows) CFRelease(windows);
   CFRelease(app);
@@ -55,7 +57,8 @@ void WindowMacOS::resize(core::Size size) {
       AXValueGetValue((AXValueRef)positionRef, kAXValueCGPointType, &newPoint);
       CFRelease(positionRef);
     }
-    CGSize newSize = {static_cast<CGFloat>(size.get_width()), static_cast<CGFloat>(size.get_height())};
+    CGSize newSize = {static_cast<CGFloat>(size.get_width()),
+                      static_cast<CGFloat>(size.get_height())};
     AXValueRef sizeValue = AXValueCreate(kAXValueCGSizeType, &newSize);
     AXUIElementSetAttributeValue(window, kAXSizeAttribute, sizeValue);
     CFRelease(sizeValue);
@@ -72,7 +75,8 @@ void WindowMacOS::move(core::Point point) {
   AXUIElementCopyAttributeValues(app, kAXWindowsAttribute, 0, 100, &windows);
   if (windows && CFArrayGetCount(windows) > 0) {
     AXUIElementRef window = (AXUIElementRef)CFArrayGetValueAtIndex(windows, 0);
-    CGPoint newPoint = {static_cast<CGFloat>(point.get_x()), static_cast<CGFloat>(point.get_y())};
+    CGPoint newPoint = {static_cast<CGFloat>(point.get_x()),
+                        static_cast<CGFloat>(point.get_y())};
     AXValueRef pointValue = AXValueCreate(kAXValueCGPointType, &newPoint);
     AXUIElementSetAttributeValue(window, kAXPositionAttribute, pointValue);
     CFRelease(pointValue);
