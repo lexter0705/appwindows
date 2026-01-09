@@ -57,9 +57,46 @@ jobs:
           cp wheelhouse-arm64/*.whl wheelhouse/
           cp wheelhouse-x86_64/*.whl wheelhouse/
 
-      - name: Upload wheels
+      - name: Upload wheels as artifact
         uses: actions/upload-artifact@v4
         with:
           name: macos-wheels
           path: ./wheelhouse/*.whl
           retention-days: 7
+
+  test_macos:
+    name: Test on MacOS
+    runs-on: macos-latest
+    needs: build_wheels
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Download wheels from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-wheels
+          path: ./wheelhouse
+
+      - name: Install test dependencies
+        run: |
+          pip install pytest
+
+      - name: Install arm64 wheel only
+        run: |
+          pip install wheelhouse/*arm64*.whl
+
+      - name: Run tests
+        run: |
+          pytest tests/ -v
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Clean up any remaining test windows
+        run: |
+          osascript -e 'tell application "Finder" to close every window'
