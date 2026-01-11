@@ -46,6 +46,11 @@ def test_get_all_titles(finder):
     time.sleep(1)
 
     all_titles = finder.get_all_titles()
+
+    import logging
+    logger = logging.getLogger()
+    logger.info(all_titles)
+
     assert isinstance(all_titles, list)
     assert len(all_titles) >= len(titles)
 
