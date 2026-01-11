@@ -93,7 +93,7 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest tests/ -v
+          pytest tests/ -v -s --log-cli-level=20
         env:
           PYTHONPATH: ${{ github.workspace }}
 

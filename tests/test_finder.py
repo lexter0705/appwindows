@@ -19,6 +19,14 @@ def test_get_all_windows(finder):
     time.sleep(1)
 
     windows = finder.get_all_windows()
+
+    import logging
+
+    logger = logging.getLogger()
+
+    logger.info(windows)
+    logger.info(len(windows))
+
     assert isinstance(windows, list)
     assert len(windows) > 0
     print("Windows getted!")
