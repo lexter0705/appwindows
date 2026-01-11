@@ -42,10 +42,6 @@ std::unique_ptr<core::QuadPoints> WindowMacOS::get_points() {
 std::unique_ptr<std::string> WindowMacOS::get_title() const {
   CFArrayRef window_list = CGWindowListCopyWindowInfo(
       kCGWindowListOptionIncludingWindow, window_id_);
-  if (CFArrayGetCount(window_list) == 0) {
-    CFRelease(window_list);
-    throw core::exceptions::WindowDoesNotValidException();
-  }
   CFDictionaryRef window_info =
       reinterpret_cast<CFDictionaryRef>(CFArrayGetValueAtIndex(window_list, 0));
   std::string title;
