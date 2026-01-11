@@ -11,6 +11,6 @@ def get_creator() -> WindowCreator:
     if sys.platform == "linux":
         return XServerWindowCreator()
     elif sys.platform == "darwin":
-        return SafariWindowCreator()
+        return MacOSWindowCreator()
     else:
         return WindowsWindowCreator()

@@ -1,4 +1,5 @@
 import time
+import logging
 
 import pytest
 
@@ -8,25 +9,29 @@ from appwindows.exceptions import WindowDoesNotFoundException
 from window_creators import get_creator
 
 creator = get_creator()
+logger = logging.getLogger()
+
 
 @pytest.fixture
 def finder():
     return get_finder()
 
+def test_window_creator(finder):
+    count_windows = 5
+    count = len(finder.get_all_windows())
+    for i in range(count_windows):
+        creator.create_window(f"Test Window Creator {i}")
+    current_count = len(finder.get_all_windows())
+    logger.info(count)
+    logger.info(current_count)
+    assert count + count_windows == current_count
 
 def test_get_all_windows(finder):
     creator.create_window("Test Window 1")
     time.sleep(1)
-
     windows = finder.get_all_windows()
-
-    import logging
-
-    logger = logging.getLogger()
-
     logger.info(windows)
     logger.info(len(windows))
-
     assert isinstance(windows, list)
     assert len(windows) > 0
     print("Windows getted!")
@@ -42,15 +47,9 @@ def test_get_all_titles(finder):
     titles = ["Window A", "Window B", "Window C"]
     for i in titles:
         creator.create_window(i)
-
     time.sleep(1)
-
     all_titles = finder.get_all_titles()
-
-    import logging
-    logger = logging.getLogger()
     logger.info(all_titles)
-
     assert isinstance(all_titles, list)
     assert len(all_titles) >= len(titles)
 
