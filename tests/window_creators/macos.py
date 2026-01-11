@@ -22,12 +22,16 @@ class MacOSWindowCreator(WindowCreator):
                       x: int = 100, y: int = 100):
         escaped_title = self.__escape_applescript_string(title)
         script = f'''
-        tell application "Terminal"
-            activate
-            do script ""
-            delay 1
-            set custom title of front window to "{escaped_title}"
+        tell application "TextEdit"
+            make new document
+            delay 0.5
+            set windowTitle to "{escaped_title}"
+            set name of front window to windowTitle
             set bounds of front window to {{{x}, {y}, {x + width}, {y + height}}}
+            set text of front document to "Test Window"
+            set visible of front window to true
+            delay 1
+            return windowTitle
         end tell
         '''
         thread = Thread(target=self.__create_window_async, args=(script, title), daemon=True)
@@ -38,7 +42,7 @@ class MacOSWindowCreator(WindowCreator):
         for title in self.__window_titles:
             escaped_title = self.__escape_applescript_string(title)
             script = f'''
-            tell application "Terminal"
+            tell application "TextEdit"
                 close (every window whose custom title is "{escaped_title}")
             end tell
             '''
