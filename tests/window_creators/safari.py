@@ -17,11 +17,18 @@ class SafariWindowCreator(WindowCreator):
     def create_window(self, title: str, width: int = 400, height: int = 300,
                       x: int = 100, y: int = 100):
         escaped_title = self.__escape_applescript_string(title)
-
+        html_content = f'''
+        <!DOCTYPE html>
+        <html>
+        <head><title>{title}</title></head>
+        <body><h1>{title}</h1></body>
+        </html>
+        '''
+        html_escaped = html_content.replace('"', '\\"').replace('\n', ' ')
         script = f'''
         tell application "Safari"
             activate
-            make new document
+            make new document with properties {{URL:"data:text/html,{html_escaped}"}}
             set custom title of front window to "{escaped_title}"
             set bounds of front window to {{{x}, {y}, {x + width}, {y + height}}}
         end tell

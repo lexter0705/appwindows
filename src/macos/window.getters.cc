@@ -44,16 +44,19 @@ std::unique_ptr<std::string> WindowMacOS::get_title() const {
 
   CFArrayRef window_list = CGWindowListCopyWindowInfo(
       kCGWindowListOptionIncludingWindow, window_id_);
+
   if (CFArrayGetCount(window_list) == 0) {
     CFRelease(window_list);
     throw core::exceptions::WindowDoesNotValidException();
   }
+
   CFDictionaryRef window_info =
       reinterpret_cast<CFDictionaryRef>(CFArrayGetValueAtIndex(window_list, 0));
+
   std::string title;
   CFStringRef window_name_ref = reinterpret_cast<CFStringRef>(
       CFDictionaryGetValue(window_info, kCGWindowName));
-  if (window_name_ref && CFStringGetLength(window_name_ref) > 0) {
+  if (window_name_ref) {
     const char* title_cstr = CFStringGetCStringPtr(window_name_ref, kCFStringEncodingUTF8);
     if (title_cstr) {
       title = title_cstr;
@@ -67,19 +70,13 @@ std::unique_ptr<std::string> WindowMacOS::get_title() const {
   if (title.empty()) {
     CFStringRef owner_name_ref = reinterpret_cast<CFStringRef>(
         CFDictionaryGetValue(window_info, kCGWindowOwnerName));
-    if (owner_name_ref && CFStringGetLength(owner_name_ref) > 0) {
+    if (owner_name_ref) {
       const char* owner_cstr = CFStringGetCStringPtr(owner_name_ref, kCFStringEncodingUTF8);
       if (owner_cstr) {
-        title = owner_cstr;
-      } else {
-        char buffer[1024];
-        if (CFStringGetCString(owner_name_ref, buffer, sizeof(buffer), kCFStringEncodingUTF8)) {
-          title = buffer;
-        }
+        title = std::string(owner_cstr) + "_" + std::to_string(window_id_);
       }
     }
   }
-  if (title.empty()) title = "Window_" + std::to_string(window_id_);
   CFRelease(window_list);
   return std::make_unique<std::string>(title);
 }
