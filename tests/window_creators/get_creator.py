@@ -10,7 +10,5 @@ from .base import WindowCreator
 def get_creator() -> WindowCreator:
     if sys.platform == "linux":
         return XServerWindowCreator()
-    elif sys.platform == "darwin":
-        return MacOSWindowCreator()
     else:
         return WindowsWindowCreator()
