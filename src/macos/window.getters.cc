@@ -40,8 +40,6 @@ std::unique_ptr<core::QuadPoints> WindowMacOS::get_points() {
 }
 
 std::unique_ptr<std::string> WindowMacOS::get_title() const {
-  if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-
   CFArrayRef window_list = CGWindowListCopyWindowInfo(
       kCGWindowListOptionIncludingWindow, window_id_);
   if (CFArrayGetCount(window_list) == 0) {
