@@ -1,5 +1,6 @@
 import time
 import subprocess
+from threading import Thread
 
 from .base import WindowCreator
 
@@ -7,6 +8,7 @@ from .base import WindowCreator
 class MacOSWindowCreator(WindowCreator):
     def __init__(self):
         self.__window_titles = []
+        self.__threads = []
 
     def __escape_applescript_string(self, text: str) -> str:
         return text.replace('"', '\\"')
@@ -27,8 +29,8 @@ class MacOSWindowCreator(WindowCreator):
             set bounds of front window to {{{x}, {y}, {x + width}, {y + height}}}
         end tell
         '''
-
-        self.__run_applescript(script)
+        thread = Thread(target=lambda: self.__run_applescript(script), daemon=True)
+        thread.start()
         self.__window_titles.append(title)
         time.sleep(2)
 
