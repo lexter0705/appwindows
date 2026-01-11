@@ -85,6 +85,8 @@ jobs:
 
       - name: Install test dependencies
         run: |
+          brew install tcl-tk
+          brew install python-tk
           pip install pytest
 
       - name: Install arm64 wheel only
