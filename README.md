@@ -1,8 +1,8 @@
 <img src="https://raw.githubusercontent.com/lexter0705/appwindows/refs/heads/master/appwindows.svg" alt="" width="40%" >
 
-|[![License - BSD 3-Clause](https://img.shields.io/pypi/l/appwindows.svg)](https://github.com/lexter0705/appwindows/blob/master/LICENSE.md) | [![unit_tests](https://github.com/lexter0705/appwindows/actions/workflows/unit_tests.yml/badge.svg)](https://github.com/lexter0705/appwindows/actions/workflows/unit_tests.yml)
-|-------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|
-|[![PyPI Downloads](https://static.pepy.tech/personalized-badge/appwindows?period=total&units=INTERNATIONAL_SYSTEM&left_color=GRAY&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/appwindows) |   |
+[![License - BSD 3-Clause](https://img.shields.io/pypi/l/appwindows.svg)](https://github.com/lexter0705/appwindows/blob/master/LICENSE.md) [![unit_tests](https://github.com/lexter0705/appwindows/actions/workflows/unit_tests.yml/badge.svg)](https://github.com/lexter0705/appwindows/actions/workflows/unit_tests.yml)
+<br>
+[![PyPI Downloads](https://static.pepy.tech/personalized-badge/appwindows?period=total&units=INTERNATIONAL_SYSTEM&left_color=GRAY&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/appwindows) 
 
 # Appwindows
 The appwindows library solves the problem of working with a graphical shell on different operating systems.
