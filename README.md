@@ -10,7 +10,7 @@ The appwindows library solves the problem of working with a graphical shell on d
 # Supported platforms:
 1) Windows
 2) MacOs
-3) Linux with XServer
+3) Linux with XServer (Wayland works, but with very significant limitations)
 
 # Install
 ```bash
