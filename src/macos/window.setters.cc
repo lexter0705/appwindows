@@ -1,5 +1,6 @@
 #include "window.h"
 
+#include <Accessibility/Accessibility.h>
 #include <ApplicationServices/ApplicationServices.h>
 
 #include <cstdlib>
