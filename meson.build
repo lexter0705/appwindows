@@ -34,6 +34,7 @@ appwindows_sources = files(
 
 platform_deps = []
 platform_args = []
+platform_link_args = []
 
 if host_machine.system() == 'windows'
     appwindows_sources += files(
@@ -61,25 +62,20 @@ elif host_machine.system() == 'linux'
     endif
 
 elif host_machine.system() == 'darwin'
-    objcpp = meson.get_compiler('cpp')
     appwindows_sources += files(
         'src/macos/window.getters.cc',
-        'src/macos/window.setters.mm',  # .mm вместо .cc
+        'src/macos/window.setters.mm',
         'src/macos/finder.cc'
     )
     appwindows_inc = [appwindows_inc, include_directories('src/macos')]
-    platform_args += ['-DMACOS_USED=1']
-    platform_args += [
-        '-x', 'objective-c++',
-        '-fobjc-arc',
+    platform_args += ['-DMACOS_USED=1', '-x', 'objective-c++', '-fobjc-arc']
+    platform_link_args += [
+        '-framework', 'Foundation',
+        '-framework', 'AppKit',
+        '-framework', 'ApplicationServices',
+        '-framework', 'Accessibility'
     ]
-    platform_deps += [
-        objcpp.find_library('Foundation'),
-        objcpp.find_library('AppKit'),
-        objcpp.find_library('ApplicationServices'),
-        objcpp.find_library('Accessibility'),
-        dependency('appleframeworks', modules: ['Foundation', 'AppKit', 'ApplicationServices', 'Accessibility'])
-    ]
+
 else
     error('Unsupported platform: ' + host_machine.system())
 endif
@@ -90,6 +86,7 @@ appwindows_mod = py3.extension_module('appwindows',
                                       include_directories: [appwindows_inc, exceptions_inc, geometry_inc],
                                       install: true,
                                       cpp_args: platform_args,
+                                      link_args: platform_link_args,
                                       subdir: 'appwindows')
 
 install_subdir('lib',
