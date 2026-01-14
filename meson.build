@@ -68,7 +68,7 @@ elif host_machine.system() == 'darwin'
     )
     appwindows_inc = [appwindows_inc, include_directories('src/macos')]
     platform_args += ['-DMACOS_USED=1']
-
+    platform_deps += [meson.get_compiler('cpp').find_library('Accessibility')]
 else
     error('Unsupported platform: ' + host_machine.system())
 endif
