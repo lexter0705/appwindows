@@ -1,6 +1,8 @@
 #include "window.h"
 
 #include <ApplicationServices/ApplicationServices.h>
+#include <Accessibility/Accessibility.h>
+#include <CoreFoundation/CoreFoundation.h>
 
 #include <cstdlib>
 #include <memory>
