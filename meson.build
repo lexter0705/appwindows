@@ -61,14 +61,25 @@ elif host_machine.system() == 'linux'
     endif
 
 elif host_machine.system() == 'darwin'
+    objcpp = meson.get_compiler('cpp')
     appwindows_sources += files(
         'src/macos/window.getters.cc',
-        'src/macos/window.setters.cc',
+        'src/macos/window.setters.mm',  # .mm вместо .cc
         'src/macos/finder.cc'
     )
     appwindows_inc = [appwindows_inc, include_directories('src/macos')]
     platform_args += ['-DMACOS_USED=1']
-    platform_deps += [meson.get_compiler('cpp').find_library('Accessibility')]
+    platform_args += [
+        '-x', 'objective-c++',
+        '-fobjc-arc',
+    ]
+    platform_deps += [
+        objcpp.find_library('Foundation'),
+        objcpp.find_library('AppKit'),
+        objcpp.find_library('ApplicationServices'),
+        objcpp.find_library('Accessibility'),
+        dependency('appleframeworks', modules: ['Foundation', 'AppKit', 'ApplicationServices', 'Accessibility'])
+    ]
 else
     error('Unsupported platform: ' + host_machine.system())
 endif
