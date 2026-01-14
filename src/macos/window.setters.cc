@@ -74,102 +74,45 @@ void WindowMacOS::set_fullscreen(bool is_fullscreen) {
 
 void WindowMacOS::resize(core::Size size) {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-
   auto pid = *get_process_id();
-  CFArrayRef window_list = CGWindowListCopyWindowInfo(
-      kCGWindowListOptionIncludingWindow, window_id_);
-
-  if (CFArrayGetCount(window_list) == 0) {
-    CFRelease(window_list);
-    throw core::exceptions::WindowDoesNotValidException();
+  AXUIElementRef app = AXUIElementCreateApplication(pid);
+  CFArrayRef windows;
+  AXUIElementCopyAttributeValues(app, kAXWindowsAttribute, 0, 100, &windows);
+  if (windows && CFArrayGetCount(windows) > 0) {
+    AXUIElementRef window = (AXUIElementRef)CFArrayGetValueAtIndex(windows, 0);
+    CFTypeRef positionRef;
+    AXUIElementCopyAttributeValue(window, kAXPositionAttribute, &positionRef);
+    CGPoint newPoint = {0, 0};
+    if (positionRef) {
+      AXValueGetValue((AXValueRef)positionRef, kAXValueCGPointType, &newPoint);
+      CFRelease(positionRef);
+    }
+    CGSize newSize = {static_cast<CGFloat>(size.get_width()),
+                      static_cast<CGFloat>(size.get_height())};
+    AXValueRef sizeValue = AXValueCreate(kAXValueCGSizeType, &newSize);
+    AXUIElementSetAttributeValue(window, kAXSizeAttribute, sizeValue);
+    CFRelease(sizeValue);
   }
-
-  CFDictionaryRef window_info =
-      reinterpret_cast<CFDictionaryRef>(CFArrayGetValueAtIndex(window_list, 0));
-  CFDictionaryRef bounds_ref = reinterpret_cast<CFDictionaryRef>(
-      CFDictionaryGetValue(window_info, kCGWindowBounds));
-
-  CGRect bounds;
-  CGRectMakeWithDictionaryRepresentation(bounds_ref, &bounds);
-  CFRelease(window_list);
-
-  CGRect new_bounds = CGRectMake(bounds.origin.x, bounds.origin.y,
-                                 static_cast<CGFloat>(size.get_width()),
-                                 static_cast<CGFloat>(size.get_height()));
-
-  std::string script =
-      "tell application \"System Events\"\n"
-      "  set frontmost of process (unix id " +
-      std::to_string(pid) +
-      ") to true\n"
-      "  tell application process (unix id " +
-      std::to_string(pid) +
-      ")\n"
-      "    tell front window\n"
-      "      set bounds to {" +
-      std::to_string(static_cast<int>(new_bounds.origin.x)) + ", " +
-      std::to_string(static_cast<int>(new_bounds.origin.y)) + ", " +
-      std::to_string(
-          static_cast<int>(new_bounds.origin.x + new_bounds.size.width)) +
-      ", " +
-      std::to_string(
-          static_cast<int>(new_bounds.origin.y + new_bounds.size.height)) +
-      "}\n"
-      "    end tell\n"
-      "  end tell\n"
-      "end tell";
-
-  execute_apple_script(script);
+  if (windows) CFRelease(windows);
+  CFRelease(app);
 }
 
 void WindowMacOS::move(core::Point point) {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-
   auto pid = *get_process_id();
-  CFArrayRef window_list = CGWindowListCopyWindowInfo(
-      kCGWindowListOptionIncludingWindow, window_id_);
-
-  if (CFArrayGetCount(window_list) == 0) {
-    CFRelease(window_list);
-    throw core::exceptions::WindowDoesNotValidException();
+  AXUIElementRef app = AXUIElementCreateApplication(pid);
+  CFArrayRef windows;
+  AXUIElementCopyAttributeValues(app, kAXWindowsAttribute, 0, 100, &windows);
+  if (windows && CFArrayGetCount(windows) > 0) {
+    AXUIElementRef window = (AXUIElementRef)CFArrayGetValueAtIndex(windows, 0);
+    CGPoint newPoint = {static_cast<CGFloat>(point.get_x()),
+                        static_cast<CGFloat>(point.get_y())};
+    AXValueRef pointValue = AXValueCreate(kAXValueCGPointType, &newPoint);
+    AXUIElementSetAttributeValue(window, kAXPositionAttribute, pointValue);
+    CFRelease(pointValue);
   }
-
-  CFDictionaryRef window_info =
-      reinterpret_cast<CFDictionaryRef>(CFArrayGetValueAtIndex(window_list, 0));
-  CFDictionaryRef bounds_ref = reinterpret_cast<CFDictionaryRef>(
-      CFDictionaryGetValue(window_info, kCGWindowBounds));
-
-  CGRect bounds;
-  CGRectMakeWithDictionaryRepresentation(bounds_ref, &bounds);
-  CFRelease(window_list);
-
-  CGRect new_bounds = CGRectMake(static_cast<CGFloat>(point.get_x()),
-                                 static_cast<CGFloat>(point.get_y()),
-                                 bounds.size.width, bounds.size.height);
-
-  std::string script =
-      "tell application \"System Events\"\n"
-      "  set frontmost of process (unix id " +
-      std::to_string(pid) +
-      ") to true\n"
-      "  tell application process (unix id " +
-      std::to_string(pid) +
-      ")\n"
-      "    tell front window\n"
-      "      set bounds to {" +
-      std::to_string(static_cast<int>(new_bounds.origin.x)) + ", " +
-      std::to_string(static_cast<int>(new_bounds.origin.y)) + ", " +
-      std::to_string(
-          static_cast<int>(new_bounds.origin.x + new_bounds.size.width)) +
-      ", " +
-      std::to_string(
-          static_cast<int>(new_bounds.origin.y + new_bounds.size.height)) +
-      "}\n"
-      "    end tell\n"
-      "  end tell\n"
-      "end tell";
-
-  execute_apple_script(script);
+  if (windows) CFRelease(windows);
+  CFRelease(app);
 }
 
 void WindowMacOS::close() {
