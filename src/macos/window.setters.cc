@@ -1,6 +1,8 @@
 #include "window.h"
 
 #include <ApplicationServices/ApplicationServices.h>
+#include <ApplicationServices/AXValue.h>
+
 
 #include <cstdlib>
 #include <memory>
