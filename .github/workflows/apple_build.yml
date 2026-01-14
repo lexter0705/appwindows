@@ -23,6 +23,8 @@ jobs:
 
       - name: Install build tools
         run: |
+          brew install cairo
+          brew install --cask xquartz
           pip install meson-python cibuildwheel
 
       - name: Build for arm64
