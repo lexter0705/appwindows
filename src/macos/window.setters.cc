@@ -1,8 +1,6 @@
 #include "window.h"
 
 #include <ApplicationServices/ApplicationServices.h>
-#include <Accessibility/Accessibility.h>
-#include <CoreFoundation/CoreFoundation.h>
 
 #include <cstdlib>
 #include <memory>
@@ -14,18 +12,20 @@
 
 namespace appwindows::macos {
 
+void execute_apple_script(const std::string& script) {
+  std::string command = "osascript -e '" + script + "'";
+  system(command.c_str());
+}
+
 AXUIElementRef get_window_element(pid_t pid, CGWindowID window_id) {
     AXUIElementRef app = AXUIElementCreateApplication(pid);
     if (!app) return nullptr;
-
     CFArrayRef windows;
     AXError result = AXUIElementCopyAttributeValue(app, kAXWindowsAttribute, (CFTypeRef*)&windows);
-
     if (result != kAXErrorSuccess) {
         CFRelease(app);
         return nullptr;
     }
-
     CFIndex count = CFArrayGetCount(windows);
     AXUIElementRef target_window = nullptr;
 
@@ -36,14 +36,12 @@ AXUIElementRef get_window_element(pid_t pid, CGWindowID window_id) {
             int win_id;
             CFNumberGetValue(window_number, kCFNumberIntType, &win_id);
             CFRelease(window_number);
-
             if (win_id == window_id) {
                 target_window = (AXUIElementRef)CFRetain(window);
                 break;
             }
         }
     }
-
     CFRelease(windows);
     CFRelease(app);
     return target_window;
@@ -86,7 +84,7 @@ void WindowMacOS::resize(core::Size size) {
         throw core::exceptions::WindowDoesNotValidException();
     }
     CGSize new_size = CGSizeMake(static_cast<CGFloat>(size.get_width()),
-    CFTypeRef size_value = AXValueCreate(kAXValueCGSizeType, &new_size);
+    AXValueRef size_value = AXValueCreate(kAXValueCGSizeType, &new_size);
     if (!size_value) {
         CFRelease(position_value);
         CFRelease(window_element);
@@ -114,7 +112,7 @@ void WindowMacOS::move(core::Point point) {
         throw core::exceptions::WindowDoesNotValidException();
     }
     CGPoint new_position = CGPointMake(static_cast<CGFloat>(point.get_x()),
-    CFTypeRef position_value = AXValueCreate(kAXValueCGPointType, &new_position);
+    AXValueRef position_value = AXValueCreate(kAXValueCGPointType, &new_position);
     if (!position_value) {
         CFRelease(size_value);
         CFRelease(window_element);
@@ -124,6 +122,7 @@ void WindowMacOS::move(core::Point point) {
     CFRelease(position_value);
     CFRelease(size_value);
     CFRelease(window_element);
+
     if (result != kAXErrorSuccess) {
         throw core::exceptions::WindowDoesNotValidException();
     }
@@ -131,35 +130,58 @@ void WindowMacOS::move(core::Point point) {
 
 void WindowMacOS::close() {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
+
     auto pid = *get_process_id();
-    AXUIElementRef window_element = get_window_element(pid, window_id_);
-    if (!window_element) {
-        throw core::exceptions::WindowDoesNotValidException();
-    }
-    AXUIElementPerformAction(window_element, kAXCloseAction);
-    CFRelease(window_element);
+    std::string script =
+        "tell application \"System Events\"\n"
+        "  set frontmost of process (unix id " +
+        std::to_string(pid) +
+        ") to true\n"
+        "  tell application process (unix id " +
+        std::to_string(pid) +
+        ")\n"
+        "    tell front window\n"
+        "      perform action \"AXClose\"\n"
+        "    end tell\n"
+        "  end tell\n"
+        "end tell";
+
+    execute_apple_script(script);
 }
 
 void WindowMacOS::to_foreground() {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
+
     auto pid = *get_process_id();
-    AXUIElementRef app_element = AXUIElementCreateApplication(pid);
-    if (!app_element) {
-        throw core::exceptions::WindowDoesNotValidException();
-    }
-    AXUIElementSetAttributeValue(app_element, kAXFrontmostAttribute, kCFBooleanTrue);
-    CFRelease(app_element);
+    std::string script =
+        "tell application \"System Events\"\n"
+        "  set frontmost of process (unix id " +
+        std::to_string(pid) +
+        ") to true\n"
+        "  tell application process (unix id " +
+        std::to_string(pid) +
+        ")\n"
+        "    set frontmost to true\n"
+        "  end tell\n"
+        "end tell";
+
+    execute_apple_script(script);
 }
 
 void WindowMacOS::to_background() {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
+
     auto pid = *get_process_id();
-    AXUIElementRef app_element = AXUIElementCreateApplication(pid);
-    if (!app_element) {
-        throw core::exceptions::WindowDoesNotValidException();
-    }
-    AXUIElementSetAttributeValue(app_element, kAXFrontmostAttribute, kCFBooleanFalse);
-    CFRelease(app_element);
+    std::string script =
+        "tell application \"System Events\"\n"
+        "  tell application process (unix id " +
+        std::to_string(pid) +
+        ")\n"
+        "    set frontmost to false\n"
+        "  end tell\n"
+        "end tell";
+
+    execute_apple_script(script);
 }
 
 }  // namespace appwindows::macos
