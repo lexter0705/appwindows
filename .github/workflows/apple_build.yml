@@ -23,7 +23,7 @@ jobs:
 
       - name: Install build tools
         run: |
-          pip install meson-python cibuildwheel
+          pip install "meson>=1.2.0" "meson-python>=0.15.0" cibuildwheel
 
       - name: Build for arm64
         run: |
@@ -33,8 +33,6 @@ jobs:
           CIBW_ARCHS_MACOS: "arm64"
           CIBW_ENVIRONMENT_MACOS: |
             MACOSX_DEPLOYMENT_TARGET=12.0
-            CFLAGS="-fobjc-arc -x objective-c++"
-            CXXFLAGS="-fobjc-arc -x objective-c++"
             LDFLAGS="-framework Foundation -framework AppKit -framework ApplicationServices -framework Accessibility"
             ARCHFLAGS="-arch arm64"
           CIBW_BEFORE_BUILD_MACOS: |
