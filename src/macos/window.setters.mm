@@ -19,28 +19,33 @@ AXUIElementRef get_window_element(pid_t pid, CGWindowID window_id) {
         AXUIElementRef app = AXUIElementCreateApplication(pid);
         if (!app) return nullptr;
         CFArrayRef windows = nullptr;
-        AXError result = AXUIElementCopyAttributeValue(app, kAXWindowsAttribute, (CFTypeRef*)&windows);
-        if (result != kAXErrorSuccess || !windows) {
+        AXError err = AXUIElementCopyAttributeValue(app, kAXWindowsAttribute, (CFTypeRef*)&windows);
+        if (err != kAXErrorSuccess || !windows) {
             CFRelease(app);
             return nullptr;
         }
+        AXUIElementRef result = nullptr;
         CFIndex count = CFArrayGetCount(windows);
-        AXUIElementRef target_window = nullptr;
         for (CFIndex i = 0; i < count; ++i) {
             AXUIElementRef window = (AXUIElementRef)CFArrayGetValueAtIndex(windows, i);
             if (!window) continue;
-            CGWindowID current_id = 0;
-            if (AXUIElementGetWindow(window, &current_id) == kAXErrorSuccess) {
-                if (current_id == window_id) {
-                    CFRetain(window);
-                    target_window = window;
-                    break;
+            CFTypeRef value = nullptr;
+            err = AXUIElementCopyAttributeValue(window, kAXWindowIdAttribute, &value);
+            if (err == kAXErrorSuccess && value && CFGetTypeID(value) == CFNumberGetTypeID()) {
+                CGWindowID axWinId = 0;
+                if (CFNumberGetValue((CFNumberRef)value, kCFNumberCGWindowIDType, &axWinId)) {
+                    if (axWinId == window_id) {
+                        result = (AXUIElementRef)CFRetain(window);
+                        CFRelease(value);
+                        break;
+                    }
                 }
             }
+            if (value) CFRelease(value);
         }
         CFRelease(windows);
         CFRelease(app);
-        return target_window;
+        return result;
     }
 }
 
