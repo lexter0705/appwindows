@@ -12,10 +12,6 @@ static const CFStringRef kAXWindowNumberAttribute = CFSTR("AXWindowNumber");
 static const CFStringRef kAXFullScreenAttribute   = CFSTR("AXFullScreen");
 static const CFStringRef kAXCloseAction           = CFSTR("AXClose");
 
-static const CFStringRef kAXValueCGSizeType       = CFSTR("CGSize");
-static const CFStringRef kAXValueCGPointType      = CFSTR("CGPoint");
-
-
 namespace appwindows::macos {
 
 AXUIElementRef get_window_element(pid_t pid, CGWindowID window_id) {
@@ -89,7 +85,7 @@ void WindowMacOS::resize(core::Size size) {
 
         CGSize new_size = CGSizeMake(static_cast<CGFloat>(size.get_width()),
                                      static_cast<CGFloat>(size.get_height()));
-        AXValueRef size_value = AXValueCreate(kAXValueCGSizeType, &new_size);
+        AXValueRef size_value = AXValueCreate(kAXValueTypeCGSize, &new_size);
         if (!size_value) {
             CFRelease(window_element);
             throw core::exceptions::WindowDoesNotValidException();
@@ -112,7 +108,7 @@ void WindowMacOS::move(core::Point point) {
 
         CGPoint new_position = CGPointMake(static_cast<CGFloat>(point.get_x()),
                                            static_cast<CGFloat>(point.get_y()));
-        AXValueRef position_value = AXValueCreate(kAXValueCGPointType, &new_position);
+        AXValueRef position_value = AXValueCreate(kAXValueTypeCGPoint, &new_position);
         if (!position_value) {
             CFRelease(window_element);
             throw core::exceptions::WindowDoesNotValidException();
