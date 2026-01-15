@@ -3,11 +3,18 @@
 #include "../core/geometry/point.h"
 #include "../core/geometry/size.h"
 
-// Objective-C заголовки
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <ApplicationServices/ApplicationServices.h>
 #import <Accessibility/Accessibility.h>
+
+static const CFStringRef kAXWindowNumberAttribute = CFSTR("AXWindowNumber");
+static const CFStringRef kAXFullScreenAttribute   = CFSTR("AXFullScreen");
+static const CFStringRef kAXCloseAction           = CFSTR("AXClose");
+
+static const CFStringRef kAXValueCGSizeType       = CFSTR("CGSize");
+static const CFStringRef kAXValueCGPointType      = CFSTR("CGPoint");
+
 
 namespace appwindows::macos {
 
