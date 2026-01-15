@@ -1,5 +1,4 @@
 #include "window.h"
-
 #include "../core/exceptions/window_does_not_valid.h"
 #include "../core/geometry/point.h"
 #include "../core/geometry/size.h"
@@ -8,7 +7,6 @@
 #import <AppKit/AppKit.h>
 #import <ApplicationServices/ApplicationServices.h>
 #import <Accessibility/Accessibility.h>
-
 
 namespace appwindows::macos {
 
@@ -68,7 +66,7 @@ void WindowMacOS::set_fullscreen(bool is_fullscreen) {
         AXUIElementRef window_element = get_window_element(pid, window_id_);
         if (!window_element) throw core::exceptions::WindowDoesNotValidException();
         CFBooleanRef value = is_fullscreen ? kCFBooleanTrue : kCFBooleanFalse;
-        AXUIElementSetAttributeValue(window_element, AXFullScreen, value);
+        AXUIElementSetAttributeValue(window_element, kAXFullScreen, value);
         CFRelease(window_element);
     }
 }
@@ -126,7 +124,7 @@ void WindowMacOS::close() {
     @autoreleasepool {
         AXUIElementRef window_element = get_window_element(pid, window_id_);
         if (!window_element) throw core::exceptions::WindowDoesNotValidException();
-        AXUIElementPerformAction(window_element, AXClose);
+        AXUIElementPerformAction(window_element, kAXClose);
         CFRelease(window_element);
     }
 }
