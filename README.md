@@ -5,7 +5,7 @@
 [![PyPI Downloads](https://static.pepy.tech/personalized-badge/appwindows?period=total&units=INTERNATIONAL_SYSTEM&left_color=GRAY&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/appwindows) 
 
 # Appwindows
-The appwindows library simplifies cross-platform GUI development by handling OS-specific windowing details behind a single, clean interface.
+The appwindows library provides a unified way to find, inspect, and control application windows across Windows, macOS, and Linux.
 
 # Supported platforms:
 1) Windows
