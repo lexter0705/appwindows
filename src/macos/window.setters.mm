@@ -1,4 +1,5 @@
 #include "window.h"
+
 #include "../core/exceptions/window_does_not_valid.h"
 #include "../core/geometry/point.h"
 #include "../core/geometry/size.h"
@@ -14,7 +15,7 @@ static const CFStringRef kAXWindowIdAttribute = CFSTR("AXWindowId");
 
 #ifndef kCFNumberCGWindowIDType
 #define kCFNumberCGWindowIDType kCFNumberSInt32Type
-#endi
+#endif
 
 static const CFStringRef kAXWindowNumberAttribute = CFSTR("AXWindowNumber");
 static const CFStringRef kAXFullScreenAttribute   = CFSTR("AXFullScreen");
@@ -38,10 +39,10 @@ AXUIElementRef get_window_element(pid_t pid, CGWindowID window_id) {
             AXUIElementRef window = (AXUIElementRef)CFArrayGetValueAtIndex(windows, i);
             if (!window) continue;
             CFTypeRef value = nullptr;
-            err = AXUIElementCopyAttributeValue(window, AXWindowId, &value);
+            err = AXUIElementCopyAttributeValue(window, kAXWindowIdAttribute, &value);
             if (err == kAXErrorSuccess && value && CFGetTypeID(value) == CFNumberGetTypeID()) {
                 CGWindowID axWinId = 0;
-                if (CFNumberGetValue((CFNumberRef)value, kCFNumberSInt32Type, &axWinId)) {
+                if (CFNumberGetValue((CFNumberRef)value, kCFNumberCGWindowIDType, &axWinId)) {
                     if (axWinId == window_id) {
                         result = (AXUIElementRef)CFRetain(window);
                         CFRelease(value);
@@ -60,7 +61,6 @@ AXUIElementRef get_window_element(pid_t pid, CGWindowID window_id) {
 void WindowMacOS::set_minimize(bool is_minimize) {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
     auto pid = *get_process_id();
-
     @autoreleasepool {
         AXUIElementRef window_element = get_window_element(pid, window_id_);
         if (!window_element) throw core::exceptions::WindowDoesNotValidException();
@@ -73,7 +73,6 @@ void WindowMacOS::set_minimize(bool is_minimize) {
 void WindowMacOS::set_fullscreen(bool is_fullscreen) {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
     auto pid = *get_process_id();
-
     @autoreleasepool {
         AXUIElementRef window_element = get_window_element(pid, window_id_);
         if (!window_element) throw core::exceptions::WindowDoesNotValidException();
@@ -86,7 +85,6 @@ void WindowMacOS::set_fullscreen(bool is_fullscreen) {
 void WindowMacOS::resize(core::Size size) {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
     auto pid = *get_process_id();
-
     @autoreleasepool {
         AXUIElementRef window_element = get_window_element(pid, window_id_);
         if (!window_element) throw core::exceptions::WindowDoesNotValidException();
@@ -109,7 +107,6 @@ void WindowMacOS::resize(core::Size size) {
 void WindowMacOS::move(core::Point point) {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
     auto pid = *get_process_id();
-
     @autoreleasepool {
         AXUIElementRef window_element = get_window_element(pid, window_id_);
         if (!window_element) throw core::exceptions::WindowDoesNotValidException();
@@ -121,7 +118,6 @@ void WindowMacOS::move(core::Point point) {
             CFRelease(window_element);
             throw core::exceptions::WindowDoesNotValidException();
         }
-
         AXError result = AXUIElementSetAttributeValue(window_element, kAXPositionAttribute, position_value);
         CFRelease(position_value);
         CFRelease(window_element);
@@ -132,7 +128,6 @@ void WindowMacOS::move(core::Point point) {
 void WindowMacOS::close() {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
     auto pid = *get_process_id();
-
     @autoreleasepool {
         AXUIElementRef window_element = get_window_element(pid, window_id_);
         if (!window_element) throw core::exceptions::WindowDoesNotValidException();
@@ -144,7 +139,6 @@ void WindowMacOS::close() {
 void WindowMacOS::to_foreground() {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
     auto pid = *get_process_id();
-
     @autoreleasepool {
         AXUIElementRef app_element = AXUIElementCreateApplication(pid);
         if (!app_element) throw core::exceptions::WindowDoesNotValidException();
@@ -156,7 +150,6 @@ void WindowMacOS::to_foreground() {
 void WindowMacOS::to_background() {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
     auto pid = *get_process_id();
-
     @autoreleasepool {
         AXUIElementRef app_element = AXUIElementCreateApplication(pid);
         if (!app_element) throw core::exceptions::WindowDoesNotValidException();
