@@ -18,31 +18,26 @@ AXUIElementRef get_window_element(pid_t pid, CGWindowID window_id) {
     @autoreleasepool {
         AXUIElementRef app = AXUIElementCreateApplication(pid);
         if (!app) return nullptr;
-
-        CFArrayRef windows;
+        CFArrayRef windows = nullptr;
         AXError result = AXUIElementCopyAttributeValue(app, kAXWindowsAttribute, (CFTypeRef*)&windows);
-        if (result != kAXErrorSuccess) {
+        if (result != kAXErrorSuccess || !windows) {
             CFRelease(app);
             return nullptr;
         }
-
         CFIndex count = CFArrayGetCount(windows);
         AXUIElementRef target_window = nullptr;
-
         for (CFIndex i = 0; i < count; ++i) {
             AXUIElementRef window = (AXUIElementRef)CFArrayGetValueAtIndex(windows, i);
-            CFNumberRef window_number;
-            if (AXUIElementCopyAttributeValue(window, kAXWindowNumberAttribute, (CFTypeRef*)&window_number) == kAXErrorSuccess) {
-                int win_id;
-                CFNumberGetValue(window_number, kCFNumberIntType, &win_id);
-                CFRelease(window_number);
-                if (win_id == window_id) {
-                    target_window = (AXUIElementRef)CFRetain(window);
+            if (!window) continue;
+            CGWindowID current_id = 0;
+            if (AXUIElementGetWindow(window, &current_id) == kAXErrorSuccess) {
+                if (current_id == window_id) {
+                    CFRetain(window);
+                    target_window = window;
                     break;
                 }
             }
         }
-
         CFRelease(windows);
         CFRelease(app);
         return target_window;
