@@ -1,4 +1,5 @@
 #include "window.h"
+
 #include "../core/exceptions/window_does_not_valid.h"
 #include "../core/geometry/point.h"
 #include "../core/geometry/size.h"
@@ -8,9 +9,6 @@
 #import <ApplicationServices/ApplicationServices.h>
 #import <Accessibility/Accessibility.h>
 
-static const CFStringRef kAXWindowNumberAttribute = CFSTR("AXWindowNumber");
-static const CFStringRef kAXFullScreenAttribute   = CFSTR("AXFullScreen");
-static const CFStringRef kAXCloseAction           = CFSTR("AXClose");
 
 namespace appwindows::macos {
 
@@ -30,10 +28,10 @@ AXUIElementRef get_window_element(pid_t pid, CGWindowID window_id) {
             AXUIElementRef window = (AXUIElementRef)CFArrayGetValueAtIndex(windows, i);
             if (!window) continue;
             CFTypeRef value = nullptr;
-            err = AXUIElementCopyAttributeValue(window, kAXWindowIdAttribute, &value);
+            err = AXUIElementCopyAttributeValue(window, AXWindowId, &value);
             if (err == kAXErrorSuccess && value && CFGetTypeID(value) == CFNumberGetTypeID()) {
                 CGWindowID axWinId = 0;
-                if (CFNumberGetValue((CFNumberRef)value, kCFNumberCGWindowIDType, &axWinId)) {
+                if (CFNumberGetValue((CFNumberRef)value, kCFNumberSInt32Type, &axWinId)) {
                     if (axWinId == window_id) {
                         result = (AXUIElementRef)CFRetain(window);
                         CFRelease(value);
@@ -70,7 +68,7 @@ void WindowMacOS::set_fullscreen(bool is_fullscreen) {
         AXUIElementRef window_element = get_window_element(pid, window_id_);
         if (!window_element) throw core::exceptions::WindowDoesNotValidException();
         CFBooleanRef value = is_fullscreen ? kCFBooleanTrue : kCFBooleanFalse;
-        AXUIElementSetAttributeValue(window_element, kAXFullScreenAttribute, value);
+        AXUIElementSetAttributeValue(window_element, AXFullScreen, value);
         CFRelease(window_element);
     }
 }
@@ -128,7 +126,7 @@ void WindowMacOS::close() {
     @autoreleasepool {
         AXUIElementRef window_element = get_window_element(pid, window_id_);
         if (!window_element) throw core::exceptions::WindowDoesNotValidException();
-        AXUIElementPerformAction(window_element, kAXCloseAction);
+        AXUIElementPerformAction(window_element, AXClose);
         CFRelease(window_element);
     }
 }
