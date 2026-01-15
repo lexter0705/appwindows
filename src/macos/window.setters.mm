@@ -8,6 +8,18 @@
 #import <ApplicationServices/ApplicationServices.h>
 #import <Accessibility/Accessibility.h>
 
+#ifndef kAXWindowIdAttribute
+static const CFStringRef kAXWindowIdAttribute = CFSTR("AXWindowId");
+#endif
+
+#ifndef kCFNumberCGWindowIDType
+#define kCFNumberCGWindowIDType kCFNumberSInt32Type
+#endi
+
+static const CFStringRef kAXWindowNumberAttribute = CFSTR("AXWindowNumber");
+static const CFStringRef kAXFullScreenAttribute   = CFSTR("AXFullScreen");
+static const CFStringRef kAXCloseAction           = CFSTR("AXClose");
+
 namespace appwindows::macos {
 
 AXUIElementRef get_window_element(pid_t pid, CGWindowID window_id) {
@@ -66,7 +78,7 @@ void WindowMacOS::set_fullscreen(bool is_fullscreen) {
         AXUIElementRef window_element = get_window_element(pid, window_id_);
         if (!window_element) throw core::exceptions::WindowDoesNotValidException();
         CFBooleanRef value = is_fullscreen ? kCFBooleanTrue : kCFBooleanFalse;
-        AXUIElementSetAttributeValue(window_element, kAXFullScreen, value);
+        AXUIElementSetAttributeValue(window_element, kAXFullScreenAttribute, value);
         CFRelease(window_element);
     }
 }
@@ -124,7 +136,7 @@ void WindowMacOS::close() {
     @autoreleasepool {
         AXUIElementRef window_element = get_window_element(pid, window_id_);
         if (!window_element) throw core::exceptions::WindowDoesNotValidException();
-        AXUIElementPerformAction(window_element, kAXClose);
+        AXUIElementPerformAction(window_element, kAXCloseAction);
         CFRelease(window_element);
     }
 }
