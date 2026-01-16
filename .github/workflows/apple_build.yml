@@ -89,7 +89,7 @@ jobs:
 
       - name: Install arm64 wheel only
         run: |
-          pip install wheelhouse/*arm64*.whl
+          pip install wheelhouse/*cp313*arm64*.whl
 
       - name: Run tests
         run: |
