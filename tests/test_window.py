@@ -1,4 +1,7 @@
 import time
+import sys
+import os
+import logging
 
 import numpy as np
 import pytest
@@ -10,6 +13,7 @@ from appwindows.exceptions import WindowDoesNotValidException
 from window_creators import get_creator
 
 creator = get_creator()
+logger = logging.getLogger()
 
 
 @pytest.fixture
@@ -56,6 +60,9 @@ def test_window_get_screenshot(test_window):
 
 
 def test_window_move(test_window):
+    if sys.platform == "darwin" and os.getenv("GITHUB_ACTIONS") == "true":
+        logger.info("The test was cancelled due to lack of permissions in GitHub Actions on MacOS.")
+        return
     current_points = test_window.get_points()
     current_x = current_points.left_top.x
     current_y = current_points.left_top.y
@@ -70,6 +77,9 @@ def test_window_move(test_window):
 
 
 def test_window_resize(test_window):
+    if sys.platform == "darwin" and os.getenv("GITHUB_ACTIONS") == "true":
+        logger.info("The test was cancelled due to lack of permissions in GitHub Actions on MacOS.")
+        return
     current_size = test_window.get_size()
     width_append = 100
     height_append = 50
@@ -81,6 +91,9 @@ def test_window_resize(test_window):
 
 
 def test_window_close(test_window):
+    if sys.platform == "darwin" and os.getenv("GITHUB_ACTIONS") == "true":
+        logger.info("The test was cancelled due to lack of permissions in GitHub Actions on MacOS.")
+        return
     test_window.close()
     time.sleep(1)
 
