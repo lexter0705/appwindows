@@ -43,6 +43,7 @@ def test_window_get_points(test_window):
     assert isinstance(quad_points.right_top, Point)
     assert isinstance(quad_points.right_bottom, Point)
     assert isinstance(quad_points.left_bottom, Point)
+    logger.info(str(quad_points))
 
 
 def test_window_get_size(test_window):
@@ -50,6 +51,7 @@ def test_window_get_size(test_window):
     assert isinstance(appwindows_size, Size)
     assert appwindows_size.width > 0
     assert appwindows_size.height > 0
+    logger.info(str(appwindows_size))
 
 
 def test_window_get_screenshot(test_window):
