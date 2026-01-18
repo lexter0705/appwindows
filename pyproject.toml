@@ -12,7 +12,7 @@ version = "1.3.0"
 authors = [
     { name = "Terochkin A.S", email = "apparser.development@gmail.com" },
 ]
-description = "The appwindows library solves the problem of working with a graphical shell on different operating systems."
+description = "The appwindows library provides a unified way to find, inspect, and control application windows across Windows, macOS, and Linux."
 readme = "README.md"
 requires-python = ">=3.8"
 classifiers = [
