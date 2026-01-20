@@ -50,6 +50,7 @@ jobs:
               gcc \
               gcc-c++ \
               gcc-objc \
+              gcc-objc++ \
               libX11-devel \
               libXext-devel \
               libXrender-devel \
@@ -94,6 +95,7 @@ jobs:
               gcc \
               gcc-c++ \
               gcc-objc \
+              gcc-objc++ \
               libX11-devel \
               libXext-devel \
               libXrender-devel \
