@@ -47,10 +47,6 @@ jobs:
           CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux2014_x86_64
           CIBW_BEFORE_BUILD_LINUX: |
             yum install -y \
-              gcc \
-              gcc-c++ \
-              gcc-objc \
-              gcc-objc++ \
               libX11-devel \
               libXext-devel \
               libXrender-devel \
@@ -74,9 +70,6 @@ jobs:
             PYBIND11_INCLUDE="${{ github.workspace }}/pybind11/include"
             PYBIND11_ABI=1
           CIBW_ARCHS_MACOS: "x86_64"
-          CIBW_ENVIRONMENT_LINUX: |
-            CC=gcc
-            CXX=g++
           CIBW_ENVIRONMENT_MACOS: |
             MACOSX_DEPLOYMENT_TARGET=12.0
             LDFLAGS="-framework Foundation -framework AppKit -framework ApplicationServices -framework Accessibility"
@@ -92,13 +85,9 @@ jobs:
           CIBW_ARCHS_LINUX: "aarch64"
           CIBW_ARCHS_WINDOWS: "ARM64"
           CIBW_ARCHS_MACOS: "arm64"
-          CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux2014_x86_64
+          CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux_2_28_aarch64
           CIBW_BEFORE_BUILD_LINUX: |
-            yum install -y \
-              gcc \
-              gcc-c++ \
-              gcc-objc \
-              gcc-objc++ \
+            dnf install -y \
               libX11-devel \
               libXext-devel \
               libXrender-devel \
@@ -118,9 +107,6 @@ jobs:
           CIBW_BEFORE_BUILD_WINDOWS: "pip install meson ninja pybind11"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair --wheel-dir {dest_dir} {wheel}"
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: "auditwheel repair --wheel-dir {dest_dir} {wheel}"
-          CIBW_ENVIRONMENT_LINUX: |
-            CC=gcc
-            CXX=g++
           CIBW_ENVIRONMENT_WINDOWS: >
             PYBIND11_INCLUDE="${{ github.workspace }}/pybind11/include"
             PYBIND11_ABI=1
