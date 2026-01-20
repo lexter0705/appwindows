@@ -47,6 +47,7 @@ jobs:
           CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux2014_x86_64
           CIBW_BEFORE_BUILD_LINUX: |
             yum install -y \
+              gcc-objc
               libX11-devel \
               libXext-devel \
               libXrender-devel \
@@ -88,6 +89,7 @@ jobs:
           CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux2014_x86_64
           CIBW_BEFORE_BUILD_LINUX: |
             yum install -y \
+              gcc-objc
               libX11-devel \
               libXext-devel \
               libXrender-devel \
