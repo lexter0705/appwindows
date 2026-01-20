@@ -2,9 +2,9 @@ name: build
 
 on:
   push:
-    branches: [ main, master, apple_build ]
+    branches: [ main, master, apple_develop ]
   pull_request:
-    branches: [ main, master, apple_build ]
+    branches: [ main, master, apple_develop ]
   workflow_dispatch:
 
 jobs:
