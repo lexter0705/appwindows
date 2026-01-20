@@ -39,3 +39,5 @@ machine-file = false
 [tool.mesonpy.args]
 buildtype = "release"
 default-library = "shared"
+
+[tool.cibuildwheel.windows]

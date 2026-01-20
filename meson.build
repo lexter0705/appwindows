@@ -1,4 +1,4 @@
-project('appwindows', ['cpp', 'objcpp'],
+project('appwindows', ['cpp'],
         license: 'BSD 3-Clause License',
         meson_version: '>=0.56.0',
         default_options: [
