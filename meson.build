@@ -1,4 +1,4 @@
-project('appwindows', ['cpp', 'objcpp'],
+project('appwindows', ['cpp'],
         license: 'BSD 3-Clause License',
         meson_version: '>=0.56.0',
         default_options: [
@@ -8,6 +8,10 @@ project('appwindows', ['cpp', 'objcpp'],
             'b_ndebug=if-release',
         ]
 )
+
+if host_machine.system() == 'darwin'
+    add_languages('objcpp', required: true)
+endif
 
 pybind11_dep = dependency('pybind11', required: true)
 python_dep = dependency('python3', required: true)
