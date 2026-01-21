@@ -54,6 +54,24 @@ std::unique_ptr<core::Size> WindowXServer::get_size() const {
   return std::make_unique<core::Size>(attrs.width, attrs.height);
 }
 
+std::unique_ptr<core::Size> WindowXServer::get_min_size() const {
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
+  auto display = FinderXServer::open_display();
+  XWindowAttributes attrs;
+  if (!XGetWindowAttributes(display, window_, &attrs)) return nullptr;
+  XCloseDisplay(display);
+  return std::make_unique<core::Size>(attrs.width, attrs.height);
+}
+
+std::unique_ptr<core::Size> WindowXServer::get_max_size() const {
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
+  auto display = FinderXServer::open_display();
+  XWindowAttributes attrs;
+  if (!XGetWindowAttributes(display, window_, &attrs)) return nullptr;
+  XCloseDisplay(display);
+  return std::make_unique<core::Size>(attrs.width, attrs.height);
+}
+
 std::unique_ptr<std::string> WindowXServer::get_title() const {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
   auto display = FinderXServer::open_display();

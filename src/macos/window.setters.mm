@@ -104,6 +104,50 @@ void WindowMacOS::resize(core::Size size) {
     }
 }
 
+void WindowMacOS::set_min_size(core::Size size) {
+    if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
+    auto pid = *get_process_id();
+    @autoreleasepool {
+        AXUIElementRef window_element = get_window_element(pid, window_id_);
+        if (!window_element) throw core::exceptions::WindowDoesNotValidException();
+
+        CGSize new_size = CGSizeMake(static_cast<CGFloat>(size.get_width()),
+                                     static_cast<CGFloat>(size.get_height()));
+        AXValueRef size_value = AXValueCreate(kAXValueTypeCGSize, &new_size);
+        if (!size_value) {
+            CFRelease(window_element);
+            throw core::exceptions::WindowDoesNotValidException();
+        }
+
+        AXError result = AXUIElementSetAttributeValue(window_element, kAXSizeAttribute, size_value);
+        CFRelease(size_value);
+        CFRelease(window_element);
+        if (result != kAXErrorSuccess) throw core::exceptions::WindowDoesNotValidException();
+    }
+}
+
+void WindowMacOS::set_max_size(core::Size size) {
+    if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
+    auto pid = *get_process_id();
+    @autoreleasepool {
+        AXUIElementRef window_element = get_window_element(pid, window_id_);
+        if (!window_element) throw core::exceptions::WindowDoesNotValidException();
+
+        CGSize new_size = CGSizeMake(static_cast<CGFloat>(size.get_width()),
+                                     static_cast<CGFloat>(size.get_height()));
+        AXValueRef size_value = AXValueCreate(kAXValueTypeCGSize, &new_size);
+        if (!size_value) {
+            CFRelease(window_element);
+            throw core::exceptions::WindowDoesNotValidException();
+        }
+
+        AXError result = AXUIElementSetAttributeValue(window_element, kAXSizeAttribute, size_value);
+        CFRelease(size_value);
+        CFRelease(window_element);
+        if (result != kAXErrorSuccess) throw core::exceptions::WindowDoesNotValidException();
+    }
+}
+
 void WindowMacOS::move(core::Point point) {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
     auto pid = *get_process_id();

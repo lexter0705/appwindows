@@ -19,6 +19,8 @@ class WindowXServer final : public core::Window {
   explicit WindowXServer(WindowX window);
   [[nodiscard]] std::unique_ptr<core::QuadPoints> get_points() override;
   [[nodiscard]] std::unique_ptr<core::Size> get_size() const override;
+  [[nodiscard]] std::unique_ptr<core::Size> get_min_size() const override;
+  [[nodiscard]] std::unique_ptr<core::Size> get_max_size() const override;
   [[nodiscard]] std::unique_ptr<std::string> get_title() const override;
   [[nodiscard]] std::unique_ptr<int> get_process_id() const override;
   [[nodiscard]] py::array_t<unsigned char> get_screenshot() override;
@@ -27,6 +29,8 @@ class WindowXServer final : public core::Window {
   void set_minimize(bool is_minimize) override;
   void set_fullscreen(bool is_fullscreen) override;
   void resize(core::Size size) override;
+  void set_min_size(core::Size size) override;
+  void set_max_size(core::Size size) override;
   void move(core::Point point) override;
   void close() override;
   void to_foreground() override;

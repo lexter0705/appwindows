@@ -50,6 +50,22 @@ std::unique_ptr<core::Size> WindowWindows::get_size() const {
                                       rect.bottom - rect.top);
 }
 
+std::unique_ptr<core::Size> WindowWindows::get_min_size() const {
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
+  RECT rect;
+  GetWindowRect(*window_, &rect);
+  return std::make_unique<core::Size>(rect.right - rect.left,
+                                      rect.bottom - rect.top);
+}
+
+std::unique_ptr<core::Size> WindowWindows::get_max_size() const {
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
+  RECT rect;
+  GetWindowRect(*window_, &rect);
+  return std::make_unique<core::Size>(rect.right - rect.left,
+                                      rect.bottom - rect.top);
+}
+
 py::array_t<unsigned char> WindowWindows::get_screenshot() {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
   const auto is_minimize = IsIconic(*window_) == TRUE;

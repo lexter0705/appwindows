@@ -109,6 +109,26 @@ class Window:
         Raises:
             appwindows.exceptions.WindowDoesNotValidException: If window is invalid
         """
+    def get_min_size(self) -> geometry.Size:
+        """
+        Get min window size
+        
+        Returns:
+            Size: Min window dimensions
+        
+        Raises:
+            appwindows.exceptions.WindowDoesNotValidException: If window is invalid
+        """
+    def get_max_size(self) -> geometry.Size:
+        """
+        Get max window size
+        
+        Returns:
+            Size: Max window dimensions
+        
+        Raises:
+            appwindows.exceptions.WindowDoesNotValidException: If window is invalid
+        """
     def get_title(self) -> str:
         """
         Get the window title
@@ -147,7 +167,30 @@ class Window:
             size (appwindows.geometry.Size): New window dimensions
         
         Raises:
-            appwindows.exceptions.InvalidSizeError: If size is invalid    appwindows.exceptions.WindowDoesNotValidException: If window is invalid
+            appwindows.exceptions.InvalidSizeError: If size is invalid    
+            appwindows.exceptions.WindowDoesNotValidException: If window is invalid
+        """
+    def set_min_size(self, size: geometry.Size) -> None:
+        """
+        Set min window size
+        
+        Args:
+            size (appwindows.geometry.Size): New window min size
+        
+        Raises:
+            appwindows.exceptions.InvalidSizeError: If size is invalid  
+            appwindows.exceptions.WindowDoesNotValidException: If window is invalid
+        """
+    def resize(self, size: geometry.Size) -> None:
+        """
+        Set max window size
+        
+        Args:
+            size (appwindows.geometry.Size): New window max size
+        
+        Raises:
+            appwindows.exceptions.InvalidSizeError: If size is invalid    
+            appwindows.exceptions.WindowDoesNotValidException: If window is invalid
         """
     def set_fullscreen(self, is_maximize: bool) -> None:
         """

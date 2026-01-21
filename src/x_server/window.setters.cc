@@ -116,6 +116,50 @@ void WindowXServer::resize(const core::Size size) {
   XCloseDisplay(display);
 }
 
+void WindowXServer::set_min_size(const core::Size size) {
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
+  auto display = FinderXServer::open_display();
+
+  XSizeHints *size_hints = XAllocSizeHints();
+  if (size_hints) {
+    size_hints->flags = PMinSize | PMaxSize;
+    size_hints->min_width = size_hints->max_width = size.get_width();
+    size_hints->min_height = size_hints->max_height = size.get_height();
+    XSetWMNormalHints(display, window_, size_hints);
+    size_hints->min_width = 1;
+    size_hints->min_height = 1;
+    size_hints->max_width = INT_MAX;
+    size_hints->max_height = INT_MAX;
+    XSetWMNormalHints(display, window_, size_hints);
+    XFree(size_hints);
+  }
+  XResizeWindow(display, window_, size.get_width(), size.get_height());
+  XFlush(display);
+  XCloseDisplay(display);
+}
+
+void WindowXServer::set_max_size(const core::Size size) {
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
+  auto display = FinderXServer::open_display();
+
+  XSizeHints *size_hints = XAllocSizeHints();
+  if (size_hints) {
+    size_hints->flags = PMinSize | PMaxSize;
+    size_hints->min_width = size_hints->max_width = size.get_width();
+    size_hints->min_height = size_hints->max_height = size.get_height();
+    XSetWMNormalHints(display, window_, size_hints);
+    size_hints->min_width = 1;
+    size_hints->min_height = 1;
+    size_hints->max_width = INT_MAX;
+    size_hints->max_height = INT_MAX;
+    XSetWMNormalHints(display, window_, size_hints);
+    XFree(size_hints);
+  }
+  XResizeWindow(display, window_, size.get_width(), size.get_height());
+  XFlush(display);
+  XCloseDisplay(display);
+}
+
 void WindowXServer::move(const core::Point point) {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
   auto display = FinderXServer::open_display();

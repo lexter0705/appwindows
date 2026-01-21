@@ -100,6 +100,44 @@ std::unique_ptr<core::Size> WindowMacOS::get_size() const {
   return std::make_unique<core::Size>(bounds.size.width, bounds.size.height);
 }
 
+std::unique_ptr<core::Size> WindowMacOS::get_min_size() const {
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
+  CFArrayRef window_list = CGWindowListCopyWindowInfo(
+      kCGWindowListOptionIncludingWindow, window_id_);
+  if (CFArrayGetCount(window_list) == 0) {
+    CFRelease(window_list);
+    throw core::exceptions::WindowDoesNotValidException();
+  }
+  CFDictionaryRef window_info =
+      reinterpret_cast<CFDictionaryRef>(CFArrayGetValueAtIndex(window_list, 0));
+  CFDictionaryRef bounds_ref = reinterpret_cast<CFDictionaryRef>(
+      CFDictionaryGetValue(window_info, kCGWindowBounds));
+
+  CGRect bounds;
+  CGRectMakeWithDictionaryRepresentation(bounds_ref, &bounds);
+  CFRelease(window_list);
+  return std::make_unique<core::Size>(bounds.size.width, bounds.size.height);
+}
+
+std::unique_ptr<core::Size> WindowMacOS::get_max_size() const {
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
+  CFArrayRef window_list = CGWindowListCopyWindowInfo(
+      kCGWindowListOptionIncludingWindow, window_id_);
+  if (CFArrayGetCount(window_list) == 0) {
+    CFRelease(window_list);
+    throw core::exceptions::WindowDoesNotValidException();
+  }
+  CFDictionaryRef window_info =
+      reinterpret_cast<CFDictionaryRef>(CFArrayGetValueAtIndex(window_list, 0));
+  CFDictionaryRef bounds_ref = reinterpret_cast<CFDictionaryRef>(
+      CFDictionaryGetValue(window_info, kCGWindowBounds));
+
+  CGRect bounds;
+  CGRectMakeWithDictionaryRepresentation(bounds_ref, &bounds);
+  CFRelease(window_list);
+  return std::make_unique<core::Size>(bounds.size.width, bounds.size.height);
+}
+
 py::array_t<unsigned char> WindowMacOS::get_screenshot() {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
   CGImageRef screenshot = CGWindowListCreateImage(
