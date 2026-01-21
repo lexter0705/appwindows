@@ -112,7 +112,6 @@ jobs:
   test_macos:
     name: Test on MacOS
     runs-on: macos-latest
-    needs: build_wheels
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
