@@ -54,6 +54,22 @@ def test_window_get_size(test_window):
     logger.info(str(appwindows_size))
 
 
+def test_window_get_max_size(test_window):
+    appwindows_size = test_window.get_max_size()
+    assert isinstance(appwindows_size, Size)
+    assert appwindows_size.width >= 0
+    assert appwindows_size.height >= 0
+    logger.info(str(appwindows_size))
+
+
+def test_window_get_min_size(test_window):
+    appwindows_size = test_window.get_min_size()
+    assert isinstance(appwindows_size, Size)
+    assert appwindows_size.width >= 0
+    assert appwindows_size.height >= 0
+    logger.info(str(appwindows_size))
+
+
 def test_window_get_screenshot(test_window):
     screenshot = test_window.get_screenshot()
     assert screenshot is not None

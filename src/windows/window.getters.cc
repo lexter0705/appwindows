@@ -51,19 +51,23 @@ std::unique_ptr<core::Size> WindowWindows::get_size() const {
 }
 
 std::unique_ptr<core::Size> WindowWindows::get_min_size() const {
-  if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-  RECT rect;
-  GetWindowRect(*window_, &rect);
-  return std::make_unique<core::Size>(rect.right - rect.left,
-                                      rect.bottom - rect.top);
+    if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
+    MINMAXINFO mmi = {0};
+    SendMessage(*window_, WM_GETMINMAXINFO, 0, reinterpret_cast<LPARAM>(&mmi));
+    return std::make_unique<core::Size>(
+        mmi.ptMinTrackSize.x,
+        mmi.ptMinTrackSize.y
+    );
 }
 
 std::unique_ptr<core::Size> WindowWindows::get_max_size() const {
-  if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-  RECT rect;
-  GetWindowRect(*window_, &rect);
-  return std::make_unique<core::Size>(rect.right - rect.left,
-                                      rect.bottom - rect.top);
+    if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
+    MINMAXINFO mmi = {0};
+    SendMessage(*window_, WM_GETMINMAXINFO, 0, reinterpret_cast<LPARAM>(&mmi));
+    return std::make_unique<core::Size>(
+        mmi.ptMaxTrackSize.x,
+        mmi.ptMaxTrackSize.y
+    );
 }
 
 py::array_t<unsigned char> WindowWindows::get_screenshot() {
