@@ -53,7 +53,6 @@ std::unique_ptr<core::Size> WindowWindows::get_size() const {
 
 std::unique_ptr<core::Size> WindowWindows::get_min_size() const {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-    result
     MINMAXINFO mmi = {0};
     SendMessage(*window_, WM_GETMINMAXINFO, 0, reinterpret_cast<LPARAM>(&mmi));
     return std::make_unique<core::Size>(
