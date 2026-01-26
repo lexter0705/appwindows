@@ -1,15 +1,16 @@
-# .github/workflows/unit_tests.yml
 name: unit_tests
 
 on:
-  repository_dispatch:
-    types: [build_completed]
+  workflow_run:
+    workflows: ["build"]
+    types: [completed]
+    branches: [main, master]
 
 jobs:
   test_windows:
     name: Test on Windows
     runs-on: windows-2019
-    if: ${{ github.event.client_payload.ref_name == 'main' || github.event.client_payload.ref_name == 'master' || github.event.client_payload.ref_name == 'apple_develop' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,29 +27,31 @@ jobs:
           workflow_conclusion: success
           name: wheels-windows-2019
           path: ./wheelhouse
-          run_id: ${{ github.event.client_payload.run_id }}
-
+          run_id: ${{ github.event.workflow_run.id }}
+          
       - name: Install dependencies
-        run: pip install pytest pillow numpy
+        run: |
+          pip install pytest pillow numpy
         shell: powershell
-
+        
       - name: Install wheel
         run: |
           $wheel = Get-ChildItem -Path "./wheelhouse/*cp313*.whl" -ErrorAction SilentlyContinue | Select-Object -First 1
           Write-Host "Found wheel: $($wheel.FullName)"
           pip install --force-reinstall "$($wheel.FullName)"
         shell: powershell
-
+        
       - name: Run tests
-        run: pytest tests/ -v
+        run: |
+          pytest tests/ -v
         env:
           PYTHONPATH: ${{ github.workspace }}
         shell: powershell
-
+        
   test_linux:
     runs-on: ubuntu-22.04
     name: Test on Linux
-    if: ${{ github.event.client_payload.ref_name == 'main' || github.event.client_payload.ref_name == 'master' || github.event.client_payload.ref_name == 'apple_develop' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     timeout-minutes: 15
     steps:
       - name: Checkout code
@@ -62,11 +65,19 @@ jobs:
       - name: Install X11 utilities
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb x11-utils xterm xdotool wmctrl zenity yad
+          sudo apt-get install -y \
+            xvfb \
+            x11-utils \
+            xterm \
+            xdotool \
+            wmctrl \
+            zenity \
+            yad \
         shell: bash
 
       - name: Install Python dependencies
-        run: pip install pytest pillow numpy
+        run: |
+          pip install pytest pillow numpy
         shell: bash
 
       - name: Download wheels
@@ -76,7 +87,7 @@ jobs:
           workflow_conclusion: success
           name: wheels-ubuntu-22.04
           path: ./wheelhouse
-          run_id: ${{ github.event.client_payload.run_id }}
+          run_id: ${{ github.event.workflow_run.id }}
 
       - name: Install wheel
         run: |
@@ -86,9 +97,12 @@ jobs:
 
       - name: Run tests with xterm windows
         run: |
+          # Запускаем Xvfb
           Xvfb :99 -screen 0 1024x768x24 &
           export DISPLAY=:99
           sleep 2
+          
+          # Запускаем тесты
           python -m pytest tests/ -v
         env:
           PYTHONPATH: ${{ github.workspace }}
@@ -97,7 +111,7 @@ jobs:
 
   test_macos:
     name: Test on MacOS
-    if: ${{ github.event.client_payload.ref_name == 'main' || github.event.client_payload.ref_name == 'master' || github.event.client_payload.ref_name == 'apple_develop' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: macos-latest
     steps:
       - name: Checkout code
@@ -115,18 +129,22 @@ jobs:
           workflow_conclusion: success
           name: wheels-macos-14
           path: ./wheelhouse
-          run_id: ${{ github.event.client_payload.run_id }}
+          run_id: ${{ github.event.workflow_run.id }}
 
       - name: Install test dependencies
-        run: pip install pytest PySide6
+        run: |
+          pip install pytest PySide6
 
       - name: Install arm64 wheel only
-        run: pip install wheelhouse/*cp313*arm64*.whl
+        run: |
+          pip install wheelhouse/*cp313*arm64*.whl
 
       - name: Run tests
-        run: pytest tests/ -v -s --log-cli-level=20
+        run: |
+          pytest tests/ -v -s --log-cli-level=20
         env:
           PYTHONPATH: ${{ github.workspace }}
 
       - name: Clean up any remaining test windows
-        run: osascript -e 'tell application "Finder" to close every window'
+        run: |
+          osascript -e 'tell application "Finder" to close every window'
