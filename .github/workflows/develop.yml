@@ -26,7 +26,7 @@ jobs:
           python-version: '3.13'
 
       - name: Install cibuildwheel
-        run: pip install cibuildwheel==23.3.0
+        run: pip install cibuildwheel>=3.3.0
 
       - name: Set up MSVC (Windows only)
         if: runner.os == 'Windows'
