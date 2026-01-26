@@ -1,3 +1,4 @@
+# .github/workflows/build.yml
 name: build
 
 on:
@@ -26,8 +27,7 @@ jobs:
           python-version: '3.13'
 
       - name: Install cibuildwheel
-        run: |
-          pip install cibuildwheel==3.3.0
+        run: pip install cibuildwheel==3.3.0
 
       - name: Set up MSVC (Windows only)
         if: runner.os == 'Windows'
@@ -46,23 +46,7 @@ jobs:
           CIBW_ARCHS_WINDOWS: "AMD64"
           CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux2014_x86_64
           CIBW_BEFORE_BUILD_LINUX: |
-            yum install -y \
-              libX11-devel \
-              libXext-devel \
-              libXrender-devel \
-              libXtst-devel \
-              libXi-devel \
-              libXinerama-devel \
-              libXcursor-devel \
-              libXrandr-devel \
-              libXfixes-devel \
-              libXdamage-devel \
-              libXcomposite-devel \
-              libxkbcommon-devel \
-              mesa-libGL-devel \
-              mesa-libEGL-devel \
-              libgbm-devel \
-              pkgconfig
+            yum install -y libX11-devel libXext-devel libXrender-devel libXtst-devel libXi-devel libXinerama-devel libXcursor-devel libXrandr-devel libXfixes-devel libXdamage-devel libXcomposite-devel libxkbcommon-devel mesa-libGL-devel mesa-libEGL-devel libgbm-devel pkgconfig
           CIBW_BEFORE_BUILD_WINDOWS: "pip install meson ninja pybind11"
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair --wheel-dir {dest_dir} {wheel}"
           CIBW_REPAIR_WHEEL_COMMAND_LINUX: "auditwheel repair --wheel-dir {dest_dir} {wheel}"
@@ -74,8 +58,7 @@ jobs:
             MACOSX_DEPLOYMENT_TARGET=12.0
             LDFLAGS="-framework Foundation -framework AppKit -framework ApplicationServices -framework Accessibility"
             ARCHFLAGS="-arch arm64"
-          CIBW_BEFORE_BUILD_MACOS: |
-            pip install pybind11
+          CIBW_BEFORE_BUILD_MACOS: pip install pybind11
 
       - name: Build wheels ARM
         if: runner.os == 'Darwin'
@@ -86,8 +69,7 @@ jobs:
           CIBW_ENVIRONMENT_MACOS: |
             MACOSX_DEPLOYMENT_TARGET=12.0
             LDFLAGS="-framework Foundation -framework AppKit -framework ApplicationServices -framework Accessibility"
-          CIBW_BEFORE_BUILD_MACOS: |
-            pip install pybind11
+          CIBW_BEFORE_BUILD_MACOS: pip install pybind11
 
       - name: Upload wheels as artifact
         uses: actions/upload-artifact@v4
@@ -95,3 +77,16 @@ jobs:
           name: wheels-${{ matrix.os }}
           path: ./wheelhouse/*.whl
           retention-days: 7
+
+  dispatch_tests:
+    needs: build_wheels
+    if: ${{ always() && needs.build_wheels.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger unit tests
+        run: |
+          curl -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/${{ github.repository }}/dispatches \
+            -d '{"event_type":"build_completed","client_payload":{"run_id":"${{ github.run_id }}","ref_name":"${{ github.ref_name }}"}}'
