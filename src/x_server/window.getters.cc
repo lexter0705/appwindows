@@ -6,6 +6,7 @@
 #include <pybind11/numpy.h>
 
 #include <memory>
+#include <climits>
 #include <string>
 #include <vector>
 
@@ -56,20 +57,28 @@ std::unique_ptr<core::Size> WindowXServer::get_size() const {
 
 std::unique_ptr<core::Size> WindowXServer::get_min_size() const {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-  auto display = FinderXServer::open_display();
-  XWindowAttributes attrs;
-  if (!XGetWindowAttributes(display, window_, &attrs)) return nullptr;
+  Display* display = FinderXServer::open_display();
+  XSizeHints hints;
+  long supplied;
+  Status status = XGetWMNormalHints(display, window_, &hints, &supplied);
   XCloseDisplay(display);
-  return std::make_unique<core::Size>(attrs.width, attrs.height);
+  if (status == 0 || !(hints.flags & PMinSize)) {
+    return std::make_unique<core::Size>(1, 1);
+  }
+  return std::make_unique<core::Size>(hints.min_width, hints.min_height);
 }
 
 std::unique_ptr<core::Size> WindowXServer::get_max_size() const {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-  auto display = FinderXServer::open_display();
-  XWindowAttributes attrs;
-  if (!XGetWindowAttributes(display, window_, &attrs)) return nullptr;
+  Display* display = FinderXServer::open_display();
+  XSizeHints hints;
+  long supplied;
+  Status status = XGetWMNormalHints(display, window_, &hints, &supplied);
   XCloseDisplay(display);
-  return std::make_unique<core::Size>(attrs.width, attrs.height);
+  if (status == 0 || !(hints.flags & PMaxSize)) {
+    return std::make_unique<core::Size>(INT_MAX, INT_MAX);
+  }
+  return std::make_unique<core::Size>(hints.max_width, hints.max_height);
 }
 
 std::unique_ptr<std::string> WindowXServer::get_title() const {
