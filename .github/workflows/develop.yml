@@ -37,6 +37,7 @@ jobs:
         run: pip install delvewheel
 
       - name: Build wheels AMD64/x86_64
+        if: runner.os != 'Darwin'
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
           CIBW_BUILD: "cp313-*"

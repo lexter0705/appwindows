@@ -5,6 +5,7 @@
 #endif
 
 #include <windows.h>
+#include <climits>
 
 #include "../core/exceptions/window_does_not_valid.h"
 
@@ -52,11 +53,12 @@ std::unique_ptr<core::Size> WindowWindows::get_size() const {
 
 std::unique_ptr<core::Size> WindowWindows::get_min_size() const {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
+    result
     MINMAXINFO mmi = {0};
     SendMessage(*window_, WM_GETMINMAXINFO, 0, reinterpret_cast<LPARAM>(&mmi));
     return std::make_unique<core::Size>(
-        mmi.ptMinTrackSize.x,
-        mmi.ptMinTrackSize.y
+        mmi.ptMinTrackSize.x  > 0 ? mmi.ptMinTrackSize.x : 1, 
+        mmi.ptMinTrackSize.y  > 0 ? mmi.ptMinTrackSize.y : 1
     );
 }
 
@@ -65,8 +67,8 @@ std::unique_ptr<core::Size> WindowWindows::get_max_size() const {
     MINMAXINFO mmi = {0};
     SendMessage(*window_, WM_GETMINMAXINFO, 0, reinterpret_cast<LPARAM>(&mmi));
     return std::make_unique<core::Size>(
-        mmi.ptMaxTrackSize.x,
-        mmi.ptMaxTrackSize.y
+        mmi.ptMinTrackSize.x  > 0 ? mmi.ptMinTrackSize.x : INT_MAX, 
+        mmi.ptMinTrackSize.y  > 0 ? mmi.ptMinTrackSize.y : INT_MAX
     );
 }
 
