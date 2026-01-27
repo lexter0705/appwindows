@@ -29,8 +29,6 @@ class Window {
   virtual void set_minimize(bool is_minimize) = 0;
   virtual void set_fullscreen(bool is_fullscreen) = 0;
   virtual void resize(Size size) = 0;
-  virtual void set_max_size(Size size) = 0;
-  virtual void set_min_size(Size size) = 0;
   virtual void move(Point point) = 0;
   virtual void close() = 0;
   virtual void to_foreground() = 0;

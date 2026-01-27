@@ -25,8 +25,6 @@ public:
   void set_minimize(bool is_minimize) override;
   void set_fullscreen(bool is_fullscreen) override;
   void resize(core::Size size) override;
-  void set_min_size(core::Size size) override;
-  void set_max_size(core::Size size) override;
   void move(core::Point point) override;
   void close() override;
   void to_foreground() override;

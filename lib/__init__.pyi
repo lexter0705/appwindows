@@ -170,28 +170,6 @@ class Window:
             appwindows.exceptions.InvalidSizeError: If size is invalid    
             appwindows.exceptions.WindowDoesNotValidException: If window is invalid
         """
-    def set_min_size(self, size: geometry.Size) -> None:
-        """
-        Set min window size
-        
-        Args:
-            size (appwindows.geometry.Size): New window min size
-        
-        Raises:
-            appwindows.exceptions.InvalidSizeError: If size is invalid  
-            appwindows.exceptions.WindowDoesNotValidException: If window is invalid
-        """
-    def resize(self, size: geometry.Size) -> None:
-        """
-        Set max window size
-        
-        Args:
-            size (appwindows.geometry.Size): New window max size
-        
-        Raises:
-            appwindows.exceptions.InvalidSizeError: If size is invalid    
-            appwindows.exceptions.WindowDoesNotValidException: If window is invalid
-        """
     def set_fullscreen(self, is_maximize: bool) -> None:
         """
         Maximize or restore the window

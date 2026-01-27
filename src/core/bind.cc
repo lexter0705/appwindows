@@ -144,22 +144,6 @@ void bind_window(py::module &m) {
            "    appwindows.exceptions.InvalidSizeError: If size is invalid"
            "    appwindows.exceptions.WindowDoesNotValidException: If window is invalid",
            py::arg("size"))
-      .def("set_min_size", &Window::resize,
-           "Set min window size\n\n"
-           "Args:\n"
-           "    size (appwindows.geometry.Size): New min window dimensions\n\n"
-           "Raises:\n"
-           "    appwindows.exceptions.InvalidSizeError: If size is invalid"
-           "    appwindows.exceptions.WindowDoesNotValidException: If window is invalid",
-           py::arg("size"))
-      .def("set_max_size", &Window::resize,
-           "Set max window size\n\n"
-           "Args:\n"
-           "    size (appwindows.geometry.Size): New max window dimensions\n\n"
-           "Raises:\n"
-           "    appwindows.exceptions.InvalidSizeError: If size is invalid"
-           "    appwindows.exceptions.WindowDoesNotValidException: If window is invalid",
-           py::arg("size"))
       .def("move", &Window::move,
            "Move window to specified position\n\n"
            "Args:\n"
