@@ -3,6 +3,13 @@
 [![License - BSD 3-Clause](https://img.shields.io/pypi/l/appwindows.svg)](https://github.com/lexter0705/appwindows/blob/master/LICENSE.md) [![unit_tests](https://github.com/lexter0705/appwindows/actions/workflows/unit_tests.yml/badge.svg)](https://github.com/lexter0705/appwindows/actions/workflows/unit_tests.yml)
 <br>
 [![PyPI Downloads](https://static.pepy.tech/personalized-badge/appwindows?period=total&units=INTERNATIONAL_SYSTEM&left_color=GRAY&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/appwindows) 
+[![Documentation](https://img.shields.io/badge/docs-gitbook-green)](https://apparser.gitbook.io/appwindows)
+<br>
+[![PyPi](https://img.shields.io/badge/PyPi-link-green)](https://pypi.org/project/appwindows/)
+[![Github](https://img.shields.io/badge/github-repo-green)](https://github.com/lexter0705/appwindows)
+[![Issues](https://img.shields.io/badge/github-issues-green)](https://github.com/lexter0705/appwindows/issues)
+
+
 
 # Appwindows
 The appwindows library provides a unified way to find, inspect, and control application windows across Windows, macOS, and Linux.
