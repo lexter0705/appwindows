@@ -23,41 +23,6 @@ static const CFStringRef kAXCloseAction           = CFSTR("AXClose");
 
 namespace appwindows::macos {
 
-AXUIElementRef get_window_element(pid_t pid, CGWindowID window_id) {
-    @autoreleasepool {
-        AXUIElementRef app = AXUIElementCreateApplication(pid);
-        if (!app) return nullptr;
-        CFArrayRef windows = nullptr;
-        AXError err = AXUIElementCopyAttributeValue(app, kAXWindowsAttribute, (CFTypeRef*)&windows);
-        if (err != kAXErrorSuccess || !windows) {
-            CFRelease(app);
-            return nullptr;
-        }
-        AXUIElementRef result = nullptr;
-        CFIndex count = CFArrayGetCount(windows);
-        for (CFIndex i = 0; i < count; ++i) {
-            AXUIElementRef window = (AXUIElementRef)CFArrayGetValueAtIndex(windows, i);
-            if (!window) continue;
-            CFTypeRef value = nullptr;
-            err = AXUIElementCopyAttributeValue(window, kAXWindowIdAttribute, &value);
-            if (err == kAXErrorSuccess && value && CFGetTypeID(value) == CFNumberGetTypeID()) {
-                CGWindowID axWinId = 0;
-                if (CFNumberGetValue((CFNumberRef)value, kCFNumberCGWindowIDType, &axWinId)) {
-                    if (axWinId == window_id) {
-                        result = (AXUIElementRef)CFRetain(window);
-                        CFRelease(value);
-                        break;
-                    }
-                }
-            }
-            if (value) CFRelease(value);
-        }
-        CFRelease(windows);
-        CFRelease(app);
-        return result;
-    }
-}
-
 void WindowMacOS::set_minimize(bool is_minimize) {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
     auto pid = *get_process_id();

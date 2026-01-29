@@ -69,7 +69,7 @@ elif host_machine.system() == 'darwin'
     appwindows_sources += files(
         'src/macos/window.getters.cc',
         'src/macos/window.setters.mm',
-        'src/macos/window.getters.size.mm',
+        'src/macos/window.getters.mm',
         'src/macos/finder.cc'
     )
     appwindows_inc = [appwindows_inc, include_directories('src/macos')]

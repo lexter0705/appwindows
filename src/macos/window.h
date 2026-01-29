@@ -2,6 +2,9 @@
 
 #include <pybind11/numpy.h>
 #include <ApplicationServices/ApplicationServices.h>
+#import <AppKit/AppKit.h>
+#import <ApplicationServices/ApplicationServices.h>
+#import <Accessibility/Accessibility.h>
 
 #include "../core/base_window.h"
 #include "../core/geometry/point.h"
@@ -32,6 +35,7 @@ public:
 
 private:
   CGWindowID window_id_;
+  AXUIElementRef get_window_element(pid_t pid, CGWindowID window_id);
 };
 
 }  // namespace appwindows::macos

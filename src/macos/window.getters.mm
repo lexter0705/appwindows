@@ -25,7 +25,7 @@ static const CFStringRef kAXMaxSizeAttribute = CFSTR("AXMaxSize");
 
 namespace appwindows::macos {
 
-AXUIElementRef get_window_element(pid_t pid, CGWindowID window_id) {
+AXUIElementRef WindowMacOS::get_window_element(pid_t pid, CGWindowID window_id) {
   @autoreleasepool {
     AXUIElementRef app = AXUIElementCreateApplication(pid);
     if (!app) return nullptr;
