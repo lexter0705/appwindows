@@ -25,7 +25,8 @@ static const CFStringRef kAXMaxSizeAttribute = CFSTR("AXMaxSize");
 
 namespace appwindows::macos {
 
-AXUIElementRef WindowMacOS::get_window_element(pid_t pid, CGWindowID window_id) const {
+AXUIElementRef WindowMacOS::get_window_element() const {
+  pid_t pid = *get_process_id();
   @autoreleasepool {
     AXUIElementRef app = AXUIElementCreateApplication(pid);
     if (!app) return nullptr;
@@ -45,11 +46,9 @@ AXUIElementRef WindowMacOS::get_window_element(pid_t pid, CGWindowID window_id) 
       if (err == kAXErrorSuccess && value && CFGetTypeID(value) == CFNumberGetTypeID()) {
         CGWindowID ax_win_id = 0;
         if (CFNumberGetValue((CFNumberRef)value, kCFNumberCGWindowIDType, &ax_win_id)) {
-          if (ax_win_id == window_id) {
             result = (AXUIElementRef)CFRetain(window);
             CFRelease(value);
             break;
-          }
         }
       }
       if (value) CFRelease(value);
@@ -66,7 +65,7 @@ std::unique_ptr<core::Size> WindowMacOS::get_min_size() const {
   }
   auto pid = *get_process_id();
   @autoreleasepool {
-    AXUIElementRef window_element = get_window_element(pid, window_id_);
+    AXUIElementRef window_element = get_window_element();
     if (!window_element) {
       throw core::exceptions::WindowDoesNotValidException();
     }
@@ -98,7 +97,7 @@ std::unique_ptr<core::Size> WindowMacOS::get_max_size() const {
   }
   auto pid = *get_process_id();
   @autoreleasepool {
-    AXUIElementRef window_element = get_window_element(pid, window_id_);
+    AXUIElementRef window_element = get_window_element();
     if (!window_element) {
       throw core::exceptions::WindowDoesNotValidException();
     }

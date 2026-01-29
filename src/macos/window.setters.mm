@@ -27,7 +27,7 @@ void WindowMacOS::set_minimize(bool is_minimize) {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
     auto pid = *get_process_id();
     @autoreleasepool {
-        AXUIElementRef window_element = get_window_element(pid, window_id_);
+        AXUIElementRef window_element = get_window_element();
         if (!window_element) throw core::exceptions::WindowDoesNotValidException();
         CFBooleanRef value = is_minimize ? kCFBooleanTrue : kCFBooleanFalse;
         AXUIElementSetAttributeValue(window_element, kAXMinimizedAttribute, value);
@@ -39,7 +39,7 @@ void WindowMacOS::set_fullscreen(bool is_fullscreen) {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
     auto pid = *get_process_id();
     @autoreleasepool {
-        AXUIElementRef window_element = get_window_element(pid, window_id_);
+        AXUIElementRef window_element = get_window_element();
         if (!window_element) throw core::exceptions::WindowDoesNotValidException();
         CFBooleanRef value = is_fullscreen ? kCFBooleanTrue : kCFBooleanFalse;
         AXUIElementSetAttributeValue(window_element, kAXFullScreenAttribute, value);
@@ -51,7 +51,7 @@ void WindowMacOS::resize(core::Size size) {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
     auto pid = *get_process_id();
     @autoreleasepool {
-        AXUIElementRef window_element = get_window_element(pid, window_id_);
+        AXUIElementRef window_element = get_window_element();
         if (!window_element) throw core::exceptions::WindowDoesNotValidException();
 
         CGSize new_size = CGSizeMake(static_cast<CGFloat>(size.get_width()),
@@ -73,7 +73,7 @@ void WindowMacOS::move(core::Point point) {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
     auto pid = *get_process_id();
     @autoreleasepool {
-        AXUIElementRef window_element = get_window_element(pid, window_id_);
+        AXUIElementRef window_element = get_window_element();
         if (!window_element) throw core::exceptions::WindowDoesNotValidException();
 
         CGPoint new_position = CGPointMake(static_cast<CGFloat>(point.get_x()),
@@ -94,7 +94,7 @@ void WindowMacOS::close() {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
     auto pid = *get_process_id();
     @autoreleasepool {
-        AXUIElementRef window_element = get_window_element(pid, window_id_);
+        AXUIElementRef window_element = get_window_element();
         if (!window_element) throw core::exceptions::WindowDoesNotValidException();
         AXUIElementPerformAction(window_element, kAXCloseAction);
         CFRelease(window_element);
