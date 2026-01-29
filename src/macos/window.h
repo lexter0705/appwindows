@@ -35,7 +35,7 @@ public:
 
 private:
   CGWindowID window_id_;
-  AXUIElementRef get_window_element(pid_t pid, CGWindowID window_id) const;
+  AXUIElementRef get_window_element() const;
 };
 
 }  // namespace appwindows::macos
