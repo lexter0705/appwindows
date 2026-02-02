@@ -67,10 +67,9 @@ elif host_machine.system() == 'linux'
 
 elif host_machine.system() == 'darwin'
     appwindows_sources += files(
-        'src/macos/window.getters.cc',
         'src/macos/window.setters.mm',
         'src/macos/window.getters.mm',
-        'src/macos/finder.cc'
+        'src/macos/finder.mm'
     )
     appwindows_inc = [appwindows_inc, include_directories('src/macos')]
     platform_args += ['-DMACOS_USED=1', '-x', 'objective-c++', '-fobjc-arc']

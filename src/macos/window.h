@@ -1,10 +1,10 @@
 #pragma once
 
 #include <pybind11/numpy.h>
-#include <ApplicationServices/ApplicationServices.h>
+
 #import <AppKit/AppKit.h>
-#import <ApplicationServices/ApplicationServices.h>
 #import <Accessibility/Accessibility.h>
+#include <CoreGraphics/CGWindow.h>
 
 #include "../core/base_window.h"
 #include "../core/geometry/point.h"
@@ -15,7 +15,12 @@ namespace appwindows::macos {
 
 class WindowMacOS final : public core::Window {
 public:
-  explicit WindowMacOS(CGWindowID window_id);
+  explicit WindowMacOS(AXUIElementRef window_ref);
+  ~WindowMacOS();
+
+  WindowMacOS(const WindowMacOS&) = delete;
+  WindowMacOS& operator=(const WindowMacOS&) = delete;
+
   [[nodiscard]] std::unique_ptr<core::QuadPoints> get_points() override;
   [[nodiscard]] std::unique_ptr<std::string> get_title() const override;
   [[nodiscard]] std::unique_ptr<core::Size> get_size() const override;
@@ -34,8 +39,7 @@ public:
   void to_background() override;
 
 private:
-  CGWindowID window_id_;
-  AXUIElementRef get_window_element() const;
+  AXUIElementRef window_ref_;
 };
 
 }  // namespace appwindows::macos

@@ -55,6 +55,9 @@ def test_window_get_size(test_window):
 
 
 def test_window_get_max_size(test_window):
+    if sys.platform == "darwin" and os.getenv("GITHUB_ACTIONS") == "true":
+        logger.info("The test was cancelled due to lack of permissions in GitHub Actions on MacOS.")
+        return
     appwindows_size = test_window.get_max_size()
     assert isinstance(appwindows_size, Size)
     assert appwindows_size.width >= 0
@@ -63,6 +66,9 @@ def test_window_get_max_size(test_window):
 
 
 def test_window_get_min_size(test_window):
+    if sys.platform == "darwin" and os.getenv("GITHUB_ACTIONS") == "true":
+        logger.info("The test was cancelled due to lack of permissions in GitHub Actions on MacOS.")
+        return
     appwindows_size = test_window.get_min_size()
     assert isinstance(appwindows_size, Size)
     assert appwindows_size.width >= 0
