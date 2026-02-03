@@ -22,8 +22,8 @@ void WindowMacOS::set_minimize(bool is_minimize) {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
     CFBooleanRef minimize_value = is_minimize ? kCFBooleanTrue : kCFBooleanFalse;
     AXError error = AXUIElementSetAttributeValue(
-        window_ref_, kAXMinimizedAttribute, minimize_value);
-    if (error != kAXErrorSuccess)
+        window_ref_, CFSTR("AXMinimized"), minimize_value);
+    if (error != kAXErrorSuccess) 
         throw core::exceptions::WindowDoesNotValidException();
 }
 
@@ -31,34 +31,34 @@ void WindowMacOS::set_fullscreen(bool is_fullscreen) {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
     CFBooleanRef fullscreen_value = is_fullscreen ? kCFBooleanTrue : kCFBooleanFalse;
     AXError error = AXUIElementSetAttributeValue(
-        window_ref_, kAXFullScreenAttribute, fullscreen_value);
-    if (error != kAXErrorSuccess)
+        window_ref_, CFSTR("AXFullScreen"), fullscreen_value);
+    if (error != kAXErrorSuccess) 
         throw core::exceptions::WindowDoesNotValidException();
 }
 
 void WindowMacOS::resize(core::Size size) {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-    CGSize cg_size = {static_cast<CGFloat>(size.get_width()),
+    CGSize cg_size = {static_cast<CGFloat>(size.get_width()), 
                       static_cast<CGFloat>(size.get_height())};
     CFTypeRef size_value = AXValueCreate(kAXValueCGSizeType, &cg_size);
     if (!size_value)
         throw core::exceptions::WindowDoesNotValidException();
     AXError error = AXUIElementSetAttributeValue(
-        window_ref_, kAXSizeAttribute, size_value);
+        window_ref_, CFSTR("AXSize"), size_value);
     CFRelease(size_value);
-    if (error != kAXErrorSuccess)
+    if (error != kAXErrorSuccess) 
         throw core::exceptions::WindowDoesNotValidException();
 }
 
 void WindowMacOS::move(core::Point point) {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-    CGPoint cg_point = {static_cast<CGFloat>(point.get_x()),
+    CGPoint cg_point = {static_cast<CGFloat>(point.get_x()), 
                         static_cast<CGFloat>(point.get_y())};
     CFTypeRef position_value = AXValueCreate(kAXValueCGPointType, &cg_point);
     if (!position_value)
         throw core::exceptions::WindowDoesNotValidException();
     AXError error = AXUIElementSetAttributeValue(
-        window_ref_, kAXPositionAttribute, position_value);
+        window_ref_, CFSTR("AXPosition"), position_value);
     CFRelease(position_value);
     if (error != kAXErrorSuccess)
         throw core::exceptions::WindowDoesNotValidException();
@@ -66,7 +66,7 @@ void WindowMacOS::move(core::Point point) {
 
 void WindowMacOS::close() {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-    AXError error = AXUIElementPerformAction(window_ref_, kAXCloseAction);
+    AXError error = AXUIElementPerformAction(window_ref_, CFSTR("AXClose"));
     if (error != kAXErrorSuccess)
         throw core::exceptions::WindowDoesNotValidException();
 }
@@ -78,18 +78,18 @@ void WindowMacOS::to_foreground() {
     if (error != kAXErrorSuccess)
         throw core::exceptions::WindowDoesNotValidException();
     NSRunningApplication* app = [NSRunningApplication runningApplicationWithProcessIdentifier:pid];
-    if (!app)
+    if (!app) 
         throw core::exceptions::WindowDoesNotValidException();
     [app activateWithOptions:NSApplicationActivateIgnoringOtherApps];
-    error = AXUIElementPerformAction(window_ref_, kAXRaiseAction);
-    if (error != kAXErrorSuccess)
+    error = AXUIElementPerformAction(window_ref_, CFSTR("AXRaise"));
+    if (error != kAXErrorSuccess) 
         throw core::exceptions::WindowDoesNotValidException();
 }
 
 void WindowMacOS::to_background() {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
     NSArray* apps = [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.finder"];
-    if ([apps count] == 0)
+    if ([apps count] == 0) 
         throw core::exceptions::WindowDoesNotValidException();
     NSRunningApplication* finder = [apps firstObject];
     [finder activateWithOptions:NSApplicationActivateIgnoringOtherApps];
