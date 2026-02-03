@@ -16,14 +16,6 @@ static const CFStringRef kAXWindowIdAttribute = CFSTR("AXWindowId");
 #define kCFNumberCGWindowIDType kCFNumberSInt32Type
 #endif
 
-static const CFStringRef kAXWindowNumberAttribute = CFSTR("AXWindowNumber");
-static const CFStringRef kAXFullScreenAttribute   = CFSTR("AXFullScreen");
-static const CFStringRef kAXCloseAction           = CFSTR("AXClose");
-static const CFStringRef kAXMinimizedAttribute    = CFSTR("AXMinimized");
-static const CFStringRef kAXRaiseAction           = CFSTR("AXRaise");
-static const CFStringRef kAXPositionAttribute     = CFSTR("AXPosition");
-static const CFStringRef kAXSizeAttribute         = CFSTR("AXSize");
-
 namespace appwindows::macos {
 
 void WindowMacOS::set_minimize(bool is_minimize) {
