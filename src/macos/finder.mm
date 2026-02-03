@@ -12,54 +12,72 @@
 #include "window.h"
 
 namespace appwindows::macos {
-  
+
 FinderMacOS::FinderMacOS() = default;
 
 std::vector<std::shared_ptr<core::Window>> FinderMacOS::get_all_windows() const {
   std::vector<std::shared_ptr<core::Window>> windows;
-  CGWindowListOption list_options = kCGWindowListOptionOnScreenOnly |
+  
+  CGWindowListOption list_options = kCGWindowListOptionOnScreenOnly | 
                                    kCGWindowListExcludeDesktopElements;
   CFArrayRef window_list = CGWindowListCopyWindowInfo(list_options, kCGNullWindowID);
-  if (!window_list)
+  
+  if (!window_list) {
     return windows;
+  }
+  
   CFIndex count = CFArrayGetCount(window_list);
   for (CFIndex i = 0; i < count; ++i) {
     CFDictionaryRef window_info = reinterpret_cast<CFDictionaryRef>(
         CFArrayGetValueAtIndex(window_list, i));
+    
     CFNumberRef window_id_ref = reinterpret_cast<CFNumberRef>(
         CFDictionaryGetValue(window_info, kCGWindowNumber));
     if (!window_id_ref) continue;
+    
     CGWindowID window_id = 0;
     CFNumberGetValue(window_id_ref, kCFNumberIntType, &window_id);
+    
     CFNumberRef owner_pid_ref = reinterpret_cast<CFNumberRef>(
         CFDictionaryGetValue(window_info, kCGWindowOwnerPID));
     if (!owner_pid_ref) continue;
+    
     pid_t owner_pid = 0;
     CFNumberGetValue(owner_pid_ref, kCFNumberIntType, &owner_pid);
+    
     AXUIElementRef app_ref = AXUIElementCreateApplication(owner_pid);
     if (!app_ref) continue;
+    
     CFTypeRef window_array_ref = nullptr;
-    AXError error = AXUIElementCopyAttributeValue(app_ref, CFSTR("AXWindows"),
+    AXError error = AXUIElementCopyAttributeValue(app_ref, CFSTR("AXWindows"), 
                                                   &window_array_ref);
+    
     if (error != kAXErrorSuccess || !window_array_ref) {
       CFRelease(app_ref);
       continue;
     }
+    
     CFArrayRef window_array = reinterpret_cast<CFArrayRef>(window_array_ref);
     CFIndex window_count = CFArrayGetCount(window_array);
+    
     for (CFIndex j = 0; j < window_count; ++j) {
       AXUIElementRef window_ref = reinterpret_cast<AXUIElementRef>(
           const_cast<void*>(CFArrayGetValueAtIndex(window_array, j)));
+      
       CFRetain(window_ref);
+      
       CFTypeRef window_id_attr_ref = nullptr;
       AXError id_error = AXUIElementCopyAttributeValue(
           window_ref, CFSTR("AXWindowIdentifier"), &window_id_attr_ref);
+      
       if (id_error == kAXErrorSuccess && window_id_attr_ref) {
         CGWindowID ax_window_id = 0;
-        if (CFGetTypeID(window_id_attr_ref) == CFNumberGetTypeID())
-          CFNumberGetValue(reinterpret_cast<CFNumberRef>(window_id_attr_ref),
+        if (CFGetTypeID(window_id_attr_ref) == CFNumberGetTypeID()) {
+          CFNumberGetValue(reinterpret_cast<CFNumberRef>(window_id_attr_ref), 
                           kCFNumberIntType, &ax_window_id);
+        }
         CFRelease(window_id_attr_ref);
+        
         if (ax_window_id == window_id) {
           auto window = std::make_shared<WindowMacOS>(window_ref);
           windows.push_back(window);
@@ -68,15 +86,16 @@ std::vector<std::shared_ptr<core::Window>> FinderMacOS::get_all_windows() const 
       } else {
         CFTypeRef window_number_ref = nullptr;
         AXError number_error = AXUIElementCopyAttributeValue(
-            window_ref, kAXWindowNumberAttribute, &window_number_ref);
+            window_ref, CFSTR("AXWindowNumber"), &window_number_ref);
+        
         if (number_error == kAXErrorSuccess && window_number_ref) {
           int ax_window_number = 0;
           if (CFGetTypeID(window_number_ref) == CFNumberGetTypeID()) {
-            CFNumberGetValue(reinterpret_cast<CFNumberRef>(window_number_ref),
+            CFNumberGetValue(reinterpret_cast<CFNumberRef>(window_number_ref), 
                             kCFNumberIntType, &ax_window_number);
           }
           CFRelease(window_number_ref);
-
+          
           if (static_cast<CGWindowID>(ax_window_number) == window_id) {
             auto window = std::make_shared<WindowMacOS>(window_ref);
             windows.push_back(window);
@@ -84,46 +103,54 @@ std::vector<std::shared_ptr<core::Window>> FinderMacOS::get_all_windows() const 
           }
         }
       }
+      
       CFRelease(window_ref);
     }
+    
     CFRelease(window_array_ref);
     CFRelease(app_ref);
   }
+  
   CFRelease(window_list);
+  
   NSArray* running_apps = [[NSWorkspace sharedWorkspace] runningApplications];
   for (NSRunningApplication* app in running_apps) {
     pid_t pid = [app processIdentifier];
     AXUIElementRef app_ref = AXUIElementCreateApplication(pid);
     if (!app_ref) continue;
+    
     CFTypeRef focused_window_ref = nullptr;
     AXError focused_error = AXUIElementCopyAttributeValue(
         app_ref, CFSTR("AXFocusedWindow"), &focused_window_ref);
+    
     if (focused_error == kAXErrorSuccess && focused_window_ref) {
       CFRetain(focused_window_ref);
+      
       bool already_exists = false;
       for (const auto& window : windows) {
         auto window_macos = std::dynamic_pointer_cast<WindowMacOS>(window);
-          CFTypeRef window_ref = window_macos->get_window_ref();
+        if (window_macos) {
+          CFTypeRef window_ref = window_macos->window_ref_;
           if (window_ref == focused_window_ref) {
             already_exists = true;
             break;
           }
         }
       }
+      
       if (!already_exists) {
         auto window = std::make_shared<WindowMacOS>(
             reinterpret_cast<AXUIElementRef>(focused_window_ref));
         windows.push_back(window);
-      } else
+      } else {
         CFRelease(focused_window_ref);
-
-      if (focused_window_ref)
-        CFRelease(focused _window_ref);
-      CFRelease(app_ref);
+      }
+    }
+    if (focused_window_ref) {
+      CFRelease(focused_window_ref);
+    }
+    CFRelease(app_ref);
   }
-
-
-
   return windows;
 }
 
