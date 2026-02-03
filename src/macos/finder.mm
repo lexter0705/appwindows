@@ -130,7 +130,7 @@ std::vector<std::shared_ptr<core::Window>> FinderMacOS::get_all_windows() const 
       for (const auto& window : windows) {
         auto window_macos = std::dynamic_pointer_cast<WindowMacOS>(window);
         if (window_macos) {
-          CFTypeRef window_ref = window_macos->window_ref_;
+          CFTypeRef window_ref = window_macos->get_window_ref();
           if (window_ref == focused_window_ref) {
             already_exists = true;
             break;
