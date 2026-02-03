@@ -29,6 +29,7 @@ def test_get_all_windows(finder):
     print("Windows getted!")
     found = False
     for window in windows:
+        logger.info(window.get_title())
         if "Test Window 1" in window.get_title():
             found = True
             break
