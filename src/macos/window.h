@@ -29,6 +29,7 @@ public:
   [[nodiscard]] py::array_t<unsigned char> get_screenshot() override;
   [[nodiscard]] std::unique_ptr<int> get_process_id() const override;
   [[nodiscard]] std::unique_ptr<bool> is_valid() const override;
+  AXUIElementRef get_window_ref() const;
 
   void set_minimize(bool is_minimize) override;
   void set_fullscreen(bool is_fullscreen) override;

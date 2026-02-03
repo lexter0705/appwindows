@@ -41,7 +41,7 @@ std::unique_ptr<core::QuadPoints> WindowMacOS::get_points() {
   CGPoint position = {0, 0};
   CGSize size = {0, 0};
 
-  if (position_value && CFGetTypeID(position_value) == CFValueGetTypeID()) {
+  if (position_value && CFGetTypeID(position_value) == AXValueGetTypeID()) {
     NSValue* posValue = (__bridge NSValue*)position_value;
     if ([posValue isKindOfClass:[NSValue class]]) {
       if (strcmp([posValue objCType], @encode(CGPoint)) == 0) {
@@ -50,7 +50,7 @@ std::unique_ptr<core::QuadPoints> WindowMacOS::get_points() {
     }
   }
   
-  if (size_value && CFGetTypeID(size_value) == CFValueGetTypeID()) {
+  if (size_value && CFGetTypeID(size_value) == AXValueGetTypeID()) {
     NSValue* sizeValue = (__bridge NSValue*)size_value;
     if ([sizeValue isKindOfClass:[NSValue class]]) {
       if (strcmp([sizeValue objCType], @encode(CGSize)) == 0) {
@@ -118,7 +118,7 @@ std::unique_ptr<core::Size> WindowMacOS::get_size() const {
   
   CGSize cg_size = {0, 0};
   
-  if (size_value && CFGetTypeID(size_value) == CFValueGetTypeID()) {
+  if (size_value && CFGetTypeID(size_value) == AXValueGetTypeID()) {
     NSValue* sizeValue = (__bridge NSValue*)size_value;
     if ([sizeValue isKindOfClass:[NSValue class]]) {
       if (strcmp([sizeValue objCType], @encode(CGSize)) == 0) {
@@ -244,7 +244,7 @@ std::unique_ptr<core::Size> WindowMacOS::get_min_size() const {
   
   CGSize cg_size = {0, 0};
   
-  if (min_size_value && CFGetTypeID(min_size_value) == CFValueGetTypeID()) {
+  if (min_size_value && CFGetTypeID(min_size_value) == AXValueGetTypeID()) {
     NSValue* sizeValue = (__bridge NSValue*)min_size_value;
     if ([sizeValue isKindOfClass:[NSValue class]]) {
       if (strcmp([sizeValue objCType], @encode(CGSize)) == 0) {
@@ -273,7 +273,7 @@ std::unique_ptr<core::Size> WindowMacOS::get_max_size() const {
   
   CGSize cg_size = {0, 0};
   
-  if (max_size_value && CFGetTypeID(max_size_value) == CFValueGetTypeID()) {
+  if (max_size_value && CFGetTypeID(max_size_value) == AXValueGetTypeID()) {
     NSValue* sizeValue = (__bridge NSValue*)max_size_value;
     if ([sizeValue isKindOfClass:[NSValue class]]) {
       if (strcmp([sizeValue objCType], @encode(CGSize)) == 0) {
@@ -287,6 +287,10 @@ std::unique_ptr<core::Size> WindowMacOS::get_max_size() const {
   return std::make_unique<core::Size>(
       static_cast<int>(cg_size.width), 
       static_cast<int>(cg_size.height));
+}
+
+AXUIElementRef get_window_ref() const {
+  return window_ref_;
 }
 
 }  // namespace appwindows::macos
