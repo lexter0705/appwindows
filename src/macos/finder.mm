@@ -13,10 +13,18 @@
 
 namespace appwindows::macos {
 
+#ifnded kAXWindowsAttribute
 static CFStringRef kAXWindowsAttribute = CFSTR("AXWindows");
+#endif
+  
+#ifnded kAXWindowsAttribute
 static CFStringRef kAXMainWindowAttribute = CFSTR("AXMainWindow");
-static CFStringRef kAXFocusedWindowAttribute = CFSTR("AXFocusedWindow");
+#endif
 
+#ifnded kAXWindowsAttribute
+static CFStringRef kAXFocusedWindowAttribute = CFSTR("AXFocusedWindow");
+#endif
+  
 FinderMacOS::FinderMacOS() = default;
 
 std::vector<std::shared_ptr<core::Window>> FinderMacOS::get_all_windows() const {
