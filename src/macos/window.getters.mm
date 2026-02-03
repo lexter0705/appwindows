@@ -21,6 +21,10 @@ WindowMacOS::~WindowMacOS() {
   if (window_ref_) CFRelease(window_ref_);
 }
 
+AXUIElementRef WindowMacOS::get_window_ref() const {
+  return window_ref_;
+}
+
 std::unique_ptr<core::QuadPoints> WindowMacOS::get_points() {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
   
@@ -174,8 +178,12 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
     throw core::exceptions::WindowDoesNotValidException();
   }
   
-  py::array_t<unsigned char> image({static_cast<py::ssize_t>(height), 
-                                   static_cast<py::ssize_t>(width), 4});
+  std::vector<py::ssize_t> shape = {
+    static_cast<py::ssize_t>(height), 
+    static_cast<py::ssize_t>(width), 
+    4
+  };
+  py::array_t<unsigned char> image(shape);
   auto buffer = image.mutable_unchecked<3>();
   
   CGContextRef context = CGBitmapContextCreate(
@@ -194,6 +202,7 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
   
   return image;
 }
+
 
 std::unique_ptr<int> WindowMacOS::get_process_id() const {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
@@ -287,10 +296,6 @@ std::unique_ptr<core::Size> WindowMacOS::get_max_size() const {
   return std::make_unique<core::Size>(
       static_cast<int>(cg_size.width), 
       static_cast<int>(cg_size.height));
-}
-
-AXUIElementRef get_window_ref() const {
-  return window_ref_;
 }
 
 }  // namespace appwindows::macos

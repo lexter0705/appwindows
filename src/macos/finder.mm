@@ -20,9 +20,8 @@ std::vector<std::shared_ptr<core::Window>> FinderMacOS::get_all_windows() const 
   CGWindowListOption list_options = kCGWindowListOptionOnScreenOnly |
                                    kCGWindowListExcludeDesktopElements;
   CFArrayRef window_list = CGWindowListCopyWindowInfo(list_options, kCGNullWindowID);
-  if (!window_list) {
+  if (!window_list)
     return windows;
-  }
   CFIndex count = CFArrayGetCount(window_list);
   for (CFIndex i = 0; i < count; ++i) {
     CFDictionaryRef window_info = reinterpret_cast<CFDictionaryRef>(
@@ -117,11 +116,13 @@ std::vector<std::shared_ptr<core::Window>> FinderMacOS::get_all_windows() const 
         windows.push_back(window);
       } else
         CFRelease(focused_window_ref);
-    }
-    if (focused_window_ref)
-      CFRelease(focused_window_ref);
-    CFRelease(app_ref);
+
+      if (focused_window_ref)
+        CFRelease(focused _window_ref);
+      CFRelease(app_ref);
   }
+
+
 
   return windows;
 }
