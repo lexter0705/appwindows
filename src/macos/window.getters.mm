@@ -218,25 +218,10 @@ std::unique_ptr<int> WindowMacOS::get_process_id() const {
 }
 
 std::unique_ptr<bool> WindowMacOS::is_valid() const {
-  if (!window_ref_) {
+  if (!window_ref_)
     return std::make_unique<bool>(false);
-  }
-  
   pid_t pid = 0;
   AXError error = AXUIElementGetPid(window_ref_, &pid);
-  
-  if (error != kAXErrorSuccess) {
-    return std::make_unique<bool>(false);
-  }
-  
-  CFTypeRef window_id_value = nullptr;
-  error = AXUIElementCopyAttributeValue(
-      window_ref_, CFSTR("AXWindowIdentifier"), &window_id_value);
-  
-  if (error == kAXErrorSuccess) {
-    CFRelease(window_id_value);
-  }
-  
   return std::make_unique<bool>(error == kAXErrorSuccess);
 }
 
