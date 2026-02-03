@@ -12,18 +12,6 @@
 #include "window.h"
 
 namespace appwindows::macos {
-
-#ifnded kAXWindowsAttribute
-static CFStringRef kAXWindowsAttribute = CFSTR("AXWindows");
-#endif
-  
-#ifnded kAXWindowsAttribute
-static CFStringRef kAXMainWindowAttribute = CFSTR("AXMainWindow");
-#endif
-
-#ifnded kAXWindowsAttribute
-static CFStringRef kAXFocusedWindowAttribute = CFSTR("AXFocusedWindow");
-#endif
   
 FinderMacOS::FinderMacOS() = default;
 
@@ -52,7 +40,7 @@ std::vector<std::shared_ptr<core::Window>> FinderMacOS::get_all_windows() const 
     AXUIElementRef app_ref = AXUIElementCreateApplication(owner_pid);
     if (!app_ref) continue;
     CFTypeRef window_array_ref = nullptr;
-    AXError error = AXUIElementCopyAttributeValue(app_ref, kAXWindowsAttribute,
+    AXError error = AXUIElementCopyAttributeValue(app_ref, CFSTR("AXWindows"),
                                                   &window_array_ref);
     if (error != kAXErrorSuccess || !window_array_ref) {
       CFRelease(app_ref);
@@ -110,7 +98,7 @@ std::vector<std::shared_ptr<core::Window>> FinderMacOS::get_all_windows() const 
     if (!app_ref) continue;
     CFTypeRef focused_window_ref = nullptr;
     AXError focused_error = AXUIElementCopyAttributeValue(
-        app_ref, kAXFocusedWindowAttribute, &focused_window_ref);
+        app_ref, CFSTR("AXFocusedWindow"), &focused_window_ref);
     if (focused_error == kAXErrorSuccess && focused_window_ref) {
       CFRetain(focused_window_ref);
       bool already_exists = false;

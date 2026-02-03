@@ -8,12 +8,12 @@
 #import <AppKit/AppKit.h>
 #import <Accessibility/Accessibility.h>
 
-#ifndef kAXWindowIdAttribute
-static const CFStringRef kAXWindowIdAttribute = CFSTR("AXWindowId");
+#ifndef kAXValueCGPointType
+#define kAXValueCGPointType 1
 #endif
 
-#ifndef kCFNumberCGWindowIDType
-#define kCFNumberCGWindowIDType kCFNumberSInt32Type
+#ifndef kAXValueCGSizeType
+#define kAXValueCGSizeType 2
 #endif
 
 namespace appwindows::macos {

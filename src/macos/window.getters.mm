@@ -11,6 +11,14 @@
 #include "../core/geometry/quad_points.h"
 #include "../core/geometry/size.h"
 
+#ifndef kAXValueCGPointType
+#define kAXValueCGPointType 1
+#endif
+
+#ifndef kAXValueCGSizeType
+#define kAXValueCGSizeType 2
+#endif
+
 namespace appwindows::macos {
 
 WindowMacOS::WindowMacOS(AXUIElementRef window_ref) : window_ref_(window_ref) {
