@@ -34,7 +34,7 @@ void WindowMacOS::set_fullscreen(bool is_fullscreen) {
 
 void WindowMacOS::resize(core::Size size) {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-    CGSize cg_size = {static_cast<CGFloat>(size.get_width()), 
+    CGSize cg_size = {static_cast<CGFloat>(size.get_width()),
                       static_cast<CGFloat>(size.get_height())};
     NSValue* size_value = [NSValue valueWithSize:cg_size];
     AXError error = AXUIElementSetAttributeValue(
@@ -44,7 +44,7 @@ void WindowMacOS::resize(core::Size size) {
 
 void WindowMacOS::move(core::Point point) {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-    CGPoint cg_point = {static_cast<CGFloat>(point.get_x()), 
+    CGPoint cg_point = {static_cast<CGFloat>(point.get_x()),
                         static_cast<CGFloat>(point.get_y())};
     NSValue* point_value = [NSValue valueWithPoint:cg_point];
     AXError error = AXUIElementSetAttributeValue(
@@ -73,7 +73,7 @@ void WindowMacOS::to_foreground() {
 void WindowMacOS::to_background() {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
     NSArray* apps = [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.finder"];
-    handle_error(error);
+    if ([apps count] == 0) throw core::exceptions::WindowDoesNotValidException();
     NSRunningApplication* finder = [apps firstObject];
     [finder activateWithOptions:NSApplicationActivateIgnoringOtherApps];
 }
