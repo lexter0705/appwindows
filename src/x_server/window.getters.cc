@@ -10,7 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "../core/exceptions/window_does_not_valid.h"
+#include "../core/core.h"
+
 #include "finder.h"
 
 namespace py = pybind11;

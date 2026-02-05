@@ -6,10 +6,7 @@
 #import <Accessibility/Accessibility.h>
 #include <CoreGraphics/CGWindow.h>
 
-#include "../core/base_window.h"
-#include "../core/geometry/point.h"
-#include "../core/geometry/quad_points.h"
-#include "../core/geometry/size.h"
+#include "../core/core.h"
 
 namespace appwindows::macos {
 
@@ -41,6 +38,7 @@ public:
 
 private:
   AXUIElementRef window_ref_;
+  void handle_error(AXError error);
 };
 
 }  // namespace appwindows::macos

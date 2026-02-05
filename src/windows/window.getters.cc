@@ -7,7 +7,7 @@
 #include <windows.h>
 #include <limits>
 
-#include "../core/exceptions/window_does_not_valid.h"
+#include "../core/core.h"
 
 namespace appwindows::windows {
 

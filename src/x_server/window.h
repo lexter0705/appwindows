@@ -3,12 +3,8 @@
 #include <X11/Xlib.h>
 
 #include <memory>
-#include <vector>
 
-#include "../core/base_window.h"
-#include "../core/geometry/point.h"
-#include "../core/geometry/quad_points.h"
-#include "../core/geometry/size.h"
+#include "../core/core.h"
 
 using WindowX = Window;
 
