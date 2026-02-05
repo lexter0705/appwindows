@@ -8,6 +8,14 @@
 
 #include "../core/core.h"
 
+#ifndef kAXErrorNotEnoughPrivileges
+#define kAXErrorNotEnoughPrivileges static_cast<AXError>(-25209)
+#endif
+
+#ifndef kAXErrorAPIDisabled
+#define kAXErrorAPIDisabled static_cast<AXError>(-25210)
+#endif
+
 namespace appwindows::macos {
 
 WindowMacOS::WindowMacOS(AXUIElementRef window_ref) : window_ref_(window_ref) {
@@ -88,7 +96,8 @@ std::unique_ptr<std::string> WindowMacOS::get_title() const {
   handle_error(error);
   CFStringRef title_string = reinterpret_cast<CFStringRef>(title_value);
   CFIndex length = CFStringGetLength(title_string);
-  CFIndex max_size = CFStringGetMaximumSizeForEncoding(length, 
+  CFIndex max_size = CFStringGetMaximumSizeForEncoding(length,
+                                                       kCFStringEncodingUTF8);
   char* buffer = new char[max_size];
   std::unique_ptr<std::string> result;
   if (CFStringGetCString(title_string, buffer, max_size, 
