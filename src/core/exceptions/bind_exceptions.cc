@@ -15,7 +15,7 @@ void bind_exceptions(py::module &m){
   py::register_exception<InvalidSizeException>(m, "InvalidSizeException");
   py::register_exception<WindowDoesNotValidException>(m, "WindowDoesNotValidException");
   py::register_exception<WindowDoesNotFoundException>(m, "WindowDoesNotFoundException");
-  py::register_exception<PermissionDeniedException>(m, "WindowDoesNotFoundException");
+  py::register_exception<PermissionDeniedException>(m, "PermissionDeniedException");
 }
 
 }  // namespace appwindows::core::geometry
