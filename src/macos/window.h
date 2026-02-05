@@ -38,7 +38,7 @@ public:
 
 private:
   AXUIElementRef window_ref_;
-  void handle_error(AXError error);
+  void handle_error(AXError error) const;
 };
 
 }  // namespace appwindows::macos
