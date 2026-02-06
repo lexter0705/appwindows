@@ -23,20 +23,8 @@ The appwindows library provides a unified way to find, inspect, and control appl
 ```bash
 pip install appwindows
 ```
-# Docs
-All documentation <a href="https://apparser.gitbook.io/appwindows">here</a> <br>
-Link to <a href="https://pypi.org/project/appwindows/">PyPi</a>
-# For Developers
-1) If something doesn't work - open issue.
-2) If you want something fixed - open issue.
-3) If you can help with the library - email.
 
-apparser.development@gmail.com
-
-Any help in development is welcome)!
-
-
-# Examples 
+# Examples
 
 1) Resize window
 ```python
@@ -76,3 +64,17 @@ size = window.get_size()
 print(points.left_top) # appwindows.geometry.Point(x=200, y=200)
 print(size)            # appwindows.geometry.Size(width=200, height=200)
 ```
+
+# Docs
+All documentation <a href="https://apparser.gitbook.io/appwindows">here</a> <br>
+Link to <a href="https://pypi.org/project/appwindows/">PyPi</a>
+# For Developers
+1) If something doesn't work - open issue.
+2) If you want something fixed - open issue.
+3) If you can help with the library - email.
+
+apparser.development@gmail.com
+
+Any help in development is welcome)!
+
+
