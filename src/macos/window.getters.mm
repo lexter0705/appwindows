@@ -94,7 +94,8 @@ std::unique_ptr<std::string> WindowMacOS::get_title() const {
   CFTypeRef title_value = nullptr;
   AXError error = AXUIElementCopyAttributeValue(
       window_ref_, CFSTR("AXTitle"), &title_value);
-  handle_error(error);
+  if (error != kAXErrorSuccess)
+    return std::make_unique<std::string>(std::string());
   CFStringRef title_string = reinterpret_cast<CFStringRef>(title_value);
   CFIndex length = CFStringGetLength(title_string);
   CFIndex max_size = CFStringGetMaximumSizeForEncoding(length,
