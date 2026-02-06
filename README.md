@@ -34,3 +34,45 @@ Link to <a href="https://pypi.org/project/appwindows/">PyPi</a>
 apparser.development@gmail.com
 
 Any help in development is welcome)!
+
+
+# Examples 
+
+1) Resize window
+```python
+from appwindows import get_finder
+from appwindows.geometry import Size
+
+finder = get_finder()
+
+window = finder.get_window_by_title("Some title")
+
+window.resize(Size(width=200, height=200))
+```
+
+2) Move window
+```python
+from appwindows import get_finder
+from appwindows.geometry import Point
+
+finder = get_finder()
+
+window = finder.get_window_by_title("Some title")
+
+window.move(Point(x=200, y=200))
+```
+
+3) Get window coordinates and size
+```python
+from appwindows import get_finder
+
+finder = get_finder()
+
+window = finder.get_window_by_title("Some title")
+
+points = window.get_points()
+size = window.get_size()
+
+print(points.left_top) # appwindows.geometry.Point(x=200, y=200)
+print(size)            # appwindows.geometry.Size(width=200, height=200)
+```

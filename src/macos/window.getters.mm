@@ -40,7 +40,7 @@ std::unique_ptr<bool> WindowMacOS::is_valid() const {
 
 void WindowMacOS::handle_error(AXError error) const {
   if (error == kAXErrorNotEnoughPrivileges || error == kAXErrorAPIDisabled)
-    throw core::exceptions::WindowDoesNotValidException();
+    throw core::exceptions::PermissionDeniedException();
   else if (error != kAXErrorSuccess)
     throw core::exceptions::WindowDoesNotValidException();
 }
