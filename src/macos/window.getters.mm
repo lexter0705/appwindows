@@ -36,6 +36,7 @@ std::unique_ptr<bool> WindowMacOS::is_valid() const {
   pid_t pid = 0;
   AXError error = AXUIElementGetPid(window_ref_, &pid);
   handle_error(error);
+  return std::make_unique<bool>(true);
 }
 
 void WindowMacOS::handle_error(AXError error) const {
