@@ -43,7 +43,7 @@ void WindowMacOS::handle_error(AXError error) const {
   if (error == kAXErrorNotEnoughPrivileges || error == kAXErrorAPIDisabled)
     throw core::exceptions::PermissionDeniedException();
   else if (error != kAXErrorSuccess)
-    throw core::exceptions::WindowDoesNotValidException();
+    throw core::exceptions::WindowDoesNotValidException("(" + std::to_string(error) + ")");
 }
 
 std::unique_ptr<core::QuadPoints> WindowMacOS::get_points() {
