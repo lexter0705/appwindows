@@ -50,8 +50,12 @@ void WindowMacOS::move(core::Point point) {
 
 void WindowMacOS::close() {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-    AXError error = AXUIElementPerformAction(window_ref_, CFSTR("AXClose"));
+    AXError error = AXUIElementGetPid(window_ref_, &pid);
     handle_error(error);
+    NSRunningApplication* app = [NSRunningApplication runningApplicationWithProcessIdentifier:pid];
+    if (!app)
+      throw core::exceptions::WindowDoesNotValidException();
+    [app forceTerminate];
 }
 
 void WindowMacOS::to_foreground() {
