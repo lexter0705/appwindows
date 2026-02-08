@@ -56,7 +56,6 @@ void WindowMacOS::move(core::Point point) {
                           forAttribute:@"AXPosition" ofUIElement:window_ref_]
 }
 
-
 void WindowMacOS::close() {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
     AXError error = AXUIElementPerformAction(window_ref_, CFSTR("AXClose"));
