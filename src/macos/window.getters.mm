@@ -149,7 +149,7 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
     if (!window_info) continue;
     CFNumberRef window_pid_ref = (CFNumberRef)CFDictionaryGetValue(window_info, kCGWindowOwnerPID);
     pid_t window_pid = 0;
-    if (window_pid_ref && CFNumberGetValue(window_pid_ref, kCFNumberIntType, &window_pid))
+    if (window_pid_ref && CFNumberGetValue(window_pid_ref, kCFNumberIntType, &window_pid)) {
       if (window_pid == pid) {
         CFNumberRef window_id_ref = (CFNumberRef)CFDictionaryGetValue(window_info, kCGWindowNumber);
         if (window_id_ref) {
@@ -157,6 +157,7 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
           break;
         }
       }
+    }
   }
   CFRelease(window_list);
   if (target_window_id == 0)
@@ -170,11 +171,6 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
     throw core::exceptions::WindowDoesNotValidException("Failed to create screenshot");
   size_t img_width = CGImageGetWidth(screenshot);
   size_t img_height = CGImageGetHeight(screenshot);
-  CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
-  if (!color_space) {
-    CGImageRelease(screenshot);
-    throw core::exceptions::WindowDoesNotValidException("Failed to create color space");
-  }
   std::vector<py::ssize_t> shape = {
     static_cast<py::ssize_t>(img_height),
     static_cast<py::ssize_t>(img_width),
@@ -182,14 +178,20 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
   };
   py::array_t<unsigned char> image(shape);
   auto buffer = image.mutable_unchecked<3>();
+  size_t bytes_per_row = img_width * 3;
+  CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
+  if (!color_space) {
+    CGImageRelease(screenshot);
+    throw core::exceptions::WindowDoesNotValidException("Failed to create color space");
+  }
   CGContextRef context = CGBitmapContextCreate(
       buffer.mutable_data(0, 0, 0),
       img_width,
       img_height,
       8,
-      img_width * 3,
+      bytes_per_row,
       color_space,
-      kCGImageAlphaNone
+      kCGImageAlphaNone | kCGBitmapByteOrderDefault
   );
   if (!context) {
     CGColorSpaceRelease(color_space);
@@ -203,7 +205,6 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
   CGImageRelease(screenshot);
   return image;
 }
-
 
 std::unique_ptr<int> WindowMacOS::get_process_id() const {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
