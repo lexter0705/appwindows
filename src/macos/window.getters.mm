@@ -134,44 +134,72 @@ std::unique_ptr<core::Size> WindowMacOS::get_size() const {
 
 py::array_t<unsigned char> WindowMacOS::get_screenshot() {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-  CFTypeRef window_id_value = nullptr;
-  AXError error = AXUIElementCopyAttributeValue(
-      window_ref_, CFSTR("AXWindowIdentifier"), &window_id_value);
-  handle_error(error);
-  CGWindowID window_id = 0;
-  if (CFGetTypeID(window_id_value) == CFNumberGetTypeID()) {
-    CFNumberGetValue(reinterpret_cast<CFNumberRef>(window_id_value), 
-                     kCFNumberIntType, &window_id);
+  pid_t pid = 0;
+  AXError pid_error = AXUIElementGetPid(window_ref_, &pid);
+  handle_error(pid_error);
+  CFArrayRef window_list = CGWindowListCopyWindowInfo(
+      kCGWindowListOptionAll | kCGWindowListOptionOnScreenOnly,
+      kCGNullWindowID);
+  if (!window_list)
+    throw core::exceptions::WindowDoesNotValidException("Failed to get window list");
+  CGWindowID target_window_id = 0;
+  CFIndex window_count = CFArrayGetCount(window_list);
+  for (CFIndex i = 0; i < window_count; ++i) {
+    CFDictionaryRef window_info = (CFDictionaryRef)CFArrayGetValueAtIndex(window_list, i);
+    if (!window_info) continue;
+    CFNumberRef window_pid_ref = (CFNumberRef)CFDictionaryGetValue(window_info, kCGWindowOwnerPID);
+    pid_t window_pid = 0;
+    if (window_pid_ref && CFNumberGetValue(window_pid_ref, kCFNumberIntType, &window_pid))
+      if (window_pid == pid) {
+        CFNumberRef window_id_ref = (CFNumberRef)CFDictionaryGetValue(window_info, kCGWindowNumber);
+        if (window_id_ref) {
+          CFNumberGetValue(window_id_ref, kCFNumberIntType, &target_window_id);
+          break;
+        }
+      }
   }
-  CFRelease(window_id_value);
-  handle_error(error);
+  CFRelease(window_list);
+  if (target_window_id == 0)
+    throw core::exceptions::WindowDoesNotValidException("No window found with this process ID");
   CGImageRef screenshot = CGWindowListCreateImage(
-      CGRectNull, kCGWindowListOptionIncludingWindow, 
-      window_id, kCGWindowImageDefault);
-  if (!screenshot) throw core::exceptions::WindowDoesNotValidException();
-  size_t width = CGImageGetWidth(screenshot);
-  size_t height = CGImageGetHeight(screenshot);
-  CGColorSpaceRef color_space = CGImageGetColorSpace(screenshot);
+      CGRectNull,
+      kCGWindowListOptionIncludingWindow,
+      target_window_id,
+      kCGWindowImageBoundsIgnoreFraming | kCGWindowImageBestResolution);
+  if (!screenshot)
+    throw core::exceptions::WindowDoesNotValidException("Failed to create screenshot");
+  size_t img_width = CGImageGetWidth(screenshot);
+  size_t img_height = CGImageGetHeight(screenshot);
+  CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
   if (!color_space) {
     CGImageRelease(screenshot);
-    throw core::exceptions::WindowDoesNotValidException();
+    throw core::exceptions::WindowDoesNotValidException("Failed to create color space");
   }
   std::vector<py::ssize_t> shape = {
-    static_cast<py::ssize_t>(height), 
-    static_cast<py::ssize_t>(width), 
-    4
+    static_cast<py::ssize_t>(img_height),
+    static_cast<py::ssize_t>(img_width),
+    3
   };
   py::array_t<unsigned char> image(shape);
   auto buffer = image.mutable_unchecked<3>();
   CGContextRef context = CGBitmapContextCreate(
-      buffer.mutable_data(0, 0, 0), width, height, 8, width * 4, 
-      color_space, kCGImageAlphaPremultipliedLast);
+      buffer.mutable_data(0, 0, 0),
+      img_width,
+      img_height,
+      8,
+      img_width * 3,
+      color_space,
+      kCGImageAlphaNone
+  );
   if (!context) {
+    CGColorSpaceRelease(color_space);
     CGImageRelease(screenshot);
-    throw core::exceptions::WindowDoesNotValidException();
+    throw core::exceptions::WindowDoesNotValidException("Failed to create bitmap context");
   }
-  CGContextDrawImage(context, CGRectMake(0, 0, width, height), screenshot);
+  CGRect draw_rect = CGRectMake(0, 0, img_width, img_height);
+  CGContextDrawImage(context, draw_rect, screenshot);
   CGContextRelease(context);
+  CGColorSpaceRelease(color_space);
   CGImageRelease(screenshot);
   return image;
 }
