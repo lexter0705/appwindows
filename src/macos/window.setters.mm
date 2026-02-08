@@ -44,23 +44,18 @@ void WindowMacOS::resize(core::Size size) {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
     CGFloat width = static_cast<CGFloat>(size.get_width());
     CGFloat height = static_cast<CGFloat>(size.get_height());
-    NSString *sizeString = [NSString stringWithFormat:@"w=%f h=%f", width, height];
-    CFStringRef sizeCFString = (__bridge CFStringRef)sizeString;
-    AXError error = AXUIElementSetAttributeValue(
-        window_ref_, CFSTR("AXSize"), sizeCFString);
-    handle_error(error);
+    [UIElementUtilities setStringValue:[NSString stringWithFormat:@"w=%f h=%f", width, height]
+                          forAttribute:@"AXSize" ofUIElement:window_ref_]
 }
 
 void WindowMacOS::move(core::Point point) {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
     CGFloat x = static_cast<CGFloat>(point.get_x());
     CGFloat y = static_cast<CGFloat>(point.get_y());
-    NSString *posString = [NSString stringWithFormat:@"x=%f y=%f", x, y];
-    CFStringRef posCFString = (__bridge CFStringRef)posString;
-    AXError error = AXUIElementSetAttributeValue(
-        window_ref_, CFSTR("AXPosition"), posCFString);
-    handle_error(error);
+    [UIElementUtilities setStringValue:[NSString stringWithFormat:@"x=%f y=%f", x, y]
+                          forAttribute:@"AXPosition" ofUIElement:window_ref_]
 }
+
 
 void WindowMacOS::close() {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
