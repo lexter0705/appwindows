@@ -6,22 +6,6 @@
 
 #include "../core/core.h"
 
-#ifndef kAXWindowIdAttribute
-static const CFStringRef kAXWindowIdAttribute = CFSTR("AXWindowId");
-#endif
-
-#ifndef kCFNumberCGWindowIDType
-#define kCFNumberCGWindowIDType kCFNumberSInt32Type
-#endif
-
-#ifndef kAXValueTypeCGSize
-#define kAXValueTypeCGSize 2
-#endif
-
-#ifndef kAXValueTypeCGPoint
-#define kAXValueTypeCGPoint 1
-#endif
-
 namespace appwindows::macos {
 
 void WindowMacOS::set_minimize(bool is_minimize) {
