@@ -34,21 +34,43 @@ void WindowMacOS::set_fullscreen(bool is_fullscreen) {
 
 void WindowMacOS::resize(core::Size size) {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-    CGSize cg_size = {static_cast<CGFloat>(size.get_width()),
-                      static_cast<CGFloat>(size.get_height())};
-    NSValue* size_value = [NSValue valueWithSize:cg_size];
-    AXError error = AXUIElementSetAttributeValue(
-        window_ref_, CFSTR("AXSize"), (__bridge CFTypeRef)size_value);
+    CGSize cg_size = {
+        static_cast<CGFloat>(size.get_width()),
+        static_cast<CGFloat>(size.get_height())
+    };
+    CFTypeRef current_value = nullptr;
+    AXError error = AXUIElementCopyAttributeValue(
+        window_ref_, CFSTR("AXSize"), &current_value);
+    if (error == kAXErrorSuccess && current_value) {
+        AXValueRef size_value = AXValueCreate(kAXValueCGSizeType, &cg_size);
+        if (size_value) {
+            error = AXUIElementSetAttributeValue(
+                window_ref_, CFSTR("AXSize"), size_value);
+            CFRelease(size_value);
+        }
+        CFRelease(current_value);
+    }
     handle_error(error);
 }
 
 void WindowMacOS::move(core::Point point) {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-    CGPoint cg_point = {static_cast<CGFloat>(point.get_x()),
-                        static_cast<CGFloat>(point.get_y())};
-    NSValue* point_value = [NSValue valueWithPoint:cg_point];
-    AXError error = AXUIElementSetAttributeValue(
-        window_ref_, CFSTR("AXPosition"), (__bridge CFTypeRef)point_value);
+    CGPoint cg_point = {
+        static_cast<CGFloat>(point.get_x()),
+        static_cast<CGFloat>(point.get_y())
+    };
+    CFTypeRef current_value = nullptr;
+    AXError error = AXUIElementCopyAttributeValue(
+        window_ref_, CFSTR("AXPosition"), &current_value);
+    if (error == kAXErrorSuccess && current_value) {
+        AXValueRef point_value = AXValueCreate(kAXValueCGPointType, &cg_point);
+        if (point_value) {
+            error = AXUIElementSetAttributeValue(
+                window_ref_, CFSTR("AXPosition"), point_value);
+            CFRelease(point_value);
+        }
+        CFRelease(current_value);
+    }
     handle_error(error);
 }
 
