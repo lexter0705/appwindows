@@ -14,6 +14,14 @@ static const CFStringRef kAXWindowIdAttribute = CFSTR("AXWindowId");
 #define kCFNumberCGWindowIDType kCFNumberSInt32Type
 #endif
 
+#ifndef kAXValueTypeCGSize
+#define kAXValueTypeCGSize 2
+#endif
+
+#ifndef kAXValueTypeCGPoint
+#define kAXValueTypeCGPoint 1
+#endif
+
 namespace appwindows::macos {
 
 void WindowMacOS::set_minimize(bool is_minimize) {
@@ -38,18 +46,9 @@ void WindowMacOS::resize(core::Size size) {
         static_cast<CGFloat>(size.get_width()),
         static_cast<CGFloat>(size.get_height())
     };
-    CFTypeRef current_value = nullptr;
-    AXError error = AXUIElementCopyAttributeValue(
-        window_ref_, CFSTR("AXSize"), &current_value);
-    if (error == kAXErrorSuccess && current_value) {
-        AXValueRef size_value = AXValueCreate(kAXValueCGSizeType, &cg_size);
-        if (size_value) {
-            error = AXUIElementSetAttributeValue(
-                window_ref_, CFSTR("AXSize"), size_value);
-            CFRelease(size_value);
-        }
-        CFRelease(current_value);
-    }
+    AXValueRef size_value = AXValueCreate(kAXValueTypeCGSize, &cg_size);
+    error = AXUIElementSetAttributeValue(window_ref_, CFSTR("AXSize"), size_value);
+    CFRelease(size_value);
     handle_error(error);
 }
 
@@ -59,18 +58,9 @@ void WindowMacOS::move(core::Point point) {
         static_cast<CGFloat>(point.get_x()),
         static_cast<CGFloat>(point.get_y())
     };
-    CFTypeRef current_value = nullptr;
-    AXError error = AXUIElementCopyAttributeValue(
-        window_ref_, CFSTR("AXPosition"), &current_value);
-    if (error == kAXErrorSuccess && current_value) {
-        AXValueRef point_value = AXValueCreate(kAXValueCGPointType, &cg_point);
-        if (point_value) {
-            error = AXUIElementSetAttributeValue(
-                window_ref_, CFSTR("AXPosition"), point_value);
-            CFRelease(point_value);
-        }
-        CFRelease(current_value);
-    }
+    AXValueRef point_value = AXValueCreate(kAXValueTypeCGPoint, &cg_point);
+    error = AXUIElementSetAttributeValue(window_ref_, CFSTR("AXPosition"), point_value);
+    CFRelease(point_value);
     handle_error(error);
 }
 
