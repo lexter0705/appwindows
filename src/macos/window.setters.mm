@@ -42,18 +42,26 @@ void WindowMacOS::set_fullscreen(bool is_fullscreen) {
 
 void WindowMacOS::resize(core::Size size) {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-    CGFloat width = static_cast<CGFloat>(size.get_width());
-    CGFloat height = static_cast<CGFloat>(size.get_height());
-    [UIElementUtilities setStringValue:[NSString stringWithFormat:@"w=%f h=%f", width, height]
-                          forAttribute:@"AXSize" ofUIElement:window_ref_]
+    CGSize cg_size = {
+        static_cast<CGFloat>(size.get_width()),
+        static_cast<CGFloat>(size.get_height())
+    };
+    AXValueRef size_value = AXValueCreate(kAXValueTypeCGSize, &cg_size);
+    AXError error = AXUIElementSetAttributeValue(window_ref_, CFSTR("AXSize"), size_value);
+    CFRelease(size_value);
+    handle_error(error);
 }
 
 void WindowMacOS::move(core::Point point) {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-    CGFloat x = static_cast<CGFloat>(point.get_x());
-    CGFloat y = static_cast<CGFloat>(point.get_y());
-    [UIElementUtilities setStringValue:[NSString stringWithFormat:@"x=%f y=%f", x, y]
-                          forAttribute:@"AXPosition" ofUIElement:window_ref_]
+    CGPoint cg_point = {
+        static_cast<CGFloat>(point.get_x()),
+        static_cast<CGFloat>(point.get_y())
+    };
+    AXValueRef point_value = AXValueCreate(kAXValueTypeCGPoint, &cg_point);
+    AXError error = AXUIElementSetAttributeValue(window_ref_, CFSTR("AXPosition"), point_value);
+    CFRelease(point_value);
+    handle_error(error);
 }
 
 void WindowMacOS::close() {
