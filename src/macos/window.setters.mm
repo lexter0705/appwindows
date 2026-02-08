@@ -46,9 +46,10 @@ void WindowMacOS::resize(core::Size size) {
         static_cast<CGFloat>(size.get_width()),
         static_cast<CGFloat>(size.get_height())
     };
-    AXValueRef size_value = AXValueCreate(kAXValueTypeCGSize, &cg_size);
-    error = AXUIElementSetAttributeValue(window_ref_, CFSTR("AXSize"), size_value);
-    CFRelease(size_value);
+    NSValue* size_value = [NSValue valueWithSize:cg_size];
+    error = AXUIElementSetAttributeValue(
+        window_ref_, CFSTR("AXSize"), (__bridge CFTypeRef)size_value);
+
     handle_error(error);
 }
 
@@ -58,9 +59,9 @@ void WindowMacOS::move(core::Point point) {
         static_cast<CGFloat>(point.get_x()),
         static_cast<CGFloat>(point.get_y())
     };
-    AXValueRef point_value = AXValueCreate(kAXValueTypeCGPoint, &cg_point);
-    error = AXUIElementSetAttributeValue(window_ref_, CFSTR("AXPosition"), point_value);
-    CFRelease(point_value);
+    NSValue* point_value = [NSValue valueWithPoint:cg_point];
+    error = AXUIElementSetAttributeValue(
+        window_ref_, CFSTR("AXPosition"), (__bridge CFTypeRef)point_value);
     handle_error(error);
 }
 
