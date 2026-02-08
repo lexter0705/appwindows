@@ -50,6 +50,7 @@ void WindowMacOS::move(core::Point point) {
 
 void WindowMacOS::close() {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
+    pid_t pid;
     AXError error = AXUIElementGetPid(window_ref_, &pid);
     handle_error(error);
     NSRunningApplication* app = [NSRunningApplication runningApplicationWithProcessIdentifier:pid];
