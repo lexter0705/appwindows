@@ -4,6 +4,8 @@
 #include <vector>
 
 #include <CoreGraphics/CGWindow.h>
+#include <ScreenCaptureKit/ScreenCaptureKit.h>
+#include <dispatch/dispatch.h>
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
@@ -150,6 +152,7 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
   for (CFIndex i = 0; i < window_count; ++i) {
     CFDictionaryRef window_info = (CFDictionaryRef)CFArrayGetValueAtIndex(window_list, i);
     if (!window_info) continue;
+
     CFNumberRef window_pid_ref = (CFNumberRef)CFDictionaryGetValue(window_info, kCGWindowOwnerPID);
     pid_t window_pid = 0;
     if (window_pid_ref && CFNumberGetValue(window_pid_ref, kCFNumberIntType, &window_pid)) {
@@ -165,62 +168,111 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
   CFRelease(window_list);
   if (target_window_id == 0)
     throw core::exceptions::WindowDoesNotValidException("No window found with this process ID");
-  CGImageRef screenshot = CGWindowListCreateImage(
-      CGRectNull,
-      kCGWindowListOptionIncludingWindow,
-      target_window_id,
-      kCGWindowImageDefault);
-  if (!screenshot)
-    throw core::exceptions::WindowDoesNotValidException("Failed to create screenshot");
-  size_t img_width = CGImageGetWidth(screenshot);
-  size_t img_height = CGImageGetHeight(screenshot);
-  CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
-  if (!color_space) {
-    CGImageRelease(screenshot);
-    throw core::exceptions::WindowDoesNotValidException("Failed to create color space");
-  }
-  CGContextRef context = CGBitmapContextCreate(
-      NULL,
-      img_width,
-      img_height,
-      8,
-      0,
-      color_space,
-      kCGImageAlphaPremultipliedLast | kCGBitmapByteOrderDefault);
-  if (!context) {
-    CGColorSpaceRelease(color_space);
-    CGImageRelease(screenshot);
-    throw core::exceptions::WindowDoesNotValidException("Failed to create bitmap context");
-  }
-  CGRect draw_rect = CGRectMake(0, 0, img_width, img_height);
-  CGContextDrawImage(context, draw_rect, screenshot);
-  unsigned char* data = (unsigned char*)CGBitmapContextGetData(context);
-  if (!data) {
-    CGContextRelease(context);
-    CGColorSpaceRelease(color_space);
-    CGImageRelease(screenshot);
-    throw core::exceptions::WindowDoesNotValidException("Failed to get bitmap data");
-  }
+  __block std::vector<unsigned char> pixel_data;
+  __block bool capture_complete = false;
+  __block std::string capture_error;
+
+  [SCShareableContent getShareableContentWithCompletionHandler:^(SCShareableContent* content, NSError* error) {
+    if (error) {
+      capture_error = "Failed to get shareable content: " + std::string([[error localizedDescription] UTF8String]);
+      capture_complete = true;
+      return;
+    }
+    SCWindow* target_window = nil;
+    for (SCWindow* window in content.windows) {
+      if (window.windowID == target_window_id) {
+        target_window = window;
+        break;
+      }
+    }
+    if (!target_window) {
+      capture_error = "Window not found in shareable content";
+      capture_complete = true;
+      return;
+    }
+    SCContentFilter* content_filter = [[SCContentFilter alloc] initWithDesktopIndependentWindow:target_window];
+    SCStreamConfiguration* stream_config = [[SCStreamConfiguration alloc] init];
+    stream_config.width = target_window.frame.size.width * 2;
+    stream_config.height = target_window.frame.size.height * 2;
+    stream_config.pixelFormat = kCVPixelFormatType_32BGRA;
+    stream_config.showsCursor = NO;
+    SCStream* stream = [[SCStream alloc] initWithFilter:content_filter configuration:stream_config delegate:nil];
+    NSError* output_error = nil;
+    [stream addStreamOutput:self type:SCStreamOutputTypeScreen sampleHandlerQueue:dispatch_get_main_queue() handler:^(
+      SCStream* stream, SCStreamOutputType type, CMSampleBufferRef sample_buffer, NSError* error) {
+      if (error) {
+        capture_error = "Stream error: " + std::string([[error localizedDescription] UTF8String]);
+        capture_complete = true;
+        return;
+      }
+      if (!CMSampleBufferIsValid(sample_buffer)) {
+        capture_error = "Invalid sample buffer";
+        capture_complete = true;
+        return;
+      }
+      CVImageBufferRef image_buffer = CMSampleBufferGetImageBuffer(sample_buffer);
+      if (!image_buffer) {
+        capture_error = "Failed to get image buffer";
+        capture_complete = true;
+        return;
+      }
+      CVPixelBufferLockBaseAddress(image_buffer, kCVPixelBufferLock_ReadOnly);
+      size_t width = CVPixelBufferGetWidth(image_buffer);
+      size_t height = CVPixelBufferGetHeight(image_buffer);
+      size_t bytes_per_row = CVPixelBufferGetBytesPerRow(image_buffer);
+      uint8_t* base_address = (uint8_t*)CVPixelBufferGetBaseAddress(image_buffer);
+      if (!base_address) {
+        CVPixelBufferUnlockBaseAddress(image_buffer, kCVPixelBufferLock_ReadOnly);
+        capture_error = "Failed to get pixel buffer base address";
+        capture_complete = true;
+        return;
+      }
+      pixel_data.resize(height * width * 3);
+      for (size_t y = 0; y < height; ++y) {
+        uint8_t* src_row = base_address + (y * bytes_per_row);
+        for (size_t x = 0; x < width; ++x) {
+          size_t src_offset = x * 4;
+          size_t dst_offset = (y * width + x) * 3;
+          pixel_data[dst_offset] = src_row[src_offset + 2];
+          pixel_data[dst_offset + 1] = src_row[src_offset + 1];
+          pixel_data[dst_offset + 2] = src_row[src_offset];
+        }
+      }
+      CVPixelBufferUnlockBaseAddress(image_buffer, kCVPixelBufferLock_ReadOnly);
+      capture_complete = true;
+      [stream stopCaptureWithCompletionHandler:nil];
+    }];
+    [stream startCaptureWithCompletionHandler:^(NSError* error) {
+      if (error) {
+        capture_error = "Failed to start capture: " + std::string([[error localizedDescription] UTF8String]);
+        capture_complete = true;
+      }
+    }];
+  }];
+  while (!capture_complete)
+    [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+  if (!capture_error.empty())
+    throw core::exceptions::WindowDoesNotValidException(capture_error);
+  if (pixel_data.empty())
+    throw core::exceptions::WindowDoesNotValidException("Failed to capture screenshot");
+  auto window_size = get_size();
+  size_t width = window_size->get_width() * 2;
+  size_t height = window_size->get_height() * 2;
   std::vector<py::ssize_t> shape = {
-    static_cast<py::ssize_t>(img_height),
-    static_cast<py::ssize_t>(img_width),
+    static_cast<py::ssize_t>(height),
+    static_cast<py::ssize_t>(width),
     3
   };
   py::array_t<unsigned char> image(shape);
   auto image_buffer = image.mutable_unchecked<3>();
-  size_t bytes_per_row = CGBitmapContextGetBytesPerRow(context);
-  for (size_t y = 0; y < img_height; ++y) {
-    unsigned char* src_row = data + (y * bytes_per_row);
-    for (size_t x = 0; x < img_width; ++x) {
-      unsigned char* src_pixel = src_row + (x * 4);
-      image_buffer(y, x, 0) = src_pixel[0];     // R
-      image_buffer(y, x, 1) = src_pixel[1];     // G
-      image_buffer(y, x, 2) = src_pixel[2];     // B
+  for (size_t y = 0; y < height; ++y) {
+    for (size_t x = 0; x < width; ++x) {
+      size_t src_index = (y * width + x) * 3;
+      image_buffer(y, x, 0) = pixel_data[src_index];
+      image_buffer(y, x, 1) = pixel_data[src_index + 1];
+      image_buffer(y, x, 2) = pixel_data[src_index + 2];
     }
   }
-  CGContextRelease(context);
-  CGColorSpaceRelease(color_space);
-  CGImageRelease(screenshot);
   return image;
 }
 
