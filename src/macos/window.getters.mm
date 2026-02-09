@@ -1,6 +1,9 @@
 #include "window.h"
 
 #include <memory>
+#include <vector>
+
+#include <CoreGraphics/CGWindow.h>
 
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
@@ -147,6 +150,7 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
   for (CFIndex i = 0; i < window_count; ++i) {
     CFDictionaryRef window_info = (CFDictionaryRef)CFArrayGetValueAtIndex(window_list, i);
     if (!window_info) continue;
+
     CFNumberRef window_pid_ref = (CFNumberRef)CFDictionaryGetValue(window_info, kCGWindowOwnerPID);
     pid_t window_pid = 0;
     if (window_pid_ref && CFNumberGetValue(window_pid_ref, kCFNumberIntType, &window_pid)) {
@@ -171,27 +175,22 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
     throw core::exceptions::WindowDoesNotValidException("Failed to create screenshot");
   size_t img_width = CGImageGetWidth(screenshot);
   size_t img_height = CGImageGetHeight(screenshot);
-  std::vector<py::ssize_t> shape = {
-    static_cast<py::ssize_t>(img_height),
-    static_cast<py::ssize_t>(img_width),
-    3
-  };
-  py::array_t<unsigned char> image(shape);
-  auto buffer = image.mutable_unchecked<3>();
-  size_t bytes_per_row = img_width * 3;
   CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
   if (!color_space) {
     CGImageRelease(screenshot);
     throw core::exceptions::WindowDoesNotValidException("Failed to create color space");
   }
+  size_t bytes_per_row = img_width * 4;
+  size_t buffer_size = bytes_per_row * img_height;
+  std::vector<unsigned char> buffer(buffer_size);
   CGContextRef context = CGBitmapContextCreate(
-      buffer.mutable_data(0, 0, 0),
+      buffer.data(),
       img_width,
       img_height,
       8,
       bytes_per_row,
       color_space,
-      kCGImageAlphaNone | kCGBitmapByteOrderDefault
+      kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little
   );
   if (!context) {
     CGColorSpaceRelease(color_space);
@@ -200,6 +199,21 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
   }
   CGRect draw_rect = CGRectMake(0, 0, img_width, img_height);
   CGContextDrawImage(context, draw_rect, screenshot);
+  std::vector<py::ssize_t> shape = {
+    static_cast<py::ssize_t>(img_height),
+    static_cast<py::ssize_t>(img_width),
+    3
+  };
+  py::array_t<unsigned char> image(shape);
+  auto image_buffer = image.mutable_unchecked<3>();
+  for (size_t y = 0; y < img_height; ++y) {
+    for (size_t x = 0; x < img_width; ++x) {
+      size_t src_index = (y * bytes_per_row) + (x * 4);
+      image_buffer(y, x, 0) = buffer[src_index + 1];
+      image_buffer(y, x, 1) = buffer[src_index + 2];
+      image_buffer(y, x, 2) = buffer[src_index + 3];
+    }
+  }
   CGContextRelease(context);
   CGColorSpaceRelease(color_space);
   CGImageRelease(screenshot);
