@@ -150,7 +150,6 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
   for (CFIndex i = 0; i < window_count; ++i) {
     CFDictionaryRef window_info = (CFDictionaryRef)CFArrayGetValueAtIndex(window_list, i);
     if (!window_info) continue;
-
     CFNumberRef window_pid_ref = (CFNumberRef)CFDictionaryGetValue(window_info, kCGWindowOwnerPID);
     pid_t window_pid = 0;
     if (window_pid_ref && CFNumberGetValue(window_pid_ref, kCFNumberIntType, &window_pid)) {
@@ -170,7 +169,7 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
       CGRectNull,
       kCGWindowListOptionIncludingWindow,
       target_window_id,
-      kCGWindowImageBoundsIgnoreFraming | kCGWindowImageBestResolution);
+      kCGWindowImageDefault);
   if (!screenshot)
     throw core::exceptions::WindowDoesNotValidException("Failed to create screenshot");
   size_t img_width = CGImageGetWidth(screenshot);
@@ -180,18 +179,14 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
     CGImageRelease(screenshot);
     throw core::exceptions::WindowDoesNotValidException("Failed to create color space");
   }
-  size_t bytes_per_row = img_width * 4;
-  size_t buffer_size = bytes_per_row * img_height;
-  std::vector<unsigned char> buffer(buffer_size);
   CGContextRef context = CGBitmapContextCreate(
-      buffer.data(),
+      NULL,
       img_width,
       img_height,
       8,
-      bytes_per_row,
+      0,
       color_space,
-      kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little
-  );
+      kCGImageAlphaPremultipliedLast | kCGBitmapByteOrderDefault);
   if (!context) {
     CGColorSpaceRelease(color_space);
     CGImageRelease(screenshot);
@@ -199,6 +194,13 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
   }
   CGRect draw_rect = CGRectMake(0, 0, img_width, img_height);
   CGContextDrawImage(context, draw_rect, screenshot);
+  unsigned char* data = (unsigned char*)CGBitmapContextGetData(context);
+  if (!data) {
+    CGContextRelease(context);
+    CGColorSpaceRelease(color_space);
+    CGImageRelease(screenshot);
+    throw core::exceptions::WindowDoesNotValidException("Failed to get bitmap data");
+  }
   std::vector<py::ssize_t> shape = {
     static_cast<py::ssize_t>(img_height),
     static_cast<py::ssize_t>(img_width),
@@ -206,12 +208,14 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
   };
   py::array_t<unsigned char> image(shape);
   auto image_buffer = image.mutable_unchecked<3>();
+  size_t bytes_per_row = CGBitmapContextGetBytesPerRow(context);
   for (size_t y = 0; y < img_height; ++y) {
+    unsigned char* src_row = data + (y * bytes_per_row);
     for (size_t x = 0; x < img_width; ++x) {
-      size_t src_index = (y * bytes_per_row) + (x * 4);
-      image_buffer(y, x, 0) = buffer[src_index + 1];
-      image_buffer(y, x, 1) = buffer[src_index + 2];
-      image_buffer(y, x, 2) = buffer[src_index + 3];
+      unsigned char* src_pixel = src_row + (x * 4);
+      image_buffer(y, x, 0) = src_pixel[0];     // R
+      image_buffer(y, x, 1) = src_pixel[1];     // G
+      image_buffer(y, x, 2) = src_pixel[2];     // B
     }
   }
   CGContextRelease(context);
