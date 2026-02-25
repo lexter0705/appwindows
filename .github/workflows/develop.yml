@@ -40,7 +40,7 @@ jobs:
         if: runner.os != 'Darwin'
         run: python -m cibuildwheel --output-dir wheelhouse
         env:
-          CIBW_BUILD: "cp313-*"
+          CIBW_BUILD: "cp314-*"
           CIBW_SKIP: "*-musllinux_*"
           CIBW_ARCHS_LINUX: "x86_64"
           CIBW_ARCHS_WINDOWS: "AMD64"
@@ -111,9 +111,9 @@ jobs:
 
       - name: Install wheel
         run: |
-          $wheel = Get-ChildItem -Path "./wheelhouse/*cp313*.whl" -ErrorAction SilentlyContinue | Select-Object -First 1
+          $wheel = Get-ChildItem -Path "./wheelhouse/*cp314*.whl" -ErrorAction SilentlyContinue | Select-Object -First 1
           if (-not $wheel) {
-            Write-Error "No cp313 wheel found in ./wheelhouse"
+            Write-Error "No cp314 wheel found in ./wheelhouse"
             exit 1
           }
           Write-Host "Installing wheel: $($wheel.FullName)"
@@ -165,9 +165,9 @@ jobs:
 
       - name: Install wheel
         run: |
-          wheel=$(find ./wheelhouse -name "*cp313*.whl" -print -quit)
+          wheel=$(find ./wheelhouse -name "*cp314*.whl" -print -quit)
           if [ -z "$wheel" ]; then
-            echo "Error: No cp313 wheel found in ./wheelhouse"
+            echo "Error: No cp314 wheel found in ./wheelhouse"
             exit 1
           fi
           echo "Installing wheel: $wheel"
@@ -219,14 +219,14 @@ jobs:
           # Определяем архитектуру runner'а
           ARCH=$(uname -m)
           if [[ "$ARCH" == "arm64" || "$ARCH" == "ARM64" ]]; then
-            WHEEL_PATTERN="*cp313*arm64*.whl"
+            WHEEL_PATTERN="*cp314*arm64*.whl"
           else
-            WHEEL_PATTERN="*cp313*x86_64*.whl"
+            WHEEL_PATTERN="*cp314*x86_64*.whl"
           fi
           
           wheel=$(find ./wheelhouse -name "$WHEEL_PATTERN" -print -quit)
           if [ -z "$wheel" ]; then
-            echo "Error: No matching cp313 wheel found for architecture $ARCH"
+            echo "Error: No matching cp314 wheel found for architecture $ARCH"
             ls -la ./wheelhouse/
             exit 1
           fi
