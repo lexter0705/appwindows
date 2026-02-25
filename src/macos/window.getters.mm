@@ -138,7 +138,9 @@ std::unique_ptr<core::Size> WindowMacOS::get_size() const {
 }
 
 py::array_t<unsigned char> WindowMacOS::get_screenshot() {
-  if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
+  if (!*is_valid())
+    throw core::exceptions::WindowDoesNotValidException();
+
   pid_t pid = 0;
   AXError pid_error = AXUIElementGetPid(window_ref_, &pid);
   handle_error(pid_error);
@@ -147,19 +149,22 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
       kCGWindowListOptionAll | kCGWindowListOptionOnScreenOnly,
       kCGNullWindowID);
   if (!window_list)
-    throw core::exceptions::WindowDoesNotValidException("Failed to get window list");
+    throw core::exceptions::WindowDoesNotValidException(
+        "Failed to get window list");
 
   __block CGWindowID target_window_id = 0;
   CFIndex window_count = CFArrayGetCount(window_list);
   for (CFIndex i = 0; i < window_count; ++i) {
-    CFDictionaryRef window_info = (CFDictionaryRef)CFArrayGetValueAtIndex(window_list, i);
-    if (!window_info) continue;
-
-    CFNumberRef window_pid_ref = (CFNumberRef)CFDictionaryGetValue(window_info, kCGWindowOwnerPID);
+    CFDictionaryRef window_info =
+        (CFDictionaryRef)CFArrayGetValueAtIndex(window_list, i);
+    CFNumberRef window_pid_ref =
+        (CFNumberRef)CFDictionaryGetValue(window_info, kCGWindowOwnerPID);
     pid_t window_pid = 0;
-    if (window_pid_ref && CFNumberGetValue(window_pid_ref, kCFNumberIntType, &window_pid)) {
+    if (window_pid_ref &&
+        CFNumberGetValue(window_pid_ref, kCFNumberIntType, &window_pid)) {
       if (window_pid == pid) {
-        CFNumberRef window_id_ref = (CFNumberRef)CFDictionaryGetValue(window_info, kCGWindowNumber);
+        CFNumberRef window_id_ref =
+            (CFNumberRef)CFDictionaryGetValue(window_info, kCGWindowNumber);
         if (window_id_ref) {
           CFNumberGetValue(window_id_ref, kCFNumberIntType, &target_window_id);
           break;
@@ -168,21 +173,23 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
     }
   }
   CFRelease(window_list);
+
   if (target_window_id == 0)
-    throw core::exceptions::WindowDoesNotValidException("No window found with this process ID");
+    throw core::exceptions::WindowDoesNotValidException(
+        "No window found with this process ID");
 
-  __block std::vector<unsigned char> pixel_data;
-  __block bool capture_complete = false;
-  __block std::string capture_error;
+  __block CGImageRef captured_image = nullptr;
+  __block NSError* capture_error = nil;
+  dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
 
-  __weak WindowMacOS* weakSelf = self;
-
-  [SCShareableContent getShareableContentWithCompletionHandler:^(SCShareableContent* content, NSError* error) {
+  [SCShareableContent getShareableContentWithCompletionHandler:^(
+      SCShareableContent* content, NSError* error) {
     if (error) {
-      capture_error = "Failed to get shareable content: " + std::string([[error localizedDescription] UTF8String]);
-      capture_complete = true;
+      capture_error = error;
+      dispatch_semaphore_signal(semaphore);
       return;
     }
+
     SCWindow* target_window = nil;
     for (SCWindow* window in content.windows) {
       if (window.windowID == target_window_id) {
@@ -190,102 +197,82 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
         break;
       }
     }
+
     if (!target_window) {
-      capture_error = "Window not found in shareable content";
-      capture_complete = true;
+      capture_error = [NSError errorWithDomain:NSPOSIXErrorDomain
+                                          code:ENOENT
+                                      userInfo:nil];
+      dispatch_semaphore_signal(semaphore);
       return;
     }
-    SCContentFilter* content_filter = [[SCContentFilter alloc] initWithDesktopIndependentWindow:target_window];
-    SCStreamConfiguration* stream_config = [[SCStreamConfiguration alloc] init];
-    stream_config.width = target_window.frame.size.width * 2;
-    stream_config.height = target_window.frame.size.height * 2;
-    stream_config.pixelFormat = kCVPixelFormatType_32BGRA;
-    stream_config.showsCursor = NO;
-    SCStream* stream = [[SCStream alloc] initWithFilter:content_filter configuration:stream_config delegate:nil];
 
-    [stream addStreamOutput:weakSelf
-                       type:SCStreamOutputTypeScreen
-         sampleHandlerQueue:dispatch_get_main_queue()
-                    handler:^(SCStream* outputStream,
-                              SCStreamOutputType outputType,
-                              CMSampleBufferRef sampleBuffer,
-                              NSError* streamError) {
-      if (streamError) {
-        capture_error = "Stream error: " + std::string([[streamError localizedDescription] UTF8String]);
-        capture_complete = true;
-        return;
-      }
-      if (!CMSampleBufferIsValid(sampleBuffer)) {
-        capture_error = "Invalid sample buffer";
-        capture_complete = true;
-        return;
-      }
-      CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
-      if (!imageBuffer) {
-        capture_error = "Failed to get image buffer";
-        capture_complete = true;
-        return;
-      }
-      CVPixelBufferLockBaseAddress(imageBuffer, kCVPixelBufferLock_ReadOnly);
-      size_t width = CVPixelBufferGetWidth(imageBuffer);
-      size_t height = CVPixelBufferGetHeight(imageBuffer);
-      size_t bytesPerRow = CVPixelBufferGetBytesPerRow(imageBuffer);
-      uint8_t* baseAddress = (uint8_t*)CVPixelBufferGetBaseAddress(imageBuffer);
-      if (!baseAddress) {
-        CVPixelBufferUnlockBaseAddress(imageBuffer, kCVPixelBufferLock_ReadOnly);
-        capture_error = "Failed to get pixel buffer base address";
-        capture_complete = true;
-        return;
-      }
-      pixel_data.resize(height * width * 3);
-      for (size_t y = 0; y < height; ++y) {
-        uint8_t* srcRow = baseAddress + y * bytesPerRow;
-        for (size_t x = 0; x < width; ++x) {
-          size_t srcOffset = x * 4;
-          size_t dstOffset = (y * width + x) * 3;
-          pixel_data[dstOffset] = srcRow[srcOffset + 2];
-          pixel_data[dstOffset + 1] = srcRow[srcOffset + 1];
-          pixel_data[dstOffset + 2] = srcRow[srcOffset];
-        }
-      }
-      CVPixelBufferUnlockBaseAddress(imageBuffer, kCVPixelBufferLock_ReadOnly);
-      capture_complete = true;
-      [stream stopCaptureWithCompletionHandler:nil];
-    }];
+    SCContentFilter* filter =
+        [[SCContentFilter alloc] initWithDesktopIndependentWindow:target_window];
 
-    [stream startCaptureWithCompletionHandler:^(NSError* startError) {
-      if (startError) {
-        capture_error = "Failed to start capture: " + std::string([[startError localizedDescription] UTF8String]);
-        capture_complete = true;
+    SCStreamConfiguration* config = [[SCStreamConfiguration alloc] init];
+    config.pixelFormat = kCVPixelFormatType_32BGRA;
+
+    [SCScreenshotManager captureImageWithFilter:filter
+                                  configuration:config
+                              completionHandler:^(
+                                  CGImageRef _Nullable image,
+                                  NSError* _Nullable err) {
+      if (err) {
+        capture_error = err;
+      } else if (image) {
+        captured_image = CGImageRetain(image);
       }
+      dispatch_semaphore_signal(semaphore);
     }];
   }];
 
-  while (!capture_complete) {
-    [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+  dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+  dispatch_release(semaphore);
+
+  if (capture_error) {
+    NSString* error_desc = [capture_error localizedDescription];
+    std::string error_str =
+        error_desc ? [error_desc UTF8String] : "Unknown error";
+    throw core::exceptions::WindowDoesNotValidException(
+        "Failed to capture screenshot: " + error_str);
+  }
+  if (!captured_image)
+    throw core::exceptions::WindowDoesNotValidException(
+        "Failed to capture screenshot: no image");
+
+  size_t width = CGImageGetWidth(captured_image);
+  size_t height = CGImageGetHeight(captured_image);
+  size_t bytes_per_row = width * 4;  // BGRA
+
+  std::vector<unsigned char> buffer(bytes_per_row * height);
+  CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
+  CGContextRef context = CGBitmapContextCreate(
+      buffer.data(), width, height, 8, bytes_per_row, color_space,
+      kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Little);
+
+  if (!context) {
+    CGColorSpaceRelease(color_space);
+    CGImageRelease(captured_image);
+    throw core::exceptions::WindowDoesNotValidException(
+        "Failed to create bitmap context");
   }
 
-  if (!capture_error.empty())
-    throw core::exceptions::WindowDoesNotValidException(capture_error);
-  if (pixel_data.empty())
-    throw core::exceptions::WindowDoesNotValidException("Failed to capture screenshot");
+  CGContextDrawImage(context, CGRectMake(0, 0, width, height), captured_image);
+  CGContextRelease(context);
+  CGColorSpaceRelease(color_space);
+  CGImageRelease(captured_image);
 
-  auto window_size = get_size();
-  size_t width = window_size->get_width() * 2;
-  size_t height = window_size->get_height() * 2;
-  std::vector<py::ssize_t> shape = {
-    static_cast<py::ssize_t>(height),
-    static_cast<py::ssize_t>(width),
-    3
-  };
+  std::vector<py::ssize_t> shape = {static_cast<py::ssize_t>(height),
+                                    static_cast<py::ssize_t>(width), 3};
   py::array_t<unsigned char> image(shape);
   auto image_buffer = image.mutable_unchecked<3>();
+
   for (size_t y = 0; y < height; ++y) {
     for (size_t x = 0; x < width; ++x) {
-      size_t src_index = (y * width + x) * 3;
-      image_buffer(y, x, 0) = pixel_data[src_index];
-      image_buffer(y, x, 1) = pixel_data[src_index + 1];
-      image_buffer(y, x, 2) = pixel_data[src_index + 2];
+      size_t src_index = (y * width + x) * 4;
+      image_buffer(y, x, 0) = buffer[src_index + 2];  // R
+      image_buffer(y, x, 1) = buffer[src_index + 1];  // G
+      image_buffer(y, x, 2) = buffer[src_index];      // B
     }
   }
   return image;
