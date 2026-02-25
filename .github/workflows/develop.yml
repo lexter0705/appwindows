@@ -13,17 +13,17 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-22.04, windows-2019, macos-15]
+        os: [ubuntu-latest, windows-latest, macos-latest]
       fail-fast: false
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.13
+      - name: Set up Python 3.14
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: '3.14'
 
       - name: Install cibuildwheel
         run: pip install cibuildwheel>=3.3.0
@@ -85,7 +85,7 @@ jobs:
           retention-days: 7
 
   test_windows:
-    name: Test on Windows (Python 3.13)
+    name: Test on Windows (Python 3.14)
     needs: build_wheels
     runs-on: windows-2019
     if: ${{ needs.build_wheels.result == 'success' }}
@@ -94,10 +94,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.13
+      - name: Set up Python 3.14
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: '3.14'
 
       - name: Download wheels artifact
         uses: actions/download-artifact@v4
@@ -127,7 +127,7 @@ jobs:
         shell: powershell
 
   test_linux:
-    name: Test on Linux (Python 3.13)
+    name: Test on Linux (Python 3.14)
     needs: build_wheels
     runs-on: ubuntu-22.04
     timeout-minutes: 15
@@ -137,10 +137,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.13
+      - name: Set up Python 3.14
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: '3.14'
 
       - name: Install X11 dependencies
         run: |
@@ -191,7 +191,7 @@ jobs:
           DISPLAY: ":99"
 
   test_macos:
-    name: Test on macOS (Python 3.13)
+    name: Test on macOS (Python 3.14)
     needs: build_wheels
     runs-on: macos-14
     if: ${{ needs.build_wheels.result == 'success' }}
@@ -200,10 +200,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.13
+      - name: Set up Python 3.14
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: '3.14'
 
       - name: Download wheels artifact
         uses: actions/download-artifact@v4
