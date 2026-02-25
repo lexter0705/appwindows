@@ -142,12 +142,14 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
   pid_t pid = 0;
   AXError pid_error = AXUIElementGetPid(window_ref_, &pid);
   handle_error(pid_error);
+
   CFArrayRef window_list = CGWindowListCopyWindowInfo(
       kCGWindowListOptionAll | kCGWindowListOptionOnScreenOnly,
       kCGNullWindowID);
   if (!window_list)
     throw core::exceptions::WindowDoesNotValidException("Failed to get window list");
-  CGWindowID target_window_id = 0;
+
+  __block CGWindowID target_window_id = 0;
   CFIndex window_count = CFArrayGetCount(window_list);
   for (CFIndex i = 0; i < window_count; ++i) {
     CFDictionaryRef window_info = (CFDictionaryRef)CFArrayGetValueAtIndex(window_list, i);
@@ -168,9 +170,12 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
   CFRelease(window_list);
   if (target_window_id == 0)
     throw core::exceptions::WindowDoesNotValidException("No window found with this process ID");
+
   __block std::vector<unsigned char> pixel_data;
   __block bool capture_complete = false;
   __block std::string capture_error;
+
+  __weak WindowMacOS* weakSelf = self;
 
   [SCShareableContent getShareableContentWithCompletionHandler:^(SCShareableContent* content, NSError* error) {
     if (error) {
@@ -197,64 +202,74 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
     stream_config.pixelFormat = kCVPixelFormatType_32BGRA;
     stream_config.showsCursor = NO;
     SCStream* stream = [[SCStream alloc] initWithFilter:content_filter configuration:stream_config delegate:nil];
-    NSError* output_error = nil;
-    [stream addStreamOutput:self type:SCStreamOutputTypeScreen sampleHandlerQueue:dispatch_get_main_queue() handler:^(
-      SCStream* stream, SCStreamOutputType type, CMSampleBufferRef sample_buffer, NSError* error) {
-      if (error) {
-        capture_error = "Stream error: " + std::string([[error localizedDescription] UTF8String]);
+
+    [stream addStreamOutput:weakSelf
+                       type:SCStreamOutputTypeScreen
+         sampleHandlerQueue:dispatch_get_main_queue()
+                    handler:^(SCStream* outputStream,
+                              SCStreamOutputType outputType,
+                              CMSampleBufferRef sampleBuffer,
+                              NSError* streamError) {
+      if (streamError) {
+        capture_error = "Stream error: " + std::string([[streamError localizedDescription] UTF8String]);
         capture_complete = true;
         return;
       }
-      if (!CMSampleBufferIsValid(sample_buffer)) {
+      if (!CMSampleBufferIsValid(sampleBuffer)) {
         capture_error = "Invalid sample buffer";
         capture_complete = true;
         return;
       }
-      CVImageBufferRef image_buffer = CMSampleBufferGetImageBuffer(sample_buffer);
-      if (!image_buffer) {
+      CVImageBufferRef imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+      if (!imageBuffer) {
         capture_error = "Failed to get image buffer";
         capture_complete = true;
         return;
       }
-      CVPixelBufferLockBaseAddress(image_buffer, kCVPixelBufferLock_ReadOnly);
-      size_t width = CVPixelBufferGetWidth(image_buffer);
-      size_t height = CVPixelBufferGetHeight(image_buffer);
-      size_t bytes_per_row = CVPixelBufferGetBytesPerRow(image_buffer);
-      uint8_t* base_address = (uint8_t*)CVPixelBufferGetBaseAddress(image_buffer);
-      if (!base_address) {
-        CVPixelBufferUnlockBaseAddress(image_buffer, kCVPixelBufferLock_ReadOnly);
+      CVPixelBufferLockBaseAddress(imageBuffer, kCVPixelBufferLock_ReadOnly);
+      size_t width = CVPixelBufferGetWidth(imageBuffer);
+      size_t height = CVPixelBufferGetHeight(imageBuffer);
+      size_t bytesPerRow = CVPixelBufferGetBytesPerRow(imageBuffer);
+      uint8_t* baseAddress = (uint8_t*)CVPixelBufferGetBaseAddress(imageBuffer);
+      if (!baseAddress) {
+        CVPixelBufferUnlockBaseAddress(imageBuffer, kCVPixelBufferLock_ReadOnly);
         capture_error = "Failed to get pixel buffer base address";
         capture_complete = true;
         return;
       }
       pixel_data.resize(height * width * 3);
       for (size_t y = 0; y < height; ++y) {
-        uint8_t* src_row = base_address + (y * bytes_per_row);
+        uint8_t* srcRow = baseAddress + y * bytesPerRow;
         for (size_t x = 0; x < width; ++x) {
-          size_t src_offset = x * 4;
-          size_t dst_offset = (y * width + x) * 3;
-          pixel_data[dst_offset] = src_row[src_offset + 2];
-          pixel_data[dst_offset + 1] = src_row[src_offset + 1];
-          pixel_data[dst_offset + 2] = src_row[src_offset];
+          size_t srcOffset = x * 4;
+          size_t dstOffset = (y * width + x) * 3;
+          pixel_data[dstOffset] = srcRow[srcOffset + 2];
+          pixel_data[dstOffset + 1] = srcRow[srcOffset + 1];
+          pixel_data[dstOffset + 2] = srcRow[srcOffset];
         }
       }
-      CVPixelBufferUnlockBaseAddress(image_buffer, kCVPixelBufferLock_ReadOnly);
+      CVPixelBufferUnlockBaseAddress(imageBuffer, kCVPixelBufferLock_ReadOnly);
       capture_complete = true;
       [stream stopCaptureWithCompletionHandler:nil];
     }];
-    [stream startCaptureWithCompletionHandler:^(NSError* error) {
-      if (error) {
-        capture_error = "Failed to start capture: " + std::string([[error localizedDescription] UTF8String]);
+
+    [stream startCaptureWithCompletionHandler:^(NSError* startError) {
+      if (startError) {
+        capture_error = "Failed to start capture: " + std::string([[startError localizedDescription] UTF8String]);
         capture_complete = true;
       }
     }];
   }];
-  while (!capture_complete)
+
+  while (!capture_complete) {
     [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+  }
+
   if (!capture_error.empty())
     throw core::exceptions::WindowDoesNotValidException(capture_error);
   if (pixel_data.empty())
     throw core::exceptions::WindowDoesNotValidException("Failed to capture screenshot");
+
   auto window_size = get_size();
   size_t width = window_size->get_width() * 2;
   size_t height = window_size->get_height() * 2;
