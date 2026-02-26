@@ -138,33 +138,25 @@ std::unique_ptr<core::Size> WindowMacOS::get_size() const {
 }
 
 py::array_t<unsigned char> WindowMacOS::get_screenshot() {
-  if (!*is_valid())
-    throw core::exceptions::WindowDoesNotValidException();
-
+  if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
   pid_t pid = 0;
   AXError pid_error = AXUIElementGetPid(window_ref_, &pid);
   handle_error(pid_error);
-
   CFArrayRef window_list = CGWindowListCopyWindowInfo(
       kCGWindowListOptionAll | kCGWindowListOptionOnScreenOnly,
       kCGNullWindowID);
   if (!window_list)
-    throw core::exceptions::WindowDoesNotValidException(
-        "Failed to get window list");
-
+    throw core::exceptions::WindowDoesNotValidException("Failed to get window list");
   __block CGWindowID target_window_id = 0;
   CFIndex window_count = CFArrayGetCount(window_list);
   for (CFIndex i = 0; i < window_count; ++i) {
-    CFDictionaryRef window_info =
-        (CFDictionaryRef)CFArrayGetValueAtIndex(window_list, i);
-    CFNumberRef window_pid_ref =
-        (CFNumberRef)CFDictionaryGetValue(window_info, kCGWindowOwnerPID);
+    CFDictionaryRef window_info = (CFDictionaryRef)CFArrayGetValueAtIndex(window_list, i);
+    if (!window_info) continue;
+    CFNumberRef window_pid_ref = (CFNumberRef)CFDictionaryGetValue(window_info, kCGWindowOwnerPID);
     pid_t window_pid = 0;
-    if (window_pid_ref &&
-        CFNumberGetValue(window_pid_ref, kCFNumberIntType, &window_pid)) {
+    if (window_pid_ref && CFNumberGetValue(window_pid_ref, kCFNumberIntType, &window_pid)) {
       if (window_pid == pid) {
-        CFNumberRef window_id_ref =
-            (CFNumberRef)CFDictionaryGetValue(window_info, kCGWindowNumber);
+        CFNumberRef window_id_ref = (CFNumberRef)CFDictionaryGetValue(window_info, kCGWindowNumber);
         if (window_id_ref) {
           CFNumberGetValue(window_id_ref, kCFNumberIntType, &target_window_id);
           break;
@@ -173,23 +165,17 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
     }
   }
   CFRelease(window_list);
-
   if (target_window_id == 0)
-    throw core::exceptions::WindowDoesNotValidException(
-        "No window found with this process ID");
-
+    throw core::exceptions::WindowDoesNotValidException("No window found with this process ID");
   __block CGImageRef captured_image = nullptr;
   __block NSError* capture_error = nil;
-  dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-
-  [SCShareableContent getShareableContentWithCompletionHandler:^(
-      SCShareableContent* content, NSError* error) {
+  __block bool capture_complete = false;
+  [SCShareableContent getShareableContentWithCompletionHandler:^(SCShareableContent* content, NSError* error) {
     if (error) {
       capture_error = error;
-      dispatch_semaphore_signal(semaphore);
+      capture_complete = true;
       return;
     }
-
     SCWindow* target_window = nil;
     for (SCWindow* window in content.windows) {
       if (window.windowID == target_window_id) {
@@ -197,82 +183,60 @@ py::array_t<unsigned char> WindowMacOS::get_screenshot() {
         break;
       }
     }
-
     if (!target_window) {
-      capture_error = [NSError errorWithDomain:NSPOSIXErrorDomain
-                                          code:ENOENT
-                                      userInfo:nil];
-      dispatch_semaphore_signal(semaphore);
+      capture_error = [NSError errorWithDomain:@"WindowNotFound" code:0 userInfo:nil];
+      capture_complete = true;
       return;
     }
-
-    SCContentFilter* filter =
-        [[SCContentFilter alloc] initWithDesktopIndependentWindow:target_window];
-
-    SCStreamConfiguration* config = [[SCStreamConfiguration alloc] init];
-    config.pixelFormat = kCVPixelFormatType_32BGRA;
-
-    [SCScreenshotManager captureImageWithFilter:filter
-                                  configuration:config
-                              completionHandler:^(
-                                  CGImageRef _Nullable image,
-                                  NSError* _Nullable err) {
-      if (err) {
-        capture_error = err;
-      } else if (image) {
+    [SCScreenshotManager captureImageForWindow:target_window
+                             completionHandler:^(CGImageRef _Nullable image, NSError* _Nullable sc_error) {
+      if (sc_error)
+        capture_error = sc_error;
+      else
         captured_image = CGImageRetain(image);
-      }
-      dispatch_semaphore_signal(semaphore);
+      capture_complete = true;
     }];
   }];
-
-  dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
-  dispatch_release(semaphore);
-
-  if (capture_error) {
-    NSString* error_desc = [capture_error localizedDescription];
-    std::string error_str =
-        error_desc ? [error_desc UTF8String] : "Unknown error";
-    throw core::exceptions::WindowDoesNotValidException(
-        "Failed to capture screenshot: " + error_str);
+  while (!capture_complete) {
+    [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
   }
-  if (!captured_image)
-    throw core::exceptions::WindowDoesNotValidException(
-        "Failed to capture screenshot: no image");
-
+  if (capture_error) {
+    std::string error_msg = [[capture_error localizedDescription] UTF8String];
+    throw core::exceptions::WindowDoesNotValidException("Screenshot failed: " + error_msg);
+  }
+  if (!captured_image) {
+    throw core::exceptions::WindowDoesNotValidException("Failed to capture screenshot: no image");
+  }
   size_t width = CGImageGetWidth(captured_image);
   size_t height = CGImageGetHeight(captured_image);
-  size_t bytes_per_row = width * 4;  // BGRA
-
-  std::vector<unsigned char> buffer(bytes_per_row * height);
   CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
+  size_t bytes_per_row = width * 4;
+  std::vector<unsigned char> buffer(bytes_per_row * height);
   CGContextRef context = CGBitmapContextCreate(
       buffer.data(), width, height, 8, bytes_per_row, color_space,
-      kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Little);
-
+      kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Little);
   if (!context) {
     CGColorSpaceRelease(color_space);
     CGImageRelease(captured_image);
-    throw core::exceptions::WindowDoesNotValidException(
-        "Failed to create bitmap context");
+    throw core::exceptions::WindowDoesNotValidException("Failed to create bitmap context");
   }
-
   CGContextDrawImage(context, CGRectMake(0, 0, width, height), captured_image);
   CGContextRelease(context);
   CGColorSpaceRelease(color_space);
   CGImageRelease(captured_image);
-
   std::vector<py::ssize_t> shape = {static_cast<py::ssize_t>(height),
                                     static_cast<py::ssize_t>(width), 3};
   py::array_t<unsigned char> image(shape);
   auto image_buffer = image.mutable_unchecked<3>();
-
   for (size_t y = 0; y < height; ++y) {
     for (size_t x = 0; x < width; ++x) {
-      size_t src_index = (y * width + x) * 4;
-      image_buffer(y, x, 0) = buffer[src_index + 2];  // R
-      image_buffer(y, x, 1) = buffer[src_index + 1];  // G
-      image_buffer(y, x, 2) = buffer[src_index];      // B
+      size_t src_index = y * bytes_per_row + x * 4;
+      unsigned char blue = buffer[src_index];
+      unsigned char green = buffer[src_index + 1];
+      unsigned char red = buffer[src_index + 2];
+      image_buffer(y, x, 0) = red;
+      image_buffer(y, x, 1) = green;
+      image_buffer(y, x, 2) = blue;
     }
   }
   return image;
