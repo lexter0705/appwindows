@@ -102,7 +102,7 @@ jobs:
       - name: Download wheels artifact
         uses: actions/download-artifact@v4
         with:
-          name: wheels-windows-2019
+          name: wheels-windows-latest
           path: ./wheelhouse
 
       - name: Install test dependencies
@@ -160,7 +160,7 @@ jobs:
       - name: Download wheels artifact
         uses: actions/download-artifact@v4
         with:
-          name: wheels-ubuntu-22.04
+          name: wheels-ubuntu-latest
           path: ./wheelhouse
 
       - name: Install wheel
@@ -208,7 +208,7 @@ jobs:
       - name: Download wheels artifact
         uses: actions/download-artifact@v4
         with:
-          name: wheels-macos-14
+          name: wheels-macos-latest
           path: ./wheelhouse
 
       - name: Install test dependencies
