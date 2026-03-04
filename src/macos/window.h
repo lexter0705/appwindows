@@ -21,11 +21,13 @@ public:
   [[nodiscard]] std::unique_ptr<core::QuadPoints> get_points() override;
   [[nodiscard]] std::unique_ptr<std::string> get_title() const override;
   [[nodiscard]] std::unique_ptr<core::Size> get_size() const override;
-  [[nodiscard]] std::unique_ptr<core::Size> get_min_size() const override;
-  [[nodiscard]] std::unique_ptr<core::Size> get_max_size() const override;
   [[nodiscard]] py::array_t<unsigned char> get_screenshot() override;
   [[nodiscard]] std::unique_ptr<int> get_process_id() const override;
   [[nodiscard]] std::unique_ptr<bool> is_valid() const override;
+
+  [[nodiscard]] std::unique_ptr<core::Size> get_min_size() override;
+  [[nodiscard]] std::unique_ptr<core::Size> get_max_size() override;
+
   AXUIElementRef get_window_ref() const;
 
   void set_minimize(bool is_minimize) override;

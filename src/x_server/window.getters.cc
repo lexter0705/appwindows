@@ -56,7 +56,7 @@ std::unique_ptr<core::Size> WindowXServer::get_size() const {
   return std::make_unique<core::Size>(attrs.width, attrs.height);
 }
 
-std::unique_ptr<core::Size> WindowXServer::get_min_size() const {
+std::unique_ptr<core::Size> WindowXServer::get_min_size() {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
   Display* display = FinderXServer::open_display();
   XSizeHints hints;
@@ -69,7 +69,7 @@ std::unique_ptr<core::Size> WindowXServer::get_min_size() const {
   return std::make_unique<core::Size>(hints.min_width, hints.min_height);
 }
 
-std::unique_ptr<core::Size> WindowXServer::get_max_size() const {
+std::unique_ptr<core::Size> WindowXServer::get_max_size() {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
   Display* display = FinderXServer::open_display();
   XSizeHints hints;

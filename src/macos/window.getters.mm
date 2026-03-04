@@ -215,23 +215,25 @@ std::unique_ptr<int> WindowMacOS::get_process_id() const {
   return std::make_unique<int>(static_cast<int>(pid));
 }
 
-std::unique_ptr<core::Size> WindowMacOS::get_min_size() const {
+std::unique_ptr<core::Size> WindowMacOS::get_min_size() {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-  auto min_size = core::Size(1, 1);
+  auto min_size = std::make_unique<core::Size>(1, 1);
   auto start_size = get_size();
-  resize(min_size);
+  resize(*min_size);
   min_size = get_size();
-  resize(start_size);
+  resize(*start_size);
+  return min_size;
 }
 
-std::unique_ptr<core::Size> WindowMacOS::get_max_size() const {
+std::unique_ptr<core::Size> WindowMacOS::get_max_size() {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
   auto max_int = std::numeric_limits<int>::max();
-  auto max_size = core::Size(max_int, max_int);
+  auto max_size = std::make_unique<core::Size>(max_int, max_int);
   auto start_size = get_size();
-  resize(min_size);
-  min_size = get_size();
-  resize(start_size);
+  resize(*max_size);
+  max_size = get_size();
+  resize(*start_size);
+  return max_size;
 }
 
 }  // namespace appwindows::macos

@@ -43,7 +43,7 @@ std::unique_ptr<core::QuadPoints> WindowWindows::get_points() {
   return points;
 }
 
-std::unique_ptr<core::Size> WindowWindows::get_size() const {
+std::unique_ptr<core::Size> WindowWindows::get_size() {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
   RECT rect;
   GetWindowRect(*window_, &rect);
@@ -51,7 +51,7 @@ std::unique_ptr<core::Size> WindowWindows::get_size() const {
                                       rect.bottom - rect.top);
 }
 
-std::unique_ptr<core::Size> WindowWindows::get_min_size() const {
+std::unique_ptr<core::Size> WindowWindows::get_min_size() {
     if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
     MINMAXINFO mmi = {0};
     SendMessage(*window_, WM_GETMINMAXINFO, 0, reinterpret_cast<LPARAM>(&mmi));
