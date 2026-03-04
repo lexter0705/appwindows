@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <vector>
+#include <limits>
 
 #include <CoreGraphics/CGWindow.h>
 #include <ScreenCaptureKit/ScreenCaptureKit.h>
@@ -216,40 +217,21 @@ std::unique_ptr<int> WindowMacOS::get_process_id() const {
 
 std::unique_ptr<core::Size> WindowMacOS::get_min_size() const {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-  CFTypeRef min_size_value = nullptr;
-  AXError error = AXUIElementCopyAttributeValue(
-      window_ref_, CFSTR("AXMinSize"), &min_size_value);
-  handle_error(error);
-  CGSize cg_size = {0, 0};
-  if (min_size_value && CFGetTypeID(min_size_value) == AXValueGetTypeID()) {
-    NSValue* sizeValue = (__bridge NSValue*)min_size_value;
-    if ([sizeValue isKindOfClass:[NSValue class]])
-      if (strcmp([sizeValue objCType], @encode(CGSize)) == 0)
-        cg_size = [sizeValue sizeValue];
-  }
-  CFRelease(min_size_value);
-  return std::make_unique<core::Size>(
-      static_cast<int>(cg_size.width), 
-      static_cast<int>(cg_size.height));
+  auto min_size = core::Size(1, 1);
+  auto start_size = get_size();
+  resize(min_size);
+  min_size = get_size();
+  resize(start_size);
 }
 
 std::unique_ptr<core::Size> WindowMacOS::get_max_size() const {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-  CFTypeRef max_size_value = nullptr;
-  AXError error = AXUIElementCopyAttributeValue(
-      window_ref_, CFSTR("AXMaxSize"), &max_size_value);
-  handle_error(error);
-  CGSize cg_size = {0, 0};
-  if (max_size_value && CFGetTypeID(max_size_value) == AXValueGetTypeID()) {
-    NSValue* sizeValue = (__bridge NSValue*)max_size_value;
-    if ([sizeValue isKindOfClass:[NSValue class]])
-      if (strcmp([sizeValue objCType], @encode(CGSize)) == 0) 
-        cg_size = [sizeValue sizeValue];
-  }
-  CFRelease(max_size_value);
-  return std::make_unique<core::Size>(
-      static_cast<int>(cg_size.width), 
-      static_cast<int>(cg_size.height));
+  auto max_int = std::numeric_limits<int>::max();
+  auto max_size = core::Size(max_int, max_int);
+  auto start_size = get_size();
+  resize(min_size);
+  min_size = get_size();
+  resize(start_size);
 }
 
 }  // namespace appwindows::macos
