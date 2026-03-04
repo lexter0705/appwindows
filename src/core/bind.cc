@@ -78,7 +78,7 @@ void bind_window(py::module &m) {
           "invalid")
       .def(
           "get_max_size",
-          [](const Window &self) {
+          [](Window &self) {
             auto size = self.get_max_size();
             return size ? *size
                         : throw exceptions::WindowDoesNotValidException();
@@ -91,7 +91,7 @@ void bind_window(py::module &m) {
           "invalid")
       .def(
           "get_min_size",
-          [](const Window &self) {
+          [](Window &self) {
             auto size = self.get_min_size();
             return size ? *size
                         : throw exceptions::WindowDoesNotValidException();
