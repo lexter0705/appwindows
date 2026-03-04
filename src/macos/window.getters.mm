@@ -53,45 +53,30 @@ void WindowMacOS::handle_error(AXError error) const {
 
 std::unique_ptr<core::QuadPoints> WindowMacOS::get_points() {
   if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
-  
   CFTypeRef position_value = nullptr;
-  CFTypeRef size_value = nullptr;
-  
   AXError position_error = AXUIElementCopyAttributeValue(
       window_ref_, CFSTR("AXPosition"), &position_value);
-  AXError size_error = AXUIElementCopyAttributeValue(
-      window_ref_, CFSTR("AXSize"), &size_value);
-  
-  handle_error(size_error);
-  handle_error(position_error);
-  
+  if (position_error != kAXErrorSuccess) {
+    if (position_value) CFRelease(position_value);
+    if (position_error != kAXErrorSuccess)
+      handle_error(position_error);
+  }
   CGPoint position = {0, 0};
-  CGSize size = {0, 0};
-  if (position_value && CFGetTypeID(position_value) == AXValueGetTypeID()) {
-    NSValue* posValue = (__bridge NSValue*)position_value;
-    if ([posValue isKindOfClass:[NSValue class]])
-      if (strcmp([posValue objCType], @encode(CGPoint)) == 0)
-        position = [posValue pointValue];
-  }
-  if (size_value && CFGetTypeID(size_value) == AXValueGetTypeID()) {
-    NSValue* sizeValue = (__bridge NSValue*)size_value;
-    if ([sizeValue isKindOfClass:[NSValue class]])
-      if (strcmp([sizeValue objCType], @encode(CGSize)) == 0)
-        size = [sizeValue sizeValue];
-  }
-  
+  auto size = get_size();
+  if (position_value && CFGetTypeID(position_value) == AXValueGetTypeID())
+    AXValueGetValue(static_cast<AXValueRef>(position_value),
+                    kAXValueCGPointType, &position);
   CFRelease(position_value);
-  CFRelease(size_value);
-  auto left_top = core::Point(static_cast<int>(position.x), 
-                              static_cast<int>(position.y));
-  auto right_top = core::Point(static_cast<int>(position.x + size.width), 
-                               static_cast<int>(position.y));
-  auto right_bottom = core::Point(static_cast<int>(position.x + size.width), 
-                                  static_cast<int>(position.y + size.height));
-  auto left_bottom = core::Point(static_cast<int>(position.x), 
-                                 static_cast<int>(position.y + size.height));
   return std::make_unique<core::QuadPoints>(
-      left_top, right_top, right_bottom, left_bottom);
+			core::Point(static_cast<int>(position.x),
+        				static_cast<int>(position.y)),
+			core::Point(static_cast<int>(position.x + size.get_width()),
+            			static_cast<int>(position.y),
+			core::Point(static_cast<int>(position.x + size.get_width()),
+            			static_cast<int>(position.y + size.get_height())),
+			core::Point(static_cast<int>(position.x),
+            			static_cast<int>(position.y + size.get_height()))
+        );
 }
 
 std::unique_ptr<std::string> WindowMacOS::get_title() const {
@@ -125,15 +110,14 @@ std::unique_ptr<core::Size> WindowMacOS::get_size() const {
       window_ref_, CFSTR("AXSize"), &size_value);
   handle_error(error);
   CGSize cg_size = {0, 0};
-  if (size_value && CFGetTypeID(size_value) == AXValueGetTypeID()) {
-    NSValue* sizeValue = (__bridge NSValue*)size_value;
-    if ([sizeValue isKindOfClass:[NSValue class]])
-      if (strcmp([sizeValue objCType], @encode(CGSize)) == 0)
-        cg_size = [sizeValue sizeValue];
+  if (size_value) {
+    if (CFGetTypeID(size_value) == AXValueGetTypeID()) {
+      AXValueGetValue(static_cast<AXValueRef>(size_value),
+                      kAXValueCGSizeType, &cg_size);
+    CFRelease(size_value);
   }
-  CFRelease(size_value);
   return std::make_unique<core::Size>(
-      static_cast<int>(cg_size.width), 
+      static_cast<int>(cg_size.width),
       static_cast<int>(cg_size.height));
 }
 
