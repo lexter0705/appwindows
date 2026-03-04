@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 
+#include <ApplicationServices/ApplicationServices.h>
 #include <CoreGraphics/CGWindow.h>
 #include <ScreenCaptureKit/ScreenCaptureKit.h>
 #include <dispatch/dispatch.h>
@@ -70,12 +71,12 @@ std::unique_ptr<core::QuadPoints> WindowMacOS::get_points() {
   return std::make_unique<core::QuadPoints>(
 			core::Point(static_cast<int>(position.x),
         				static_cast<int>(position.y)),
-			core::Point(static_cast<int>(position.x + size.get_width()),
-            			static_cast<int>(position.y),
-			core::Point(static_cast<int>(position.x + size.get_width()),
-            			static_cast<int>(position.y + size.get_height())),
+			core::Point(static_cast<int>(position.x + size->get_width()),
+            			static_cast<int>(position.y)),
+			core::Point(static_cast<int>(position.x + size->get_width()),
+            			static_cast<int>(position.y + size->get_height())),
 			core::Point(static_cast<int>(position.x),
-            			static_cast<int>(position.y + size.get_height()))
+            			static_cast<int>(position.y + size->get_height()))
         );
 }
 
