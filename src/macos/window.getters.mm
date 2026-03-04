@@ -3,7 +3,6 @@
 #include <memory>
 #include <vector>
 
-#include <ApplicationServices/ApplicationServices.h>
 #include <CoreGraphics/CGWindow.h>
 #include <ScreenCaptureKit/ScreenCaptureKit.h>
 #include <dispatch/dispatch.h>
@@ -59,14 +58,14 @@ std::unique_ptr<core::QuadPoints> WindowMacOS::get_points() {
       window_ref_, CFSTR("AXPosition"), &position_value);
   if (position_error != kAXErrorSuccess) {
     if (position_value) CFRelease(position_value);
-    if (position_error != kAXErrorSuccess)
-      handle_error(position_error);
+    if (position_error != kAXErrorSuccess) handle_error(position_error);
   }
   CGPoint position = {0, 0};
   auto size = get_size();
   if (position_value && CFGetTypeID(position_value) == AXValueGetTypeID())
     AXValueGetValue(static_cast<AXValueRef>(position_value),
-                    kAXValueCGPointType, &position);
+                    static_cast<AXValueType>(kAXValueCGPointType),
+                    &position);
   CFRelease(position_value);
   return std::make_unique<core::QuadPoints>(
 			core::Point(static_cast<int>(position.x),
@@ -112,9 +111,9 @@ std::unique_ptr<core::Size> WindowMacOS::get_size() const {
   handle_error(error);
   CGSize cg_size = {0, 0};
   if (size_value) {
-    if (CFGetTypeID(size_value) == AXValueGetTypeID()) {
+    if (CFGetTypeID(size_value) == AXValueGetTypeID())
       AXValueGetValue(static_cast<AXValueRef>(size_value),
-                      kAXValueCGSizeType, &cg_size);
+                      static_cast<AXValueType>(kAXValueCGSizeType), &cg_size);
     CFRelease(size_value);
   }
   return std::make_unique<core::Size>(
