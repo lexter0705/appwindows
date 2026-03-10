@@ -18,6 +18,9 @@ logger = logging.getLogger()
 
 @pytest.fixture
 def test_window():
+    if sys.platform == "darwin" and os.getenv("GITHUB_ACTIONS") == "true":
+        logger.info("The test was cancelled due to lack of permissions in GitHub Actions on MacOS.")
+        return None
     creator.create_window("Test Window for Operations")
     time.sleep(1)
     finder = get_finder()
@@ -86,8 +89,8 @@ def test_window_get_min_size(test_window):
 
 
 def test_window_get_screenshot(test_window):
-    if sys.platform == "darwin" and os.getenv("GITHUB_ACTIONS") == "true":
-        logger.info("The test was cancelled due to lack of permissions in GitHub Actions on MacOS.")
+    if os.getenv("GITHUB_ACTIONS") == "true":
+        logger.info("The test was cancelled due to lack of permissions in GitHub Actions.")
         return
     screenshot = test_window.get_screenshot()
     assert screenshot is not None
