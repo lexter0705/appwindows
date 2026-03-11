@@ -8,6 +8,8 @@
 
 #include "../core/core.h"
 
+using WindowX = Window;
+
 namespace appwindows::x_server {
 
 class FinderXServer final : public core::Finder {
