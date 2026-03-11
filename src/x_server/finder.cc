@@ -24,43 +24,69 @@ Display* FinderXServer::open_display() {
 
 std::unique_ptr<std::string> FinderXServer::get_os() const {
   return std::make_unique<std::string>("Linux::X11");
-};
+}
 
 std::vector<std::shared_ptr<core::Window>> FinderXServer::get_all_windows()
     const {
-  auto display = FinderXServer::open_display();
-  std::vector<std::shared_ptr<core::Window>> windows;
+  Display* display = open_display();
   WindowX root = DefaultRootWindow(display);
+
   Atom net_wm_window_type = XInternAtom(display, "_NET_WM_WINDOW_TYPE", False);
   Atom net_wm_window_type_normal =
       XInternAtom(display, "_NET_WM_WINDOW_TYPE_NORMAL", False);
   Atom xa_atom = XInternAtom(display, "ATOM", False);
-  WindowX* children = nullptr;
-  unsigned int nchildren = 0;
-  if (XQueryTree(display, root, &root, &root, &children, &nchildren)) {
-    for (unsigned int i = 0; i < nchildren; ++i) {
-      Atom type;
-      int format;
-      unsigned long nitems, bytes_after;
-      unsigned char* data = nullptr;
-      if (XGetWindowProperty(display, children[i], net_wm_window_type, 0, ~0L,
-                             False, xa_atom, &type, &format, &nitems,
-                             &bytes_after, &data) == Success) {
-        if (type == xa_atom && data) {
-          Atom* types = (Atom*)data;
-          for (unsigned long j = 0; j < nitems; j++)
-            if (types[j] == net_wm_window_type_normal) {
-              windows.push_back(std::make_shared<WindowXServer>(children[i]));
-              break;
-            }
-          XFree(data);
-        }
-      }
-    }
-    if (children) XFree(children);
-  }
+
+  std::vector<std::shared_ptr<core::Window>> windows;
+
+  collect_windows(display, root, net_wm_window_type,
+                 net_wm_window_type_normal, xa_atom, windows);
+
   XCloseDisplay(display);
   return windows;
+}
+
+bool FinderXServer::is_normal_window(Display* display, WindowX window,
+                    Atom net_wm_window_type, Atom net_wm_window_type_normal,
+                    Atom xa_atom) const {
+  Atom type;
+  int format;
+  unsigned long nitems, bytes_after;
+  unsigned char* data = nullptr;
+  if (XGetWindowProperty(display, window, net_wm_window_type, 0, ~0L,
+                         False, xa_atom, &type, &format, &nitems,
+                         &bytes_after, &data) != Success) return false;
+  bool is_normal = false;
+  if (type == xa_atom && data) {
+    Atom* types = reinterpret_cast<Atom*>(data);
+    for (unsigned long j = 0; j < nitems; ++j) {
+      if (types[j] == net_wm_window_type_normal) {
+        is_normal = true;
+        break;
+      }
+    }
+  }
+  if (data) XFree(data);
+  return is_normal;
+}
+
+void FinderXServer::collect_windows(Display* display, WindowX root,
+                    Atom net_wm_window_type, Atom net_wm_window_type_normal,
+                    Atom xa_atom,
+                    std::vector<std::shared_ptr<core::Window>>& out) const {
+  WindowX unused_root, unused_parent;
+  WindowX* children = nullptr;
+  unsigned int nchildren = 0;
+  if (!XQueryTree(display, root, &unused_root, &unused_parent, 
+      &children, &nchildren)) return;
+  for (unsigned int i = 0; i < nchildren; ++i) {
+    WindowX child = children[i];
+    if (is_normal_window(display, child, net_wm_window_type,
+                       net_wm_window_type_normal, xa_atom))
+      out.push_back(std::make_shared<WindowXServer>(child));
+    collect_windows(display, child, net_wm_window_type,
+                   net_wm_window_type_normal, xa_atom, out);
+  }
+  if (children) XFree(children);
 }
 
 }  // namespace appwindows::x_server
