@@ -1,24 +1,34 @@
 #pragma once
 
 #include <pybind11/numpy.h>
-#include <ApplicationServices/ApplicationServices.h>
 
-#include "../core/base_window.h"
-#include "../core/geometry/point.h"
-#include "../core/geometry/quad_points.h"
-#include "../core/geometry/size.h"
+#import <AppKit/AppKit.h>
+#import <Accessibility/Accessibility.h>
+#include <CoreGraphics/CGWindow.h>
+
+#include "../core/core.h"
 
 namespace appwindows::macos {
 
 class WindowMacOS final : public core::Window {
 public:
-  explicit WindowMacOS(CGWindowID window_id);
+  explicit WindowMacOS(AXUIElementRef window_ref);
+  ~WindowMacOS();
+
+  WindowMacOS(const WindowMacOS&) = delete;
+  WindowMacOS& operator=(const WindowMacOS&) = delete;
+
   [[nodiscard]] std::unique_ptr<core::QuadPoints> get_points() override;
   [[nodiscard]] std::unique_ptr<std::string> get_title() const override;
   [[nodiscard]] std::unique_ptr<core::Size> get_size() const override;
   [[nodiscard]] py::array_t<unsigned char> get_screenshot() override;
   [[nodiscard]] std::unique_ptr<int> get_process_id() const override;
   [[nodiscard]] std::unique_ptr<bool> is_valid() const override;
+
+  [[nodiscard]] std::unique_ptr<core::Size> get_min_size() override;
+  [[nodiscard]] std::unique_ptr<core::Size> get_max_size() override;
+
+  AXUIElementRef get_window_ref() const;
 
   void set_minimize(bool is_minimize) override;
   void set_fullscreen(bool is_fullscreen) override;
@@ -29,7 +39,8 @@ public:
   void to_background() override;
 
 private:
-  CGWindowID window_id_;
+  AXUIElementRef window_ref_;
+  void handle_error(AXError error) const;
 };
 
 }  // namespace appwindows::macos

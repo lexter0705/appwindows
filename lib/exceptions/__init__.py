@@ -1,7 +1,9 @@
 from appwindows.appwindows.exceptions import InvalidSizeException, \
                                              WindowDoesNotValidException, \
-                                             WindowDoesNotFoundException
+                                             WindowDoesNotFoundException, \
+                                             PermissionDeniedException
 
 __all__ = ["InvalidSizeException",
            "WindowDoesNotValidException",
-           "WindowDoesNotFoundException"]
+           "WindowDoesNotFoundException",
+           "PermissionDeniedException"]

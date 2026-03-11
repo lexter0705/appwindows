@@ -2,8 +2,7 @@
 
 #include <memory>
 
-#include "../core/base_finder.h"
-#include "../core/base_window.h"
+#include "../core/core.h"
 
 namespace appwindows::windows {
 

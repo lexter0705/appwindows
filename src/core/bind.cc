@@ -77,6 +77,32 @@ void bind_window(py::module &m) {
           "    appwindows.exceptions.WindowDoesNotValidException: If window is "
           "invalid")
       .def(
+          "get_max_size",
+          [](Window &self) {
+            auto size = self.get_max_size();
+            return size ? *size
+                        : throw exceptions::WindowDoesNotValidException();
+          },
+          "Get max window size\n\n"
+          "Returns:\n"
+          "    Size: Max window dimensions\n\n"
+          "Raises:\n"
+          "    appwindows.exceptions.WindowDoesNotValidException: If window is "
+          "invalid")
+      .def(
+          "get_min_size",
+          [](Window &self) {
+            auto size = self.get_min_size();
+            return size ? *size
+                        : throw exceptions::WindowDoesNotValidException();
+          },
+          "Get min window size\n\n"
+          "Returns:\n"
+          "    Size: Min window dimensions\n\n"
+          "Raises:\n"
+          "    appwindows.exceptions.WindowDoesNotValidException: If window is "
+          "invalid")
+      .def(
           "get_screenshot", [](Window &self) { return self.get_screenshot(); },
           "Get current window image\n\n"
           "Returns:\n"
@@ -116,8 +142,7 @@ void bind_window(py::module &m) {
            "    size (appwindows.geometry.Size): New window dimensions\n\n"
            "Raises:\n"
            "    appwindows.exceptions.InvalidSizeError: If size is invalid"
-           "    appwindows.exceptions.WindowDoesNotValidException: If window "
-           "is invalid",
+           "    appwindows.exceptions.WindowDoesNotValidException: If window is invalid",
            py::arg("size"))
       .def("move", &Window::move,
            "Move window to specified position\n\n"

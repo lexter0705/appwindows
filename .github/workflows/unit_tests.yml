@@ -9,7 +9,7 @@ on:
 jobs:
   test_windows:
     name: Test on Windows
-    runs-on: windows-2019
+    runs-on: windows-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout code
@@ -25,7 +25,7 @@ jobs:
         with:
           workflow: build.yml
           workflow_conclusion: success
-          name: wheels-windows-2019
+          name: wheels-windows-latest
           path: ./wheelhouse
           run_id: ${{ github.event.workflow_run.id }}
           
@@ -49,7 +49,7 @@ jobs:
         shell: powershell
         
   test_linux:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     name: Test on Linux
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     timeout-minutes: 15
@@ -85,7 +85,7 @@ jobs:
         with:
           workflow: build.yml
           workflow_conclusion: success
-          name: wheels-ubuntu-22.04
+          name: wheels-ubuntu-latest
           path: ./wheelhouse
           run_id: ${{ github.event.workflow_run.id }}
 
@@ -108,3 +108,43 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}
           DISPLAY: ":99"
         shell: bash
+
+  test_macos:
+    name: Test on MacOS
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Download wheels
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build.yml
+          workflow_conclusion: success
+          name: wheels-macos-latest
+          path: ./wheelhouse
+          run_id: ${{ github.event.workflow_run.id }}
+
+      - name: Install test dependencies
+        run: |
+          pip install pytest PySide6
+
+      - name: Install arm64 wheel only
+        run: |
+          pip install wheelhouse/*cp313*arm64*.whl
+
+      - name: Run tests
+        run: |
+          pytest tests/ -v -s --log-cli-level=20
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Clean up any remaining test windows
+        run: |
+          osascript -e 'tell application "Finder" to close every window'

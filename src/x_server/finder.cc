@@ -7,7 +7,8 @@
 #include <stdexcept>
 #include <string>
 
-#include "../core/base_window.h"
+#include "../core/core.h"
+
 #include "window.h"
 
 using WindowX = Window;
