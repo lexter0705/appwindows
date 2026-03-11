@@ -1,4 +1,4 @@
-project('appwindows', 'cpp',
+project('appwindows', ['cpp'],
         license: 'BSD 3-Clause License',
         meson_version: '>=0.56.0',
         default_options: [
@@ -8,6 +8,10 @@ project('appwindows', 'cpp',
             'b_ndebug=if-release',
         ]
 )
+
+if host_machine.system() == 'darwin'
+    add_languages('objcpp', required: true)
+endif
 
 pybind11_dep = dependency('pybind11', required: true)
 python_dep = dependency('python3', required: true)
@@ -34,6 +38,7 @@ appwindows_sources = files(
 
 platform_deps = []
 platform_args = []
+platform_link_args = []
 
 if host_machine.system() == 'windows'
     appwindows_sources += files(
@@ -62,12 +67,18 @@ elif host_machine.system() == 'linux'
 
 elif host_machine.system() == 'darwin'
     appwindows_sources += files(
-        'src/macos/window.getters.cc',
-        'src/macos/window.setters.cc',
-        'src/macos/finder.cc'
+        'src/macos/window.setters.mm',
+        'src/macos/window.getters.mm',
+        'src/macos/finder.mm'
     )
     appwindows_inc = [appwindows_inc, include_directories('src/macos')]
-    platform_args += ['-DMACOS_USED=1']
+    platform_args += ['-DMACOS_USED=1', '-x', 'objective-c++', '-fobjc-arc']
+    platform_link_args += [
+        '-framework', 'Foundation',
+        '-framework', 'AppKit',
+        '-framework', 'ApplicationServices',
+        '-framework', 'Accessibility'
+    ]
 
 else
     error('Unsupported platform: ' + host_machine.system())
@@ -79,6 +90,7 @@ appwindows_mod = py3.extension_module('appwindows',
                                       include_directories: [appwindows_inc, exceptions_inc, geometry_inc],
                                       install: true,
                                       cpp_args: platform_args,
+                                      link_args: platform_link_args,
                                       subdir: 'appwindows')
 
 install_subdir('lib',

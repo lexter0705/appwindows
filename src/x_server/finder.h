@@ -5,8 +5,7 @@
 #include <memory>
 #include <vector>
 
-#include "../core/base_finder.h"
-#include "../core/base_window.h"
+#include "../core/core.h"
 
 namespace appwindows::x_server {
 

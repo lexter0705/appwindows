@@ -3,10 +3,7 @@
 #include <pybind11/numpy.h>
 #include <windows.h>
 
-#include "../core/base_window.h"
-#include "../core/geometry/point.h"
-#include "../core/geometry/quad_points.h"
-#include "../core/geometry/size.h"
+#include "../core/core.h"
 
 namespace appwindows::windows {
 
@@ -19,6 +16,9 @@ class WindowWindows final : public core::Window {
   [[nodiscard]] py::array_t<unsigned char> get_screenshot() override;
   [[nodiscard]] std::unique_ptr<int> get_process_id() const override;
   [[nodiscard]] std::unique_ptr<bool> is_valid() const override;
+
+  [[nodiscard]] std::unique_ptr<core::Size> get_min_size() override;
+  [[nodiscard]] std::unique_ptr<core::Size> get_max_size() override;
 
   void set_minimize(bool is_minimize) override;
   void set_fullscreen(bool is_fullscreen) override;

@@ -4,7 +4,8 @@
 
 #include <memory>
 
-#include "../core/base_window.h"
+#include "../core/core.h"
+
 #include "window.h"
 
 namespace appwindows::windows {

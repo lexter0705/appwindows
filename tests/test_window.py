@@ -1,4 +1,7 @@
 import time
+import sys
+import os
+import logging
 
 import numpy as np
 import pytest
@@ -7,12 +10,17 @@ from appwindows import get_finder
 from appwindows.geometry import Point, Size
 from appwindows.exceptions import WindowDoesNotValidException
 
-from window_creator import WindowCreator
+from window_creators import get_creator
 
-creator = WindowCreator()
+creator = get_creator()
+logger = logging.getLogger()
+
 
 @pytest.fixture
 def test_window():
+    if sys.platform == "darwin" and os.getenv("GITHUB_ACTIONS") == "true":
+        logger.info("The test was cancelled due to lack of permissions in GitHub Actions on MacOS.")
+        return None
     creator.create_window("Test Window for Operations")
     time.sleep(1)
     finder = get_finder()
@@ -22,12 +30,18 @@ def test_window():
 
 
 def test_window_get_title(test_window):
+    if sys.platform == "darwin" and os.getenv("GITHUB_ACTIONS") == "true":
+        logger.info("The test was cancelled due to lack of permissions in GitHub Actions on MacOS.")
+        return
     title = test_window.get_title()
     assert isinstance(title, str)
     assert "Test Window for Operations" in title
 
 
 def test_window_get_points(test_window):
+    if sys.platform == "darwin" and os.getenv("GITHUB_ACTIONS") == "true":
+        logger.info("The test was cancelled due to lack of permissions in GitHub Actions on MacOS.")
+        return
     quad_points = test_window.get_points()
     assert hasattr(quad_points, 'left_top')
     assert hasattr(quad_points, 'right_top')
@@ -38,16 +52,46 @@ def test_window_get_points(test_window):
     assert isinstance(quad_points.right_top, Point)
     assert isinstance(quad_points.right_bottom, Point)
     assert isinstance(quad_points.left_bottom, Point)
+    logger.info(str(quad_points))
 
 
 def test_window_get_size(test_window):
+    if sys.platform == "darwin" and os.getenv("GITHUB_ACTIONS") == "true":
+        logger.info("The test was cancelled due to lack of permissions in GitHub Actions on MacOS.")
+        return
     appwindows_size = test_window.get_size()
     assert isinstance(appwindows_size, Size)
     assert appwindows_size.width > 0
     assert appwindows_size.height > 0
+    logger.info(str(appwindows_size))
+
+
+def test_window_get_max_size(test_window):
+    if sys.platform == "darwin" and os.getenv("GITHUB_ACTIONS") == "true":
+        logger.info("The test was cancelled due to lack of permissions in GitHub Actions on MacOS.")
+        return
+    appwindows_size = test_window.get_max_size()
+    assert isinstance(appwindows_size, Size)
+    assert appwindows_size.width >= 0
+    assert appwindows_size.height >= 0
+    logger.info(str(appwindows_size))
+
+
+def test_window_get_min_size(test_window):
+    if sys.platform == "darwin" and os.getenv("GITHUB_ACTIONS") == "true":
+        logger.info("The test was cancelled due to lack of permissions in GitHub Actions on MacOS.")
+        return
+    appwindows_size = test_window.get_min_size()
+    assert isinstance(appwindows_size, Size)
+    assert appwindows_size.width >= 0
+    assert appwindows_size.height >= 0
+    logger.info(str(appwindows_size))
 
 
 def test_window_get_screenshot(test_window):
+    if os.getenv("GITHUB_ACTIONS") == "true":
+        logger.info("The test was cancelled due to lack of permissions in GitHub Actions.")
+        return
     screenshot = test_window.get_screenshot()
     assert screenshot is not None
     assert isinstance(screenshot, np.ndarray)
@@ -55,6 +99,9 @@ def test_window_get_screenshot(test_window):
 
 
 def test_window_move(test_window):
+    if sys.platform == "darwin" and os.getenv("GITHUB_ACTIONS") == "true":
+        logger.info("The test was cancelled due to lack of permissions in GitHub Actions on MacOS.")
+        return
     current_points = test_window.get_points()
     current_x = current_points.left_top.x
     current_y = current_points.left_top.y
@@ -69,6 +116,9 @@ def test_window_move(test_window):
 
 
 def test_window_resize(test_window):
+    if sys.platform == "darwin" and os.getenv("GITHUB_ACTIONS") == "true":
+        logger.info("The test was cancelled due to lack of permissions in GitHub Actions on MacOS.")
+        return
     current_size = test_window.get_size()
     width_append = 100
     height_append = 50
@@ -80,6 +130,9 @@ def test_window_resize(test_window):
 
 
 def test_window_close(test_window):
+    if sys.platform == "darwin" and os.getenv("GITHUB_ACTIONS") == "true":
+        logger.info("The test was cancelled due to lack of permissions in GitHub Actions on MacOS.")
+        return
     test_window.close()
     time.sleep(1)
 

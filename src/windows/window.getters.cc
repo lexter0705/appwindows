@@ -5,8 +5,9 @@
 #endif
 
 #include <windows.h>
+#include <limits>
 
-#include "../core/exceptions/window_does_not_valid.h"
+#include "../core/core.h"
 
 namespace appwindows::windows {
 
@@ -48,6 +49,25 @@ std::unique_ptr<core::Size> WindowWindows::get_size() const {
   GetWindowRect(*window_, &rect);
   return std::make_unique<core::Size>(rect.right - rect.left,
                                       rect.bottom - rect.top);
+}
+
+std::unique_ptr<core::Size> WindowWindows::get_min_size() {
+    if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
+    MINMAXINFO mmi = {0};
+    SendMessage(*window_, WM_GETMINMAXINFO, 0, reinterpret_cast<LPARAM>(&mmi));
+    return std::make_unique<core::Size>(
+        mmi.ptMinTrackSize.x  > 0 ? mmi.ptMinTrackSize.x : 1, 
+        mmi.ptMinTrackSize.y  > 0 ? mmi.ptMinTrackSize.y : 1
+    );
+}
+
+std::unique_ptr<core::Size> WindowWindows::get_max_size() {
+    if (!*is_valid()) throw core::exceptions::WindowDoesNotValidException();
+    MINMAXINFO mmi = {0};
+    SendMessage(*window_, WM_GETMINMAXINFO, 0, reinterpret_cast<LPARAM>(&mmi));
+    const int max_width = (mmi.ptMaxTrackSize.x > 0) ? mmi.ptMaxTrackSize.x : std::numeric_limits<int>::max();
+    const int max_height = (mmi.ptMaxTrackSize.y > 0) ? mmi.ptMaxTrackSize.y : std::numeric_limits<int>::max();
+    return std::make_unique<core::Size>(max_width, max_height);
 }
 
 py::array_t<unsigned char> WindowWindows::get_screenshot() {

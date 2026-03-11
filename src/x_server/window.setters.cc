@@ -6,9 +6,8 @@
 #include <climits>
 #include <cstring>
 
-#include "../core/exceptions/window_does_not_valid.h"
-#include "../core/geometry/point.h"
-#include "../core/geometry/size.h"
+#include "../core/core.h"
+
 #include "finder.h"
 
 using WindowX = Window;
