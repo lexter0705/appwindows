@@ -15,8 +15,8 @@
 The appwindows library provides a unified way to find, inspect, and control application windows across Windows, macOS, and Linux.
 
 # Supported platforms:
-1) Windows
-2) MacOs
+1) Windows 10 and later
+2) MacOS 12.2 and later
 3) Linux with XServer (Wayland works, but with very significant limitations)
 
 # Install
@@ -64,6 +64,13 @@ size = window.get_size()
 print(points.left_top) # appwindows.geometry.Point(x=200, y=200)
 print(size)            # appwindows.geometry.Size(width=200, height=200)
 ```
+# Why "appwindows"?
+| Comparison Point | PyGetWindow | PyWinCtl | appwindows |
+| :--- | :---: | :---: | :---: |
+| **Cross-Platform** (macOS, Linux, Windows) | ❌ | ✅ | ✅ |
+| **Can Take Screenshots** | ❌ | ❌ | ✅ |
+| **Actively Maintained** | ❌ | ✅ | ❌ |
+| **Has CI/CD Testing** | ❌ | ✅ | ❌ |
 
 # Docs
 All documentation <a href="https://apparser.gitbook.io/appwindows">here</a> <br>
