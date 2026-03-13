@@ -26,7 +26,7 @@ pip install appwindows
 
 # Examples
 
-1) Resize window
+1) Create window screenshot
 ```python
 from appwindows import get_finder
 from appwindows.geometry import Size
@@ -35,7 +35,7 @@ finder = get_finder()
 
 window = finder.get_window_by_title("Some title")
 
-window.resize(Size(width=200, height=200))
+window.get_screenshot() # numpy.ndarray whith image
 ```
 
 2) Move window
