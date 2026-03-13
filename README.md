@@ -68,9 +68,9 @@ print(size)            # appwindows.geometry.Size(width=200, height=200)
 | Comparison Point | PyGetWindow | PyWinCtl | appwindows |
 | :--- | :---: | :---: | :---: |
 | **Cross-Platform** (macOS, Linux, Windows) | ❌ | ✅ | ✅ |
-| **Can Take Screenshots** | ❌ | ❌ | ✅ |
-| **Actively Maintained** | ❌ | ✅ | ❌ |
-| **Has CI/CD Testing** | ❌ | ✅ | ❌ |
+| **Can Take Screenshots** | ❌ | ✅ | ✅ |
+| **Actively Maintained** | ❌ | ❌ | ✅ |
+| **Has CI/CD Testing** | ❌ | ❌ | ✅ |
 
 # Docs
 All documentation <a href="https://apparser.gitbook.io/appwindows">here</a> <br>
