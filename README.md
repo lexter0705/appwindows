@@ -73,6 +73,9 @@ print(size)            # appwindows.geometry.Size(width=200, height=200)
 | **Has CI/CD Testing** | ❌ | ❌ | ✅ |
 | **Error Handling** | ❌ | ❌ | ✅ |
 | **Documentation** | ❌ | ✅ | ✅ |
+| **Relative Geometry** | ❌ | ❌ | ✅ |
+| **Triggers** | ❌ | ✅ | ✅ |
+| **Desktops** | ❌ | ❌ | ✅ |
 
 # Docs
 All documentation <a href="https://apparser.gitbook.io/appwindows">here</a> <br>

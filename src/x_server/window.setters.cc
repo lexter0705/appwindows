@@ -105,7 +105,7 @@ void WindowXServer::resize(const core::Size size) {
     XSetWMNormalHints(display, window_, size_hints);
     size_hints->min_width = 1;
     size_hints->min_height = 1;
-    size_hints->max_width = INT_MAX;
+    size_hints->PMaxSizemax_width = INT_MAX;
     size_hints->max_height = INT_MAX;
     XSetWMNormalHints(display, window_, size_hints);
     XFree(size_hints);
