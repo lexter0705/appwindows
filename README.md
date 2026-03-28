@@ -69,8 +69,10 @@ print(size)            # appwindows.geometry.Size(width=200, height=200)
 | :--- | :---: | :---: | :---: |
 | **Cross-Platform** (macOS, Linux, Windows) | ❌ | ✅ | ✅ |
 | **Can Take Screenshots** | ❌ | ❌ | ✅ |
-| **Actively Maintained** | ❌ | ❌ | ✅ |
+| **Actively Maintained** | ❌ | ✅ | ✅ |
 | **Has CI/CD Testing** | ❌ | ❌ | ✅ |
+| **Error Handling** | ❌ | ❌ | ✅ |
+| **Documentation** | ❌ | ✅ | ✅ |
 
 # Docs
 All documentation <a href="https://apparser.gitbook.io/appwindows">here</a> <br>
